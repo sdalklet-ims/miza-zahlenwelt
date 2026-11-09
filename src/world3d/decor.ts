@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { worlds, worldCfg } from '../core/texts';
-import { S, ZW, WH, heightAt, pathY, riverOf } from '../world/terrain';
+import { S, ZW, WH, PLOT, heightAt, pathY, riverOf } from '../world/terrain';
 import type { WorldModel, Decor } from '../world/world';
 import { createHouse } from './models';
 
@@ -155,21 +155,22 @@ export function buildDecor(model: WorldModel): THREE.Group {
     }
     return mergeGeometries(parts)!;
   })();
+  const inPlot = (x: number, y: number) => !!PLOT && Math.abs(x - PLOT.x) < 380 && y > PLOT.y - 300 && y < PLOT.y + 420;
   const grassItems: Decor[] = [], flowerItems: { d: Decor; c: THREE.Color }[] = [];
   const colors = ['#ff8fab', '#ffd166', '#ffffff', '#c3a6ff', '#ff9f5a'].map((c) => new THREE.Color(c));
   worlds.forEach((w, zi) => {
     const th = worldCfg.themes[w.meta.theme] ?? worldCfg.themes.forest;
     const rv = riverOf(zi);
-    const nG = w.meta.theme === 'mountain' ? 700 : w.meta.theme === 'village' ? 500 : 2600;
+    const nG = w.meta.theme === 'mountain' ? 1400 : w.meta.theme === 'village' ? 900 : 4400;
     for (let i = 0; i < nG; i++) {
       const x = zi * ZW + rnd() * ZW, y = 60 + rnd() * (WH - 120);
-      if (Math.abs(y - pathY(x)) < 62 || (rv && x > rv.x0 - 30 && x < rv.x1 + 30)) continue;
+      if (Math.abs(y - pathY(x)) < 62 || inPlot(x, y) || (rv && x > rv.x0 - 30 && x < rv.x1 + 30)) continue;
       grassItems.push({ kind: 'g', x, y, s: 0.8 + rnd() * 0.9, rot: rnd() * 6.28 });
     }
-    const nF = Math.round(th.flower * 14);
+    const nF = Math.round(th.flower * 26);
     for (let i = 0; i < nF; i++) {
       const x = zi * ZW + rnd() * ZW, y = 60 + rnd() * (WH - 120);
-      if (Math.abs(y - pathY(x)) < 62 || (rv && x > rv.x0 - 30 && x < rv.x1 + 30)) continue;
+      if (Math.abs(y - pathY(x)) < 62 || inPlot(x, y) || (rv && x > rv.x0 - 30 && x < rv.x1 + 30)) continue;
       flowerItems.push({ d: { kind: 'f', x, y, s: 0.8 + rnd() * 0.5, rot: 0 }, c: colors[Math.floor(rnd() * 5)] });
     }
   });

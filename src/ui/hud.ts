@@ -1,5 +1,6 @@
 import { h } from '../core/dom';
 import { totalStars, coins } from '../core/rewards';
+import { builtCount, parts } from '../core/house';
 import { onProgress } from '../core/progress';
 import { layers } from './stage';
 
@@ -7,18 +8,21 @@ export interface HudHandlers {
   onMap?: () => void;
   onAlbum?: () => void;
   onSettings?: () => void;
+  onHouse?: () => void;
 }
 
 let root: HTMLElement;
 let backBtn: HTMLButtonElement;
 let starsEl: HTMLElement;
 let coinEl: HTMLElement;
+let houseEl: HTMLElement;
 
 export const hud = {
   init(handlers: HudHandlers) {
     backBtn = h('button', { class: 'hud-btn back', 'aria-label': 'Zurück' }, '◀ Zurück');
     starsEl = h('div', { class: 'hud-stars', 'aria-label': 'Sterne' });
     coinEl = h('div', { class: 'hud-stars coin', 'aria-label': 'Münzen' });
+    houseEl = h('button', { class: 'hud-stars house', 'aria-label': 'Mias Haus', onclick: () => handlers.onHouse?.() });
     const btn = (icon: string, label: string, fn?: () => void) =>
       fn ? h('button', { class: 'hud-btn icon', 'aria-label': label, title: label, onclick: fn }, icon) : null;
     root = h(
@@ -26,6 +30,7 @@ export const hud = {
       { class: 'hud-bar' },
       backBtn,
       h('div', { class: 'spacer' }),
+      houseEl,
       coinEl,
       starsEl,
       btn('🗺️', 'Karte', handlers.onMap),
@@ -47,5 +52,6 @@ export const hud = {
   refresh() {
     if (starsEl) starsEl.textContent = `⭐ ${totalStars()}`;
     if (coinEl) coinEl.textContent = `🪙 ${coins()}`;
+    if (houseEl) houseEl.textContent = `🏠 ${builtCount()}/${parts.length}`;
   },
 };

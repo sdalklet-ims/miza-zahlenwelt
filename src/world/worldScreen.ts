@@ -6,12 +6,16 @@ import * as THREE from 'three';
 import { h, clamp, pick } from '../core/dom';
 import { worlds, textOf } from '../core/texts';
 import { getProgress, mutate } from '../core/progress';
-import { equippedFor, hasGadget, addCoins } from '../core/rewards';
+import { equippedFor, addCoins } from '../core/rewards';
+import { build as buildPart, isBuilt } from '../core/house';
+import { onProgress } from '../core/progress';
 import { show } from '../core/router';
 import { createControls } from '../input/controls';
 import { speak } from '../audio/speak';
 import { award } from '../ui/results';
-import { openShop } from '../ui/shop';
+import { openHouseUi, setBuilder } from '../ui/houseUi';
+import { openModal } from '../ui/modal';
+import { createHouse3D } from '../world3d/house';
 import { getScale, layers, W as VW } from '../ui/stage';
 import { stationStarters, type Npc, type Offer } from '../stations';
 import { buildWorld, PROC_KINDS, type Bush, type Critter, type Interact } from './world';
@@ -28,7 +32,6 @@ export interface EnterOpts { spawnWorld?: string }
 const R = 13; // Mias Kollisionsradius (an den Füßen)
 const DT = 1 / 60;
 const RUN = 235;
-const GLITTER = ['#ff8fab', '#ffd166', '#8fd3ff', '#c3a6ff', '#9ae6a0'];
 const angDiff = (a: number, b: number) => Math.atan2(Math.sin(b - a), Math.cos(b - a));
 
 function fogTexture() {
@@ -55,6 +58,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
     onGate: () => { speak('common.gate.soon'); shakeFog = 1; },
     onBush: (b) => toggleHide(b),
     onSquirrel: (c) => pet(c),
+    onPlot: () => { speak('wald.haus.plot'); openHouseUi({ mode: 'plan' }); },
   });
   // Wasser (mit Lücke an der Brücke)
   worlds.forEach((_, i) => {
@@ -63,7 +67,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
     model.rects.push({ x: rv.x0, y: 0, w: rv.x1 - rv.x0, h: rv.by - 56 }, { x: rv.x0, y: rv.by + 56, w: rv.x1 - rv.x0, h: WH - rv.by - 56 });
   });
 
-  const saved = getProgress().pos;
+  const saved = getProgress().posV === 3 ? getProgress().pos : undefined;
   const spawnZone = opts.spawnWorld ? worlds.findIndex((w) => w.id === opts.spawnWorld) : -1;
   const spawn = opts.spawnWorld && !(saved && zoneIndex(saved.x) === spawnZone) ? model.spawns[opts.spawnWorld] : saved ?? model.spawns[first];
   const st = { x: spawn.x, y: spawn.y, vx: 0, vy: 0, t: 0, phase: 0, yaw: 0 };
@@ -72,10 +76,9 @@ export async function enterWorld(opts: EnterOpts = {}) {
   /* ── Oberfläche ── */
   const cv = h('canvas', { class: 'world-canvas' });
   const labels = h('div', { class: 'labels' });
-  const radar = h('div', { class: 'radar' }, h('i', {}), h('b', {}));
   const controls = createControls(() => act());
   const banner = h('div', { class: 'zone-banner' });
-  const el = h('div', { class: 'worldscreen' }, cv, labels, radar, banner, controls.el);
+  const el = h('div', { class: 'worldscreen' }, cv, labels, banner, controls.el);
   const pixelRatio = () => clamp(getScale() * (window.devicePixelRatio || 1), 1, 2);
   const stage = createStage3D(cv, pixelRatio());
   const fit = () => stage.setPixelRatio(pixelRatio());
@@ -87,7 +90,51 @@ export async function enterWorld(opts: EnterOpts = {}) {
   const fx = new Particles();
   scene.add(fx.points);
 
+  /* ── Mias Haus ── */
+  const plot = model.plot;
+  const house = createHouse3D();
+  let dyn = { rects: [] as { x: number; y: number; w: number; h: number }[], solids: [] as { x: number; y: number; r: number }[] };
+  if (plot) {
+    house.group.position.set(plot.x * S, heightAt(plot.x, plot.y), plot.y * S);
+    scene.add(house.group);
+  }
+  let houseInside = false;
+  function syncHouse(animate: boolean) {
+    if (!plot) return;
+    const hs = getProgress().house;
+    house.sync(hs.built, { roof: hs.roof, wall: hs.wall }, animate);
+    dyn = house.collisions(hs.built, plot.x, plot.y);
+  }
+  syncHouse(false);
+  house.onLand = (_id, p) => {
+    for (let i = 0; i < 16; i++) fx.add(p.x + (Math.random() - 0.5) * 2.5, p.y - 0.3, p.z + (Math.random() - 0.5) * 2.5, (Math.random() - 0.5) * 1.5, 0.6 + Math.random(), (Math.random() - 0.5) * 1.5, 0.8, 0.5, '#e2cda0');
+  };
+  const offHouse = onProgress(() => syncHouse(true));
+
+  function confetti() {
+    for (let i = 0; i < 40; i++) {
+      const c = h('div', { class: 'confetti', style: { left: Math.random() * 1150 + 'px', animationDelay: Math.random() * 1.2 + 's' } }, ['🎉', '🎊', '⭐', '🌸', '🎈'][i % 5]);
+      el.append(c);
+      setTimeout(() => c.remove(), 4800);
+    }
+  }
+  function milestone(stage: number) {
+    const info = [null, ['🏗️', 'Der Rohbau steht!', 'wald.haus.roh'], ['🏡', 'Mias Haus ist bewohnbar!', 'wald.haus.done'], ['🏆', 'Alles gebaut!', 'wald.haus.master']][stage] as [string, string, string];
+    if (stage >= 2) confetti();
+    award('wald.haus', stage);
+    const close = openModal({ title: info[1], content: h('div', { class: 'milestone' }, h('div', { class: 'big' }, info[0]), h('p', {}, textOf(info[2])), h('button', { class: 'btn', onclick: () => close() }, 'Weiter bauen!')) });
+    speak(info[2]);
+  }
+  /** Teil aufbauen – nur, wenn Mia beim Bauplatz ist */
+  setBuilder((id) => {
+    if (!plot || Math.hypot(st.x - plot.x, st.y - plot.y) > 700) return void speak('wald.haus.far');
+    const stage = buildPart(id);
+    if (stage) setTimeout(() => milestone(stage), 1500);
+    else speak('wald.haus.built');
+  });
+
   const miaRig = M.createMia(equippedFor('mia'));
+  miaRig.root.scale.setScalar(0.82); // schlanker und kleiner als zuvor
   scene.add(miaRig.root);
   // Silhouette: Mia bleibt auch hinter Bäumen und Häusern sichtbar (zeichnet nur dort, wo etwas davor ist)
   const silhouette = new THREE.MeshBasicMaterial({ color: '#ffb84d', transparent: true, opacity: 0.5, depthFunc: THREE.GreaterDepth, depthWrite: false });
@@ -120,7 +167,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
 
   const critters = model.critters.map((c) => {
     const sq = M.createSquirrel();
-    sq.root.scale.setScalar(1.3);
+    sq.root.scale.setScalar(1.0);
     scene.add(sq.root);
     return { c, sq, yaw: 0 };
   });
@@ -234,7 +281,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
     const starKey: Record<string, string> = { check: `${worldId}.check`, punkte: `${worldId}.punkte`, steine: `${worldId}.steine`, kaertchen: `${worldId}.kaertchen`, memory: `${worldId}.memory`, pilze: `${worldId}.pilze` };
     const btns = npc.offers.map((o) => {
       const s = starKey[o] ? getProgress().stars[starKey[o]] ?? 0 : null;
-      return h('button', { class: 'btn ' + (o === 'video' || o === 'shop' ? 'sun' : o === 'check' ? 'coral' : ''), onclick: () => { savePos(); closeDialog(); if (o === 'shop') openShop(); else start?.(o as Offer, npc, () => void enterWorld()); } },
+      return h('button', { class: 'btn ' + (o === 'video' || o === 'shop' ? 'sun' : o === 'check' ? 'coral' : ''), onclick: () => { savePos(); closeDialog(); if (o === 'shop') openHouseUi({ mode: 'shop' }); else start?.(o as Offer, npc, () => void enterWorld()); } },
         labelsTxt[o] ?? o, s != null && h('small', { class: 'btn-stars' }, '★'.repeat(s) + '☆'.repeat(3 - s)));
     });
     bubble = h('div', { class: 'bubble world-bubble' },
@@ -289,7 +336,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
       else ix = iy = 0;
     }
     if (!hidden) {
-      const sp = hasGadget('turbo') ? RUN * 1.35 : RUN;
+      const sp = RUN;
       const len = Math.hypot(ix, iy) || 1, mag = Math.min(1, Math.hypot(ix, iy));
       const tvx = (ix / len) * sp * mag, tvy = (iy / len) * sp * mag;
       const a = 1 - Math.exp(-(mag > 0 ? 11 : 15) * DT); // sanftes Beschleunigen und Abbremsen
@@ -301,7 +348,6 @@ export async function enterWorld(opts: EnterOpts = {}) {
       const spd = Math.hypot(st.vx, st.vy);
       st.phase += spd * DT * 0.062;
       const gy = heightAt(st.x, st.y);
-      if (hasGadget('glitzer') && spd > 60 && Math.random() < 0.6) fx.add(st.x * S + (Math.random() - 0.5) * 0.5, gy + 0.3 + Math.random() * 1.0, st.y * S + (Math.random() - 0.5) * 0.5, (Math.random() - 0.5) * 0.6, 0.6 + Math.random() * 0.5, (Math.random() - 0.5) * 0.6, 0.9, 0.22, GLITTER[Math.floor(Math.random() * 5)], -0.4);
       dustT -= DT;
       if (spd > 120 && dustT <= 0) {
         dustT = 0.09;
@@ -344,16 +390,15 @@ export async function enterWorld(opts: EnterOpts = {}) {
       mutate((p) => void (p.discovered[s.id] = true));
       for (let i = 0; i < 26; i++) { const a = (i / 26) * 6.28; fx.add(s.x * S, heightAt(s.x, s.y) + 1.1, s.y * S, Math.cos(a) * 2.6, 1 + Math.random() * 2, Math.sin(a) * 2.6, 0.9, 0.3, '#ffd54a', -3); }
       speak('wald.star.found');
+      addCoins(5);
       award(`wald.entdecker.${s.id}`, 1);
     }
 
-    // Münzen (mit Magnet fliegen sie zu Mia)
-    const mag = hasGadget('magnet');
+    // Münzen
     for (const cw of coinViews) {
       const co = cw.c;
       if (co.got) continue;
       const d = Math.hypot(co.x - st.x, co.y - st.y);
-      if (mag && d < 170 && d > 20) { co.x += ((st.x - co.x) / d) * 260 * DT; co.y += ((st.y - co.y) / d) * 260 * DT; }
       if (d < 30) {
         co.got = true;
         cw.m.visible = false;
@@ -398,7 +443,12 @@ export async function enterWorld(opts: EnterOpts = {}) {
           st.x = s.x + nx * m; st.y = s.y + ny * m;
         }
       }
-      for (const r of model.rects) {
+      for (const s of dyn.solids) {
+        const m = s.r + R;
+        const dx = st.x - s.x, dy = st.y - s.y, d = Math.hypot(dx, dy);
+        if (d < m && d > 0.001) { st.x = s.x + (dx / d) * m; st.y = s.y + (dy / d) * m; }
+      }
+      for (const r of [...model.rects, ...dyn.rects]) {
         if (st.x < r.x - R || st.x > r.x + r.w + R || st.y < r.y - R || st.y > r.y + r.h + R) continue;
         const cx = clamp(st.x, r.x, r.x + r.w), cy = clamp(st.y, r.y, r.y + r.h);
         const dx = st.x - cx, dy = st.y - cy, d = Math.hypot(dx, dy);
@@ -414,7 +464,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
   }
 
   function savePos() {
-    mutate((p) => void (p.pos = { x: Math.round(st.x), y: Math.round(st.y) }));
+    mutate((p) => { p.pos = { x: Math.round(st.x), y: Math.round(st.y) }; p.posV = 3; });
   }
 
   /* ── Darstellung ── */
@@ -476,26 +526,14 @@ export async function enterWorld(opts: EnterOpts = {}) {
       const sh = shakeFog * Math.sin(timeSec * 40) * 0.2;
       fs.sp.position.x = fs.f.x * S + Math.sin(timeSec * 0.5 + fs.f.ph) * 0.5 + sh;
     }
-    fx.update(DT);
-
-    // Sternen-Fernglas: Pfeil zum nächsten versteckten Stern
-    let showRadar = false;
-    if (hasGadget('fernglas')) {
-      let best: { x: number; y: number } | null = null, bd = 1e9;
-      for (const s of model.stars) { if (s.got) continue; const d = Math.hypot(s.x - st.x, s.y - st.y); if (d < bd) { bd = d; best = s; } }
-      if (best && bd > 160) {
-        v3.set(best.x * S, heightAt(best.x, best.y) + 1.2, best.y * S);
-        const p = stage.project(v3);
-        const cx = VW / 2, cy = 410, a = Math.atan2(p.y - cy, p.x - cx) + (p.behind ? Math.PI : 0);
-        const inside = !p.behind && p.x > 60 && p.x < VW - 60 && p.y > 110 && p.y < 720;
-        const ax = inside ? p.x : clamp(cx + Math.cos(a) * 520, 70, VW - 70), ay = inside ? p.y - 60 : clamp(cy + Math.sin(a) * 330, 120, 700);
-        radar.style.transform = `translate(${ax}px, ${ay}px)`;
-        (radar.firstChild as HTMLElement).style.transform = `rotate(${inside ? 90 : a * 57.3}deg)`;
-        (radar.lastChild as HTMLElement).textContent = `⭐ ${Math.round(bd / 50)} m`;
-        showRadar = true;
-      }
+    if (plot) {
+      const inh = isBuilt('fundament') && Math.abs(st.x - plot.x) < 160 && st.y > plot.y - 125 && st.y < plot.y + 125 && isBuilt('wand_hinten');
+      if (inh !== houseInside) { houseInside = inh; house.setInside(inh); }
+      house.update(timeSec, DT);
+      const ch = house.chimney();
+      if (ch && Math.random() < 0.06) fx.add(ch.x + (Math.random() - 0.5) * 0.2, ch.y, ch.z, 0.25, 0.9, 0.1, 2.6, 0.9, '#d8d8d8');
     }
-    radar.style.display = showRadar ? 'flex' : 'none';
+    fx.update(DT);
 
     stage.renderer.render(scene, stage.camera);
   }
@@ -521,12 +559,17 @@ export async function enterWorld(opts: EnterOpts = {}) {
       controls.dispose();
       savePos();
       stage.dispose();
+      offHouse();
+      setBuilder(null);
     },
   };
   stage.follow(st.x, st.y, 0, 0, DT, true);
   stage.streamChunks(st.x, st.y, 30); // die nächsten Kacheln sofort, der Rest läuft nach
   if (import.meta.env.DEV) (window as unknown as { __mia: unknown }).__mia = st;
   show(screen, { back: null });
-  if (opts.spawnWorld && model.spawns[opts.spawnWorld] === spawn) speak(`${opts.spawnWorld}.arrive`);
+  if (!getProgress().seen.goal) {
+    mutate((p) => void (p.seen.goal = true));
+    speak('wald.haus.goal');
+  } else if (opts.spawnWorld && model.spawns[opts.spawnWorld] === spawn) speak(`${opts.spawnWorld}.arrive`);
   raf = requestAnimationFrame(frame);
 }

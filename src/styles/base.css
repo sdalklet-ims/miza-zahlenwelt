@@ -91,3 +91,4 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 .alb-thumb { width: 110px; margin: 0 auto; }
 .alb-name { font: 900 22px var(--font); margin-top: 4px; } .alb-sub { font: 700 18px var(--font); color: #6b5a44; }
 .hud-stars.coin { background: #fff0b8; border-bottom-color: #d9b84c; }
+.hud-stars.house { background: #e7f4d9; border-bottom-color: #a9cf86; border-left: 0; border-right: 0; border-top: 0; cursor: pointer; font-family: var(--font); color: var(--ink); }

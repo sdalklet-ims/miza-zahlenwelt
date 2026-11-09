@@ -6,7 +6,7 @@
 import { worlds, type WorldContent } from '../core/texts';
 import { getProgress } from '../core/progress';
 import { stationStarters, type Npc } from '../stations';
-import { ZW, WW, WH, pathY, riverOf } from './terrain';
+import { ZW, WW, WH, PLOT, pathY, riverOf } from './terrain';
 
 export interface Circle { x: number; y: number; r: number }
 export interface Rect { x: number; y: number; w: number; h: number }
@@ -25,6 +25,7 @@ export interface WorldModel {
   critters: Critter[]; bushes: Bush[]; stars: Star[]; coins: Coin[]; npcs: NpcEnt[]; decor: Decor[];
   butterflies: { x: number; y: number; ph: number; col: string }[];
   spawns: Record<string, { x: number; y: number }>;
+  plot: { x: number; y: number } | null;
 }
 
 export interface Hooks {
@@ -32,6 +33,7 @@ export interface Hooks {
   onGate: () => void;
   onBush: (b: Bush) => void;
   onSquirrel: (c: Critter) => void;
+  onPlot: () => void;
 }
 
 const AREA = (ZW * WH) / (1400 * 1800); // Dichte der Dekoration wächst mit der Zonengröße
@@ -49,7 +51,7 @@ function rng(seed: number) {
 }
 
 export function buildWorld(hooks: Hooks): WorldModel {
-  const m: WorldModel = { solids: [], rects: [], interacts: [], fogs: [], gates: [], critters: [], bushes: [], stars: [], coins: [], npcs: [], decor: [], butterflies: [], spawns: {} };
+  const m: WorldModel = { solids: [], rects: [], interacts: [], fogs: [], gates: [], critters: [], bushes: [], stars: [], coins: [], npcs: [], decor: [], butterflies: [], spawns: {}, plot: PLOT };
   const keep: Circle[] = [];
   const disc = getProgress().discovered;
   const addSolid = (x: number, y: number, r: number) => m.solids.push({ x, y, r });
@@ -97,6 +99,11 @@ export function buildWorld(hooks: Hooks): WorldModel {
       m.critters.push(c0);
       m.interacts.push({ id: `critter.${m.critters.length}`, x: c0.x, y: c0.y, r: 70, label: 'Streicheln', icon: '🐿️', follow: c0, run: () => hooks.onSquirrel(c0) });
     }
+  }
+
+  if (PLOT) {
+    keep.push({ x: PLOT.x, y: PLOT.y, r: 430 });
+    m.interacts.push({ id: 'plot', x: PLOT.x, y: PLOT.y + 330, r: 170, label: 'Bauplatz', icon: '🏠', run: hooks.onPlot });
   }
 
   /* ── Münzen (einmal einsammelbar, gespeichert) ── */
@@ -161,17 +168,17 @@ export function buildWorld(hooks: Hooks): WorldModel {
       m.decor.push({ kind: 'rock', x, y, s, rot: r() * 6.28 });
     };
     if (theme === 'forest') {
-      place(150, 38, 105, (x, y) => tree(x, y, ['tree_forest', 'tree_dark', 'tree_forest', 'pine'][Math.floor(r() * 4)], 0.85 + r() * 0.4), 0.5);
-      place(14, 30, 100, (x, y) => rock(x, y, 0.8 + r() * 0.3), 0.1);
+      place(52, 60, 105, (x, y) => tree(x, y, ['tree_forest', 'tree_dark', 'tree_forest', 'pine'][Math.floor(r() * 4)], 0.85 + r() * 0.4), 0.5);
+      place(7, 40, 100, (x, y) => rock(x, y, 0.8 + r() * 0.3), 0.1);
     } else if (theme === 'meadow') {
-      place(22, 60, 130, (x, y) => tree(x, y, 'tree_light', 0.9 + r() * 0.3), 0.3);
-      place(18, 40, 120, (x, y) => rock(x, y, 0.7), 0);
+      place(9, 80, 130, (x, y) => tree(x, y, 'tree_light', 0.9 + r() * 0.3), 0.3);
+      place(8, 50, 120, (x, y) => rock(x, y, 0.7), 0);
     } else if (theme === 'river') {
-      place(50, 50, 130, (x, y) => tree(x, y, ['tree_light', 'tree_forest'][Math.floor(r() * 2)], 0.9 + r() * 0.3), 0.4);
+      place(22, 70, 130, (x, y) => tree(x, y, ['tree_light', 'tree_forest'][Math.floor(r() * 2)], 0.9 + r() * 0.3), 0.4);
     } else if (theme === 'mountain') {
       place(10, 130, 150, (x, y) => { addSolid(x - 50, y, 40); addSolid(x + 50, y, 40); addSolid(x, y, 45); m.decor.push({ kind: 'mountain', x, y, s: 1.1 + r() * 0.5, rot: r() * 6.28 }); }, 0.9);
-      place(55, 40, 120, (x, y) => tree(x, y, 'pine', 0.9 + r() * 0.4), 0.45);
-      place(26, 40, 110, (x, y) => rock(x, y, 0.9 + r() * 0.5), 0.2);
+      place(24, 60, 120, (x, y) => tree(x, y, 'pine', 0.9 + r() * 0.4), 0.45);
+      place(12, 50, 110, (x, y) => rock(x, y, 0.9 + r() * 0.5), 0.2);
     } else if (theme === 'village') {
       for (let k = 0; k < 6; k++) {
         const hx = x0 + 260 + k * 300, hy = pathY(hx) + (k % 2 ? 250 : -230);
@@ -179,7 +186,7 @@ export function buildWorld(hooks: Hooks): WorldModel {
         keep.push({ x: hx, y: hy, r: 130 });
         m.decor.push({ kind: k % 2 ? 'house_blue' : 'house_red', x: hx, y: hy, s: 1, rot: 0 });
       }
-      place(34, 50, 150, (x, y) => tree(x, y, ['tree_autumn', 'tree_light'][Math.floor(r() * 2)], 0.9 + r() * 0.3), 0.5);
+      place(14, 70, 150, (x, y) => tree(x, y, ['tree_autumn', 'tree_light'][Math.floor(r() * 2)], 0.9 + r() * 0.3), 0.5);
     }
   }
 

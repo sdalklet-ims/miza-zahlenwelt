@@ -120,6 +120,15 @@ const hillAmp = (x: number) => {
   return a + (b - a) * smooth(ZW * 0.8, ZW, lx);
 };
 
+/** Bauplatz von Mias Haus (Spiel-Pixel, Mittelpunkt des Hauses) */
+export const PLOT = (() => {
+  for (let i = 0; i < worlds.length; i++) {
+    const p = worlds[i].world?.plot;
+    if (p) return { x: i * ZW + p.x, y: p.y };
+  }
+  return null;
+})();
+
 /** Höhe des Bodens (3D-Einheiten) an einer Stelle in Spiel-Pixeln. Wege, Flüsse und Brücken bleiben flach. */
 export function heightAt(x: number, y: number): number {
   const n = Math.sin(x * 0.0021) * Math.cos(y * 0.0017) * 0.5 + Math.sin(x * 0.0047 + 1.3) * Math.sin(y * 0.0039 + 0.7) * 0.25 + Math.sin(x * 0.011 + y * 0.009) * 0.08;
@@ -131,5 +140,6 @@ export function heightAt(x: number, y: number): number {
   // an der Zonengrenze (Nebeltor) auch flach
   const edge = Math.abs(((x % ZW) + ZW) % ZW - 0);
   flat *= smooth(40, 260, Math.min(edge, ZW - edge));
+  if (PLOT) flat *= smooth(430, 640, Math.hypot(x - PLOT.x, y - PLOT.y)); // Bauplatz ist eben
   return n * hillAmp(x) * flat;
 }

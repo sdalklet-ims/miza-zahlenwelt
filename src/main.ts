@@ -8,6 +8,7 @@ import { enterWorld } from './world/worldScreen';
 import { startScreen } from './ui/start';
 import { openSettings } from './ui/settings';
 import { openAlbum } from './ui/album';
+import { openHouseUi } from './ui/houseUi';
 import { speak, unlockAudio } from './audio/speak';
 import './worlds/wald'; // registriert die Welt "wald"
 
@@ -17,7 +18,7 @@ function goMap() {
   show(mapScreen(), { back: null });
 }
 
-hud.init({ onMap: goMap, onAlbum: openAlbum, onSettings: openSettings });
+hud.init({ onMap: goMap, onAlbum: openAlbum, onSettings: openSettings, onHouse: () => openHouseUi({ mode: 'plan' }) });
 
 show(
   startScreen(() => {

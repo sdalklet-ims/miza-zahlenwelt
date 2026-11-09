@@ -43,11 +43,13 @@ Die Eule klingt etwas tiefer, Mia heller (Tonhöhe pro Figur aus `content/common
 - Oben rechts: ⭐ Sterne, 🗺️ Weltkarte (Schnellreise), 🎩 Album, ⚙️ Einstellungen.
 - Am Rechner: Pfeile/WASD, Leertaste/E = Pfote.
 
-**Münzen und Laden:** Münzen (🪙) liegen überall im Wald (45 Stück, einmal einsammelbar) und gibt es für jedes Spiel. Bei **Fuchs Fritz** kauft man Gadgets: Turbo-Schuhe, Glitzerspur, Münz-Magnet und Sternen-Fernglas (Pfeil zum nächsten versteckten Stern). Gadgets stehen in `content/common.json → shop.items`, ihre Wirkung ist in `src/world/worldScreen.ts`. Sterne bleiben der Fortschritt (Album) und werden nie ausgegeben.
+**Hauptziel: Mias Haus bauen.** Münzen (🪙) liegen überall im Wald und gibt es für jedes Spiel und jeden Stern. Bei **Fuchs Fritz** (Baumarkt) kauft man Baumaterial, am **Bauplatz** (Pfote bei der Wiese südwestlich vom Start) baut Mia es auf. Das Haus hat **47 Teile** in vier Gruppen: Rohbau (Fundament, Gerüst, Boden, vier Wände, Dachstuhl, Dach, Tür, Fenster), Außen (Schornstein mit Rauch, Veranda, Dachrinne, Blumenkästen, Namensschild, Wimpelkette, Wetterhahn, Fahne …), Garten (Zaun, Tor, Steinweg, Laternen, Beete, Bank, Apfelbaum, Vogelhaus, Brunnen, Schaukel, Kratzbaum, Teich …) und Innen (Katzenkorb, Teppich, Tisch, Sofa, Regal, Lampe, Bilder, Kamin, Vorhänge …). Teile bauen aufeinander auf (ohne Fundament kein Gerüst, ohne Wände kein Dach). Dach- und Wandfarbe sind frei wählbar. Meilensteine: Rohbau (1 ⭐), bewohnbar (2 ⭐, Einzugsparty), alles gebaut (3 ⭐). Läuft Mia ins fertige Haus, verschwinden Dach und Vorderwand (Puppenhaus-Ansicht). Die Preise werden als Mini-Stellentafel gezeigt.
+
+Katalog und Preise: `content/house.json`; 3D-Modell je Teil: `src/world3d/house.ts`; Logik: `src/core/house.ts`; Oberfläche: `src/ui/houseUi.ts`. Ein neues Teil = Eintrag in der JSON + eine Modellfunktion in `house.ts`.
 
 **Minispiele für Sterne und Münzen** (ohne Zeitdruck, beliebig oft spielbar): **Memory** am Memory-Brett (Zahl ↔ Punkte in der Stellentafel) und **Zahlenpilze** im Pilzring (Zahlen auf- oder absteigend ordnen). Sie liegen in `src/stations/wald/minigames.ts`.
 
-Sterne gibt es auch fürs Entdecken (8 versteckte im Wald): 4 versteckte Sterne im Wald und das Eichhörnchen-Kraulen (langsam herangehen).
+Sterne gibt es auch fürs Entdecken (8 versteckte im Wald): 4 versteckte Sterne im Wald und das Eichhörnchen-Kraulen (langsam herangehen); jeder Stern bringt auch 5 Münzen.
 
 ## Aufbau
 

@@ -15,16 +15,16 @@
   },
   "world": {
     "spawn": {
-      "x": 920,
-      "y": 1300
+      "x": 760,
+      "y": 1585
     },
     "npcs": [
       {
         "id": "eule",
         "kind": "owl",
         "name": "Eule Olga",
-        "x": 730,
-        "y": 1140,
+        "x": 560,
+        "y": 1330,
         "hello": "wald.eule.hello",
         "offers": [
           "video",
@@ -35,8 +35,8 @@
         "id": "igel",
         "kind": "hedgehog",
         "name": "Igel Ingo",
-        "x": 1040,
-        "y": 1530,
+        "x": 1250,
+        "y": 1750,
         "hello": "wald.igel.hello",
         "offers": [
           "punkte"
@@ -46,8 +46,8 @@
         "id": "dachs",
         "kind": "badger",
         "name": "Dachs Bruno",
-        "x": 1390,
-        "y": 1090,
+        "x": 1650,
+        "y": 1150,
         "hello": "wald.dachs.hello",
         "offers": [
           "steine"
@@ -57,22 +57,11 @@
         "id": "hase",
         "kind": "hare",
         "name": "Hase Hugo",
-        "x": 1460,
-        "y": 1560,
+        "x": 2050,
+        "y": 1470,
         "hello": "wald.hase.hello",
         "offers": [
           "kaertchen"
-        ]
-      },
-      {
-        "id": "truhe",
-        "kind": "chest",
-        "name": "Schatzkiste",
-        "x": 1950,
-        "y": 1330,
-        "hello": "wald.truhe.hello",
-        "offers": [
-          "check"
         ]
       },
       {
@@ -80,7 +69,7 @@
         "kind": "fox",
         "name": "Fuchs Fritz",
         "x": 1250,
-        "y": 1180,
+        "y": 1260,
         "hello": "wald.fuchs.hello",
         "offers": [
           "shop"
@@ -90,8 +79,8 @@
         "id": "memory",
         "kind": "board",
         "name": "Memory-Brett",
-        "x": 600,
-        "y": 1700,
+        "x": 1500,
+        "y": 2450,
         "hello": "wald.memory.hello",
         "offers": [
           "memory"
@@ -101,134 +90,200 @@
         "id": "pilze",
         "kind": "shroom",
         "name": "Zahlenpilze",
-        "x": 1500,
-        "y": 800,
+        "x": 2200,
+        "y": 900,
         "hello": "wald.pilze.hello",
         "offers": [
           "pilze"
+        ]
+      },
+      {
+        "id": "truhe",
+        "kind": "chest",
+        "name": "Schatzkiste",
+        "x": 3000,
+        "y": 1516,
+        "hello": "wald.truhe.hello",
+        "offers": [
+          "check"
         ]
       }
     ],
     "bushes": [
       {
-        "x": 600,
-        "y": 1400
+        "x": 281,
+        "y": 1408
       },
       {
-        "x": 870,
-        "y": 1040
+        "x": 2841,
+        "y": 1899
       },
       {
-        "x": 1160,
-        "y": 1360
+        "x": 1723,
+        "y": 1698
       },
       {
-        "x": 1300,
-        "y": 1700
+        "x": 209,
+        "y": 1977
       },
       {
-        "x": 960,
-        "y": 1780
+        "x": 1084,
+        "y": 1450
       },
       {
-        "x": 1580,
-        "y": 1100
+        "x": 750,
+        "y": 2185
       },
       {
-        "x": 540,
-        "y": 920
+        "x": 1476,
+        "y": 1290
       },
       {
-        "x": 1550,
-        "y": 1800
+        "x": 1541,
+        "y": 940
       },
       {
-        "x": 300,
-        "y": 1800
+        "x": 1218,
+        "y": 2048
       },
       {
-        "x": 1700,
-        "y": 1900
+        "x": 2019,
+        "y": 1716
       },
       {
-        "x": 1900,
-        "y": 700
+        "x": 902,
+        "y": 1960
       },
       {
-        "x": 1000,
-        "y": 2200
+        "x": 2385,
+        "y": 1717
+      },
+      {
+        "x": 1435,
+        "y": 1902
+      },
+      {
+        "x": 980,
+        "y": 1259
+      },
+      {
+        "x": 1904,
+        "y": 1101
+      },
+      {
+        "x": 2923,
+        "y": 1178
       }
     ],
     "stars": [
       {
         "id": "s1",
-        "x": 550,
-        "y": 660
+        "x": 2891,
+        "y": 2609
       },
       {
         "id": "s2",
-        "x": 1690,
-        "y": 730
+        "x": 2389,
+        "y": 2376
       },
       {
         "id": "s3",
-        "x": 650,
-        "y": 1960
+        "x": 967,
+        "y": 2666
       },
       {
         "id": "s4",
-        "x": 1280,
-        "y": 2050
+        "x": 950,
+        "y": 575
       },
       {
         "id": "s5",
-        "x": 300,
-        "y": 300
+        "x": 2282,
+        "y": 477
       },
       {
         "id": "s6",
-        "x": 2050,
-        "y": 420
+        "x": 302,
+        "y": 836
       },
       {
         "id": "s7",
-        "x": 350,
-        "y": 2300
+        "x": 2750,
+        "y": 542
       },
       {
         "id": "s8",
-        "x": 1100,
-        "y": 2450
+        "x": 1359,
+        "y": 592
+      },
+      {
+        "id": "s9",
+        "x": 1943,
+        "y": 277
+      },
+      {
+        "id": "s10",
+        "x": 1811,
+        "y": 2149
+      },
+      {
+        "id": "s11",
+        "x": 290,
+        "y": 2638
+      },
+      {
+        "id": "s12",
+        "x": 760,
+        "y": 927
       }
     ],
     "critters": [
       {
         "kind": "squirrel",
-        "x": 820,
-        "y": 1220
+        "x": 1914,
+        "y": 779
       },
       {
         "kind": "squirrel",
-        "x": 1220,
-        "y": 1440
+        "x": 1685,
+        "y": 619
       },
       {
         "kind": "squirrel",
-        "x": 1500,
-        "y": 1280
+        "x": 2432,
+        "y": 1028
       },
       {
         "kind": "squirrel",
-        "x": 700,
-        "y": 1900
+        "x": 2802,
+        "y": 896
       },
       {
         "kind": "squirrel",
-        "x": 1750,
-        "y": 1100
+        "x": 784,
+        "y": 1545
+      },
+      {
+        "kind": "squirrel",
+        "x": 1270,
+        "y": 939
+      },
+      {
+        "kind": "squirrel",
+        "x": 2842,
+        "y": 2279
+      },
+      {
+        "kind": "squirrel",
+        "x": 2504,
+        "y": 775
       }
     ],
-    "coins": 45
+    "coins": 90,
+    "plot": {
+      "x": 520,
+      "y": 2250
+    }
   },
   "games": {
     "punkte": {
@@ -828,11 +883,11 @@
     ],
     "wald.fuchs.hello": [
       "fuchs",
-      "Psst, Mia! Bei mir gibt es die tollsten Sachen. Sammle Münzen und kauf dir was Schönes!"
+      "Willkommen im Baumarkt, Mia! Hier gibt es alles für dein Haus: vom Fundament bis zur Deko. Sammle Münzen und kauf ein!"
     ],
     "wald.fuchs.buy": [
       "fuchs",
-      "Prima Wahl! Viel Spaß damit."
+      "Prima Wahl! Das Material liegt bereit. Bau es am Bauplatz auf."
     ],
     "wald.fuchs.poor": [
       "fuchs",
@@ -877,6 +932,34 @@
     "wald.pilze.oops.down": [
       "mia",
       "Hoppla, da ist noch eine größere Zahl. Vergleiche zuerst die Hunderter, dann die Zehner."
+    ],
+    "wald.haus.goal": [
+      "mia",
+      "Mein Ziel: ein eigenes Haus! Ich sammle Münzen und kaufe bei Fuchs Fritz Baumaterial."
+    ],
+    "wald.haus.plot": [
+      "mia",
+      "Das ist mein Bauplatz. Hier entsteht mein Haus!"
+    ],
+    "wald.haus.built": [
+      "mia",
+      "Wieder ein Stück vom Haus gebaut!"
+    ],
+    "wald.haus.roh": [
+      "eule",
+      "Hu-hu! Der Rohbau steht. Das sieht schon nach einem Haus aus!"
+    ],
+    "wald.haus.done": [
+      "eule",
+      "Mias Haus ist bewohnbar! Zeit für eine Einzugsparty!"
+    ],
+    "wald.haus.master": [
+      "eule",
+      "Alles ist fertig! Mia ist die beste Baumeisterin im ganzen Wald!"
+    ],
+    "wald.haus.far": [
+      "mia",
+      "Dafür muss ich beim Bauplatz sein!"
     ]
   }
 }

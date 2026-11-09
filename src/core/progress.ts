@@ -30,8 +30,9 @@ export interface Progress {
   /** Münzen (Währung für den Laden) und eingesammelte Münzen in der Welt */
   coins: number;
   coinsGot: Record<string, boolean>;
-  /** Gekaufte Gadgets */
-  gadgets: Record<string, boolean>;
+  /** Mias Haus: gekaufte und aufgebaute Teile, Farben, Meilensteine */
+  house: { owned: Record<string, boolean>; built: Record<string, boolean>; roof: string; wall: string; stage: number };
+  posV: number;
 }
 
 const KEY = 'mia.progress.v1';
@@ -49,7 +50,8 @@ const defaults = (): Progress => ({
   discovered: {},
   coins: 0,
   coinsGot: {},
-  gadgets: {},
+  house: { owned: {}, built: {}, roof: '#d9534f', wall: '#fff0d4', stage: 0 },
+  posV: 0,
 });
 
 let state: Progress = load();

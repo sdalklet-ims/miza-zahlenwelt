@@ -43,8 +43,8 @@ export function box(w: number, h: number, d: number, col: string) {
   m.receiveShadow = true;
   return m;
 }
-const at = <T extends THREE.Object3D>(o: T, x: number, y: number, z: number) => (o.position.set(x, y, z), o);
-const rot = <T extends THREE.Object3D>(o: T, x: number, y = 0, z = 0) => (o.rotation.set(x, y, z), o);
+export const at = <T extends THREE.Object3D>(o: T, x: number, y: number, z: number) => (o.position.set(x, y, z), o);
+export const rot = <T extends THREE.Object3D>(o: T, x: number, y = 0, z = 0) => (o.rotation.set(x, y, z), o);
 
 export function canvasTex(w: number, h: number, draw: (c: CanvasRenderingContext2D) => void) {
   const cv = document.createElement('canvas');
@@ -68,34 +68,34 @@ export interface MiaRig {
 export function createMia(acc: string[]): MiaRig {
   const root = new THREE.Group();
   const body = new THREE.Group();
-  body.position.y = 0.66;
+  body.position.y = 0.9;
   root.add(body);
-  body.add(sph(0.5, OR, 0.86, 0.82, 1.22, 18));
-  body.add(at(sph(0.42, CR, 0.82, 0.6, 1.0, 14), 0, -0.2, 0.12));
-  for (let i = 0; i < 4; i++) body.add(at(sph(0.1, ORD, 2.2, 0.22, 0.9, 8), 0, 0.38 - Math.abs(i - 1.5) * 0.03, -0.38 + i * 0.26));
+  body.add(sph(0.5, OR, 0.72, 0.72, 1.3, 18));
+  body.add(at(sph(0.42, CR, 0.66, 0.5, 1.05, 14), 0, -0.17, 0.12));
+  for (let i = 0; i < 4; i++) body.add(at(sph(0.1, ORD, 2.2, 0.22, 0.9, 8), 0, 0.34 - Math.abs(i - 1.5) * 0.03, -0.42 + i * 0.28));
 
   const head = new THREE.Group();
-  head.position.set(0, 0.58, 0.58);
+  head.position.set(0, 0.5, 0.66);
   body.add(head);
-  head.add(sph(0.43, OR, 1.06, 0.92, 0.96, 18));
-  head.add(at(sph(0.2, CR, 1, 0.72, 0.8, 12), 0, -0.13, 0.33));
-  head.add(at(sph(0.05, PK, 1.2, 0.8, 0.8, 8), 0, -0.04, 0.43));
+  head.add(sph(0.37, OR, 1.06, 0.92, 0.96, 18));
+  head.add(at(sph(0.17, CR, 1, 0.72, 0.8, 12), 0, -0.11, 0.29));
+  head.add(at(sph(0.045, PK, 1.2, 0.8, 0.8, 8), 0, -0.04, 0.37));
   const eyes: THREE.Mesh[] = [];
   const ears: THREE.Group[] = [];
   for (const sx of [-1, 1]) {
-    const e = at(sph(0.078, INK, 1, 1.3, 0.6, 10), sx * 0.17, 0.08, 0.37);
+    const e = at(sph(0.078, INK, 1, 1.3, 0.6, 10), sx * 0.15, 0.07, 0.32);
     head.add(e);
     eyes.push(e);
-    head.add(at(sph(0.026, '#ffffff', 1, 1, 1, 6), sx * 0.17 + 0.02, 0.13, 0.41));
+    head.add(at(sph(0.026, '#ffffff', 1, 1, 1, 6), sx * 0.15 + 0.02, 0.12, 0.36));
     const ear = new THREE.Group();
-    ear.position.set(sx * 0.27, 0.36, -0.02);
+    ear.position.set(sx * 0.23, 0.31, -0.02);
     ear.rotation.z = -sx * 0.28;
     ear.add(at(cone(0.16, 0.34, OR, 4), 0, 0.1, 0), at(cone(0.09, 0.22, PK, 4), 0, 0.06, 0.05));
     head.add(ear);
     ears.push(ear);
     for (let w = -1; w <= 1; w++) {
       const wh = cyl(0.004, 0.004, 0.42, '#7a5a3b', 4);
-      at(wh, sx * 0.36, -0.1 + w * 0.045, 0.36);
+      at(wh, sx * 0.32, -0.1 + w * 0.045, 0.3);
       wh.rotation.set(0, 0, Math.PI / 2 + w * 0.12 * sx);
       wh.rotation.y = sx * 0.2;
       head.add(wh);
@@ -104,10 +104,10 @@ export function createMia(acc: string[]): MiaRig {
 
   // Beine: Hüftgelenke zum Schwingen
   const legs: { g: THREE.Group; off: number }[] = [];
-  for (const [lx, lz, off] of [[-0.24, 0.4, 0], [0.24, 0.4, Math.PI], [-0.24, -0.4, Math.PI], [0.24, -0.4, 0]] as number[][]) {
+  for (const [lx, lz, off] of [[-0.2, 0.46, 0], [0.2, 0.46, Math.PI], [-0.2, -0.46, Math.PI], [0.2, -0.46, 0]] as number[][]) {
     const g = new THREE.Group();
-    g.position.set(lx, 0.42, lz);
-    g.add(at(cyl(0.085, 0.07, 0.46, OR, 8), 0, -0.23, 0), at(sph(0.1, CR, 1, 0.65, 1.35, 8), 0, -0.46, 0.04));
+    g.position.set(lx, 0.62, lz);
+    g.add(at(cyl(0.075, 0.06, 0.66, OR, 8), 0, -0.33, 0), at(sph(0.09, CR, 1, 0.65, 1.35, 8), 0, -0.66, 0.04));
     body.add(g);
     legs.push({ g, off });
   }
@@ -117,7 +117,7 @@ export function createMia(acc: string[]): MiaRig {
   let parent: THREE.Object3D = body;
   for (let i = 0; i < 5; i++) {
     const s = new THREE.Group();
-    s.position.set(0, i === 0 ? 0.12 : 0.27, i === 0 ? -0.58 : 0);
+    s.position.set(0, i === 0 ? 0.1 : 0.27, i === 0 ? -0.66 : 0);
     s.rotation.x = i === 0 ? -2.0 : 0.38;
     s.add(at(cyl(0.075 - i * 0.004, 0.08 - i * 0.004, 0.3, i % 2 ? ORD : OR, 8), 0, 0.15, 0));
     parent.add(s);
@@ -156,7 +156,7 @@ export function createMia(acc: string[]): MiaRig {
     setAccessories: setAcc,
     animate(t, phase, sp) {
       const moving = sp > 0.05;
-      body.position.y = 0.66 + (moving ? Math.abs(Math.cos(phase)) * 0.13 * sp : Math.sin(t * 2) * 0.012);
+      body.position.y = 0.9 + (moving ? Math.abs(Math.cos(phase)) * 0.13 * sp : Math.sin(t * 2) * 0.012);
       body.rotation.z = Math.sin(phase) * 0.06 * sp;
       body.rotation.x = sp * 0.09;
       for (const l of legs) l.g.rotation.x = Math.sin(phase + l.off) * 0.95 * sp;
@@ -201,7 +201,7 @@ function owl(acc: string[]): NpcRig {
   bow.add(at(rot(cone(0.16, 0.34, '#d9534f', 4), 0, 0, Math.PI / 2), -0.2, 1.3, 0.62), at(rot(cone(0.16, 0.34, '#d9534f', 4), 0, 0, -Math.PI / 2), 0.2, 1.3, 0.62), at(sph(0.08, '#b9413e'), 0, 1.3, 0.64));
   g.add(bow);
   bow.visible = acc.includes('eule-schleife');
-  g.scale.setScalar(1.15);
+  g.scale.set(0.95, 1.0, 0.95);
   return { root: g, update: (t) => { body.scale.y = 0.62 * 1.25 * (1 + Math.sin(t * 2) * 0.012); head.rotation.y = Math.sin(t * 0.8) * 0.18; } };
 }
 
@@ -225,8 +225,8 @@ function hedgehog(): NpcRig {
     eye(g, sx * 0.17, 0.62, 1.15, 0.055);
     g.add(at(sph(0.1, '#e8b98a', 1, 1, 0.5, 8), sx * 0.3, 0.88, 0.8), at(sph(0.16, '#e0b88a', 1, 0.5, 1.2, 8), sx * 0.35, 0.06, 0.4), at(sph(0.16, '#e0b88a', 1, 0.5, 1.2, 8), sx * 0.35, 0.06, -0.4));
   }
-  g.scale.setScalar(1.1);
-  return { root: g, update: (t) => (g.scale.y = 1.1 * (1 + Math.sin(t * 2.4) * 0.015)) };
+  g.scale.setScalar(0.9);
+  return { root: g, update: (t) => (g.scale.y = 0.9 * (1 + Math.sin(t * 2.4) * 0.015)) };
 }
 
 function badger(): NpcRig {
@@ -244,7 +244,7 @@ function badger(): NpcRig {
   }
   head.add(at(sph(0.1, '#2f3036', 1.1, 0.8, 1, 8), 0, -0.12, 0.56));
   g.add(at(new THREE.Mesh(new THREE.DodecahedronGeometry(0.22, 0), mat('#a8a29a', { flat: true })), 0.75, 0.22, 0.8));
-  g.scale.setScalar(1.05);
+  g.scale.setScalar(0.88);
   return { root: g, update: (t) => (head.rotation.y = Math.sin(t * 0.9) * 0.2) };
 }
 
@@ -269,7 +269,7 @@ function hare(): NpcRig {
   const card = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.8), new THREE.MeshStandardMaterial({ map: canvasTex(128, 160, (c) => { c.fillStyle = '#fff'; c.fillRect(0, 0, 128, 160); c.strokeStyle = '#6b8fd6'; c.lineWidth = 10; c.strokeRect(5, 5, 118, 150); c.fillStyle = '#3f62b8'; c.font = '900 110px sans-serif'; c.textAlign = 'center'; c.fillText('7', 64, 118); }), side: THREE.DoubleSide }));
   at(rot(card, -0.2, 0, -0.1), 0, 0.85, 0.62);
   g.add(card);
-  g.scale.setScalar(1.05);
+  g.scale.set(0.85, 0.95, 0.85);
   return { root: g, update: (t) => { head.rotation.z = Math.sin(t * 1.2) * 0.05; } };
 }
 
@@ -291,7 +291,7 @@ function fox(): NpcRig {
   tail.rotation.x = -0.4;
   g.add(tail);
   g.add(at(rot(cyl(0.13, 0.13, 0.03, '#f4c430', 16), Math.PI / 2), 0, 1.0, 0.92));
-  g.scale.setScalar(1.1);
+  g.scale.set(0.85, 0.95, 0.85);
   return { root: g, update: (t) => { tail.rotation.y = Math.sin(t * 2.5) * 0.35; head.rotation.y = Math.sin(t * 0.7) * 0.15; } };
 }
 

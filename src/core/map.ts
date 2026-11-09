@@ -11,7 +11,7 @@ import type { Screen } from './router';
 
 interface Pt { x: number; y: number }
 
-const MAX_STARS_PER_WORLD = 27;
+const MAX_STARS_PER_WORLD = 30;
 const isOpen = (w: WorldContent) => w.meta.status === 'open' && !!modules[w.id];
 
 /** Pfad durch alle Stationen (leicht geschwungen), als Punktliste + Index je Station */

@@ -140,3 +140,29 @@
 .shroom .stem { position: absolute; left: 52px; top: 86px; width: 56px; height: 56px; border-radius: 10px 10px 24px 24px; background: linear-gradient(90deg, #fbf0d8, #e2cfa4); }
 .shroom.gone { transform: translateY(-40px) scale(.1); opacity: 0; pointer-events: none; }
 .basket { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); font: 900 34px var(--font); background: #fff; border: 4px solid var(--wood); border-radius: 20px; padding: 4px 24px; }
+
+/* ───────── Haus: Baumarkt und Bauplan ───────── */
+.hu { min-width: 860px; }
+.hu-head { display: flex; align-items: center; gap: 18px; margin-bottom: 10px; }
+.hu-coins { font: 900 34px var(--font); background: #fff0b8; border-radius: 18px; padding: 4px 18px; }
+.hu-prog { flex: 1; display: flex; flex-direction: column; gap: 4px; font: 800 22px var(--font); }
+.hu-prog small { font: 700 18px var(--font); color: #6b5a44; }
+.hu-bar { display: block; height: 14px; background: #e6dcc4; border-radius: 8px; overflow: hidden; } .hu-bar i { display: block; height: 100%; background: var(--leaf); transition: width .4s; }
+.hu-tabs { display: flex; gap: 8px; margin-bottom: 10px; }
+.hu-tab { flex: 1; height: 60px; border-radius: 16px; border: 0; border-bottom: 5px solid #d6bf93; background: #fff; font: 800 22px var(--font); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.05; }
+.hu-tab small { font: 700 15px var(--font); color: #6b5a44; } .hu-tab.on { background: var(--sun); border-bottom-color: var(--sun-d); }
+.hu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-height: 410px; overflow: auto; padding: 2px; }
+.hu-card { background: #fff; border: 4px solid #d6bf93; border-bottom-width: 7px; border-radius: 18px; padding: 8px 8px 10px; display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
+.hu-card.built { border-color: var(--leaf); background: #eaf7e2; }
+.hu-icon { font-size: 46px; line-height: 1.1; } .hu-name { font: 900 19px/1.1 var(--font); min-height: 42px; display: grid; place-items: center; }
+.hu-price { display: flex; flex-direction: column; align-items: center; gap: 2px; font: 800 18px var(--font); }
+.hu-req { font: 700 13px/1.1 var(--font); color: #8a6a44; min-height: 16px; }
+.hu-card .btn { min-height: 48px; font-size: 19px; padding: 4px 12px; }
+.hu-state { font: 800 15px/1.15 var(--font); padding: 6px 4px; min-height: 48px; display: grid; place-items: center; } .hu-state.ok { color: var(--leaf-d); } .hu-state.wait { color: #b9761a; } .hu-state.off { color: #9a8a74; }
+.hu-colors { display: flex; gap: 26px; margin-top: 12px; justify-content: center; }
+.hu-chips { display: flex; align-items: center; gap: 8px; font: 800 20px var(--font); }
+.hu-chip { width: 44px; height: 44px; border-radius: 50%; border: 4px solid #fff; background: var(--c); box-shadow: 0 0 0 3px #d6bf93; } .hu-chip.on { box-shadow: 0 0 0 5px var(--leaf); }
+.mini-board.tiny { gap: 3px; } .mb-col.tiny { width: 26px; min-height: 22px; padding: 2px; gap: 2px; } .mini-board.tiny .mb-dot { width: 7px; height: 7px; }
+.milestone { text-align: center; min-width: 560px; } .milestone .big { font-size: 110px; line-height: 1.1; } .milestone p { font: 800 28px/1.3 var(--font); margin: 6px 0 14px; }
+.confetti { position: absolute; top: -40px; font-size: 34px; pointer-events: none; animation: confetti 3.2s linear forwards; z-index: 40; }
+@keyframes confetti { to { transform: translateY(900px) rotate(540deg); opacity: .8; } }

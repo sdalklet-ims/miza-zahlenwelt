@@ -19,7 +19,7 @@ export interface Stage3D {
   dispose(): void;
 }
 
-const CAM_OFFSET = new THREE.Vector3(0, 11.2, 11.2);
+const CAM_OFFSET = new THREE.Vector3(0, 10, 10.4);
 
 export function createStage3D(canvas: HTMLCanvasElement, pixelRatio: number): Stage3D {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
