@@ -6,7 +6,7 @@ import { worlds, textOf, type WorldContent } from '../core/texts';
 import { getProgress } from '../core/progress';
 import { equippedFor } from '../core/rewards';
 import { stationStarters, type Npc } from '../stations';
-import { S, drawSprite, npcSprite } from './sprites';
+import { S, drawSprite, drawSway, npcSprite } from './sprites';
 import { ZW, WW, WH, pathY, riverOf } from './terrain';
 
 export interface Circle { x: number; y: number; r: number }
@@ -96,7 +96,7 @@ export async function buildWorld(hooks: Hooks): Promise<WorldModel> {
           x: nx, y: ny, ext: 160,
           draw: (c, sx, sy, t) => {
             c.fillStyle = 'rgba(0,0,0,.2)'; c.beginPath(); c.ellipse(sx, sy + 2, spr.w * 0.34, 8, 0, 0, 7); c.fill();
-            drawSprite(c, spr, sx, sy - Math.abs(Math.sin(t * 2 + nx)) * 1.5);
+            c.save(); c.translate(sx, sy); c.scale(1 - Math.sin(t * 2 + nx) * 0.012, 1 + Math.sin(t * 2 + nx) * 0.02); drawSprite(c, spr, 0, 0); c.restore();
           },
         });
       }
@@ -199,7 +199,15 @@ export async function buildWorld(hooks: Hooks): Promise<WorldModel> {
   };
   const tree = (x: number, y: number, key: string, sc: number) => {
     addSolid(x, y, key === 'pine' ? 12 * sc : 14 * sc);
-    m.drawables.push({ x, y, ext: 110, draw: (c, sx, sy, t) => drawSprite(c, S[key], sx + Math.sin(t * 1.2 + x) * 0.8, sy, sc) });
+    m.drawables.push({
+      x, y, ext: 120,
+      draw: (c, sx, sy, t) => {
+        const g = c.createRadialGradient(sx + 20 * sc, sy + 4, 2, sx + 20 * sc, sy + 4, 46 * sc);
+        g.addColorStop(0, 'rgba(15,40,10,.32)'); g.addColorStop(1, 'rgba(15,40,10,0)');
+        c.fillStyle = g; c.beginPath(); c.ellipse(sx + 20 * sc, sy + 4, 50 * sc, 15 * sc, 0, 0, 7); c.fill();
+        drawSway(c, S[key], sx, sy, sc, Math.sin(t * 1.1 + x * 0.013) * 0.022 + Math.sin(t * 2.3 + y) * 0.006);
+      },
+    });
   };
 
   for (let zi = 0; zi < worlds.length; zi++) {

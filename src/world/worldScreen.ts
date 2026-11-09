@@ -25,7 +25,7 @@ const R = 13; // Mias Kollisionsradius (an den Füßen)
 const DT = 1 / 60;
 const RUN = 235;
 
-interface Particle { x: number; y: number; vx: number; vy: number; life: number; max: number; kind: 'heart' | 'spark' | 'ring'; col?: string }
+interface Particle { x: number; y: number; vx: number; vy: number; life: number; max: number; kind: 'heart' | 'spark' | 'ring' | 'dust'; col?: string }
 
 let vignette: HTMLCanvasElement | null = null;
 function getVignette() {
@@ -38,6 +38,11 @@ function getVignette() {
   gr.addColorStop(1, 'rgba(60,70,30,.32)');
   g.fillStyle = gr;
   g.fillRect(0, 0, VW, VH);
+  // Dunst in der Ferne (oben heller/bläulicher) → Tiefenwirkung
+  const hz = g.createLinearGradient(0, 0, 0, VH * 0.55);
+  hz.addColorStop(0, 'rgba(205,232,255,.22)'); hz.addColorStop(1, 'rgba(205,232,255,0)');
+  g.fillStyle = hz;
+  g.fillRect(0, 0, VW, VH * 0.55);
   return vignette;
 }
 
@@ -73,7 +78,8 @@ export async function enterWorld(opts: EnterOpts = {}) {
   const spawnZone = opts.spawnWorld ? worlds.findIndex((w) => w.id === opts.spawnWorld) : -1;
   // Schnellreise in dieselbe Zone: dort weitermachen, wo Mia stand; sonst an den Zonen-Startpunkt
   const spawn = opts.spawnWorld && !(saved && zoneIndex(saved.x) === spawnZone) ? model.spawns[opts.spawnWorld] : saved ?? model.spawns[first];
-  const st = { x: spawn.x, y: spawn.y, vx: 0, vy: 0, dir: 'down' as Dir, t: 0 };
+  const st = { x: spawn.x, y: spawn.y, vx: 0, vy: 0, dir: 'down' as Dir, t: 0, phase: 0 };
+  let dustT = 0;
   const cam = { x: clamp(st.x - VW / 2, 0, WW - VW), y: clamp(st.y - VH / 2, 0, WH - VH) };
   miaPos.x = st.x; miaPos.y = st.y;
 
@@ -213,6 +219,13 @@ export async function enterWorld(opts: EnterOpts = {}) {
       st.x += st.vx * DT;
       st.y += st.vy * DT;
       collide();
+      const spd = Math.hypot(st.vx, st.vy);
+      st.phase += spd * DT * 0.062; // Beinbewegung folgt der echten Geschwindigkeit
+      dustT -= DT;
+      if (spd > 120 && dustT <= 0) {
+        dustT = 0.11;
+        parts.push({ x: st.x - (st.vx / spd) * 10 + (Math.random() - 0.5) * 8, y: st.y - 2, vx: -st.vx * 0.08, vy: -10 - Math.random() * 8, life: 0.45, max: 0.45, kind: 'dust' });
+      }
       if (Math.hypot(st.vx, st.vy) > 12) st.dir = Math.abs(st.vx) > Math.abs(st.vy) ? (st.vx < 0 ? 'left' : 'right') : st.vy < 0 ? 'up' : 'down';
     }
     miaPos.x = st.x; miaPos.y = st.y;
@@ -325,7 +338,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
     get x() { return st.x; }, get y() { return st.y; }, ext: 90,
     draw: (c, sx, sy, t) => {
       if (hidden) return;
-      drawMia(c, sx, sy, { dir: st.dir, t, moving: Math.hypot(st.vx, st.vy) > 12, acc: equippedFor('mia') });
+      drawMia(c, sx, sy, { dir: st.dir, t, phase: st.phase, speed: Math.min(1, Math.hypot(st.vx, st.vy) / RUN), acc: equippedFor('mia') });
     },
   } as Drawable;
 
@@ -362,6 +375,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
       c.globalAlpha = a;
       if (p.kind === 'heart') { c.font = '24px system-ui'; c.fillText('❤️', sx - 12, sy); }
       else if (p.kind === 'spark') { c.fillStyle = p.col ?? '#fff'; c.beginPath(); c.arc(sx, sy, 5 * a + 1, 0, 7); c.fill(); }
+      else if (p.kind === 'dust') { c.fillStyle = 'rgba(226,205,160,.8)'; c.beginPath(); c.arc(sx, sy, 4 + (1 - a) * 9, 0, 7); c.fill(); }
       else { c.strokeStyle = '#fff'; c.lineWidth = 4; c.beginPath(); c.ellipse(sx, sy, 30 * (1 - a) + 6, 15 * (1 - a) + 3, 0, 0, 7); c.stroke(); }
       c.globalAlpha = 1;
     }
