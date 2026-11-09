@@ -1,27 +1,28 @@
 /**
- * Baut die Welt aus den Content-JSONs: eine Zone je Welt (Reihenfolge = meta.order), durch einen Weg verbunden.
- * Gebiete mit status "locked" (oder ohne Station) bekommen ein Nebeltor. Dekoration entsteht deterministisch (Zufall mit festem Seed).
+ * Baut die Weltdaten aus den Content-JSONs: eine Zone je Welt (Reihenfolge = meta.order), durch einen Weg verbunden.
+ * Gebiete mit status "locked" (oder ohne Station) bekommen ein Nebeltor. Dekoration entsteht deterministisch (fester Seed).
+ * Gezeichnet wird in src/world3d (three.js); hier stehen nur Positionen, Kollisionen und Interaktionen.
  */
-import { worlds, textOf, type WorldContent } from '../core/texts';
+import { worlds, type WorldContent } from '../core/texts';
 import { getProgress } from '../core/progress';
-import { equippedFor } from '../core/rewards';
 import { stationStarters, type Npc } from '../stations';
-import { S, drawSprite, drawSway, npcSprite } from './sprites';
 import { ZW, WW, WH, pathY, riverOf } from './terrain';
 
 export interface Circle { x: number; y: number; r: number }
 export interface Rect { x: number; y: number; w: number; h: number }
-export interface Drawable { x: number; y: number; ext: number; draw: (c: CanvasRenderingContext2D, sx: number, sy: number, t: number) => void }
 export interface Interact { id: string; x: number; y: number; r: number; label: string; icon: string; run: () => void; follow?: { x: number; y: number } }
 export interface Critter { x: number; y: number; vx: number; vy: number; hx: number; hy: number; tx: number; ty: number; wait: number; face: number; fleeing: boolean }
 export interface Bush { x: number; y: number; occupied: boolean }
-export interface Coin { id: string; x: number; y: number; got: boolean }
 export interface Star { id: string; x: number; y: number; got: boolean }
+export interface Coin { id: string; x: number; y: number; got: boolean }
+export interface NpcEnt { npc: Npc; id: string; kind: string; name: string; x: number; y: number; worldId: string }
+export interface Decor { kind: string; x: number; y: number; s: number; rot: number }
 
 export interface WorldModel {
-  solids: Circle[]; rects: Rect[]; drawables: Drawable[]; interacts: Interact[];
+  solids: Circle[]; rects: Rect[]; interacts: Interact[];
   fogs: { x: number; y: number; s: number; ph: number }[];
-  critters: Critter[]; bushes: Bush[]; stars: Star[]; coins: Coin[];
+  gates: { x: number; y: number }[];
+  critters: Critter[]; bushes: Bush[]; stars: Star[]; coins: Coin[]; npcs: NpcEnt[]; decor: Decor[];
   butterflies: { x: number; y: number; ph: number; col: string }[];
   spawns: Record<string, { x: number; y: number }>;
 }
@@ -36,6 +37,7 @@ export interface Hooks {
 const AREA = (ZW * WH) / (1400 * 1800); // Dichte der Dekoration wächst mit der Zonengröße
 
 export const isOpen = (w: WorldContent) => w.meta.status === 'open' && !!stationStarters[w.id];
+export const PROC_KINDS = ['chest', 'board', 'shroom'];
 
 function rng(seed: number) {
   return () => {
@@ -46,69 +48,10 @@ function rng(seed: number) {
   };
 }
 
-const ellipse = (c: CanvasRenderingContext2D, x: number, y: number, rx: number, ry: number, fill: string) => {
-  c.beginPath(); c.ellipse(x, y, rx, ry, 0, 0, 7); c.fillStyle = fill; c.fill();
-};
-
-function drawSquirrel(c: CanvasRenderingContext2D, x: number, y: number, t: number, cr: Critter) {
-  const moving = Math.hypot(cr.vx, cr.vy) > 10;
-  c.save();
-  c.translate(x, y);
-  c.scale(cr.face < 0 ? -1 : 1, 1);
-  ellipse(c, 0, 2, 16, 5, 'rgba(0,0,0,.2)');
-  const hop = moving ? Math.abs(Math.sin(t * 16)) * 6 : 0;
-  c.translate(0, -hop);
-  c.strokeStyle = '#a8602b'; c.lineWidth = 10; c.lineCap = 'round';
-  c.beginPath(); c.moveTo(-8, -10); c.bezierCurveTo(-30, -6, -28, -38, -12 + Math.sin(t * 5) * 3, -42); c.stroke();
-  ellipse(c, 0, -10, 12, 9, '#b8692f');
-  ellipse(c, 2, -6, 7, 5, '#f1d4a6');
-  ellipse(c, 10, -20, 8, 7.5, '#b8692f');
-  c.fillStyle = '#b8692f'; c.beginPath(); c.moveTo(6, -26); c.lineTo(8, -34); c.lineTo(12, -26); c.fill();
-  ellipse(c, 12, -21, 1.8, 2.4, '#3b2a1e');
-  ellipse(c, 17, -19, 1.8, 1.4, '#3b2a1e');
-  c.restore();
-}
-
-/** Prozedurale Objekte: Schatzkiste, Memory-Brett, Pilzring */
-function drawProp(c: CanvasRenderingContext2D, kind: string, sx: number, sy: number, t: number) {
-  if (kind === 'chest') {
-    drawSprite(c, S.chest, sx, sy, 1.1);
-    if (Math.sin(t * 3) > 0.9) ellipse(c, sx + 20, sy - 50, 4, 4, '#fff6b0');
-  } else if (kind === 'board') {
-    ellipse(c, sx, sy + 2, 52, 10, 'rgba(0,0,0,.2)');
-    c.fillStyle = '#7a4d26'; c.fillRect(sx - 38, sy - 40, 8, 42); c.fillRect(sx + 30, sy - 40, 8, 42);
-    c.fillStyle = '#c07b45'; c.strokeStyle = '#6a3f1c'; c.lineWidth = 4;
-    c.beginPath(); c.roundRect(sx - 56, sy - 96, 112, 64, 8); c.fill(); c.stroke();
-    const cols = ['#4a90d9', '#e8704a', '#4f9d5d', '#f4b942'];
-    for (let i = 0; i < 4; i++) { c.fillStyle = '#fff'; c.beginPath(); c.roundRect(sx - 48 + i * 25, sy - 86, 20, 44, 4); c.fill(); c.fillStyle = cols[i]; c.fillRect(sx - 44 + i * 25, sy - 76, 12, 6); }
-    c.fillStyle = '#3b2a1e'; c.font = '900 15px system-ui'; c.textAlign = 'center'; c.fillText('?', sx - 36, sy - 58); c.fillText('347', sx + 14, sy - 56);
-  } else if (kind === 'shroom') {
-    const cols = ['#e8504a', '#e9a24b', '#c3a6ff', '#e8504a'];
-    for (let i = 0; i < 4; i++) {
-      const a = (i / 4) * 6.28 + 0.6, mx = sx + Math.cos(a) * 34, my = sy + Math.sin(a) * 14, k = 1 + Math.sin(t * 2 + i) * 0.03;
-      ellipse(c, mx, my + 2, 16, 5, 'rgba(0,0,0,.18)');
-      c.fillStyle = '#f6ead2'; c.fillRect(mx - 5, my - 16, 10, 16);
-      c.fillStyle = cols[i]; c.beginPath(); c.ellipse(mx, my - 18, 20 * k, 14 * k, 0, Math.PI, 0); c.fill();
-      c.fillStyle = '#fff'; c.beginPath(); c.arc(mx - 7, my - 22, 3, 0, 7); c.arc(mx + 6, my - 25, 2.4, 0, 7); c.fill();
-    }
-  }
-}
-
-/** Marktstand neben dem Händler */
-function drawStall(c: CanvasRenderingContext2D, sx: number, sy: number) {
-  ellipse(c, sx, sy + 2, 80, 12, 'rgba(0,0,0,.2)');
-  c.fillStyle = '#7a4d26'; c.fillRect(sx - 70, sy - 96, 8, 98); c.fillRect(sx + 62, sy - 96, 8, 98);
-  for (let i = 0; i < 7; i++) { c.fillStyle = i % 2 ? '#fff' : '#d9534f'; c.beginPath(); c.moveTo(sx - 78 + i * 22.3, sy - 100); c.lineTo(sx - 56 + i * 22.3, sy - 100); c.lineTo(sx - 52 + i * 22.3, sy - 78); c.lineTo(sx - 82 + i * 22.3, sy - 78); c.fill(); }
-  c.fillStyle = '#c07b45'; c.strokeStyle = '#6a3f1c'; c.lineWidth = 4; c.beginPath(); c.roundRect(sx - 72, sy - 40, 144, 40, 6); c.fill(); c.stroke();
-  const it = ['#4a90d9', '#f4c430', '#4f9d5d', '#e8504a'];
-  for (let i = 0; i < 4; i++) { ellipse(c, sx - 48 + i * 32, sy - 48, 11, 9, it[i]); }
-}
-
-export async function buildWorld(hooks: Hooks): Promise<WorldModel> {
-  const m: WorldModel = { solids: [], rects: [], drawables: [], interacts: [], fogs: [], critters: [], bushes: [], stars: [], coins: [], butterflies: [], spawns: {} };
+export function buildWorld(hooks: Hooks): WorldModel {
+  const m: WorldModel = { solids: [], rects: [], interacts: [], fogs: [], gates: [], critters: [], bushes: [], stars: [], coins: [], npcs: [], decor: [], butterflies: [], spawns: {} };
   const keep: Circle[] = [];
   const disc = getProgress().discovered;
-
   const addSolid = (x: number, y: number, r: number) => m.solids.push({ x, y, r });
 
   /* ── Inhalte je Zone (aus world.* in den JSONs) ── */
@@ -124,63 +67,22 @@ export async function buildWorld(hooks: Hooks): Promise<WorldModel> {
       const nx = x0 + n.x, ny = n.y;
       keep.push({ x: nx, y: ny, r: 150 });
       const npc: Npc = { ...n, x: nx, y: ny };
-      const proc = n.kind === 'chest' || n.kind === 'board' || n.kind === 'shroom';
-      if (proc) {
-        addSolid(nx, ny, 28);
-        m.drawables.push({ x: nx, y: ny, ext: 110, draw: (c, sx, sy, t) => drawProp(c, n.kind, sx, sy, t) });
-      } else {
-        if (n.kind === 'fox') {
-          addSolid(nx - 100, ny + 6, 22); addSolid(nx + 100, ny + 6, 22);
-          m.drawables.push({ x: nx, y: ny + 40, ext: 130, draw: (c, sx, sy) => drawStall(c, sx, sy) });
-        }
-        const spr = await npcSprite(n.kind, equippedFor(n.id));
-        addSolid(nx, ny, 20);
-        m.drawables.push({
-          x: nx, y: ny, ext: 160,
-          draw: (c, sx, sy, t) => {
-            c.fillStyle = 'rgba(0,0,0,.2)'; c.beginPath(); c.ellipse(sx, sy + 2, spr.w * 0.34, 8, 0, 0, 7); c.fill();
-            c.save(); c.translate(sx, sy); c.scale(1 - Math.sin(t * 2 + nx) * 0.012, 1 + Math.sin(t * 2 + nx) * 0.02); drawSprite(c, spr, 0, 0); c.restore();
-          },
-        });
-      }
-      // Namensschild + „sprich mich an“-Zeichen
-      m.drawables.push({
-        x: nx, y: ny + 0.1, ext: 200,
-        draw: (c, sx, sy, t) => {
-          const near = mia.d(nx, ny) < 260;
-          const top = proc ? 96 : 150;
-          if (near) {
-            c.font = '800 18px ui-rounded, system-ui, sans-serif';
-            const wv = c.measureText(n.name).width + 22;
-            c.fillStyle = '#fff6e3'; c.strokeStyle = '#d6bf93'; c.lineWidth = 3;
-            c.beginPath(); c.roundRect(sx - wv / 2, sy - top - 30, wv, 28, 10); c.fill(); c.stroke();
-            c.fillStyle = '#3b2a1e'; c.textAlign = 'center'; c.fillText(n.name, sx, sy - top - 10);
-          }
-          c.font = '26px system-ui, sans-serif'; c.textAlign = 'center';
-          c.fillText(n.kind === 'chest' ? '⭐' : n.kind === 'board' || n.kind === 'shroom' ? '🎮' : n.kind === 'fox' ? '🛒' : '💬', sx, sy - top - 38 + Math.sin(t * 3 + nx) * 4);
-        },
+      const proc = PROC_KINDS.includes(n.kind);
+      m.npcs.push({ npc, id: n.id, kind: n.kind, name: n.name, x: nx, y: ny, worldId: w.id });
+      addSolid(nx, ny, proc ? 28 : 20);
+      if (n.kind === 'fox') { addSolid(nx - 100, ny + 6, 22); addSolid(nx + 100, ny + 6, 22); }
+      m.interacts.push({
+        id: `npc.${n.id}`, x: nx, y: ny, r: 120,
+        label: n.kind === 'chest' ? 'Öffnen' : proc ? 'Spielen' : n.kind === 'fox' ? 'Zum Laden' : 'Ansprechen',
+        icon: n.kind === 'chest' ? '🗝️' : proc ? '🎮' : n.kind === 'fox' ? '🛒' : '💬',
+        run: () => hooks.onNpc(npc, w.id),
       });
-      m.interacts.push({ id: `npc.${n.id}`, x: nx, y: ny, r: 120, label: n.kind === 'chest' ? 'Öffnen' : proc ? 'Spielen' : n.kind === 'fox' ? 'Zum Laden' : 'Ansprechen', icon: n.kind === 'chest' ? '🗝️' : proc ? '🎮' : n.kind === 'fox' ? '🛒' : '💬', run: () => hooks.onNpc(npc, w.id) });
     }
 
     for (const b of d.bushes ?? []) {
       const bush: Bush = { x: x0 + b.x, y: b.y, occupied: false };
       m.bushes.push(bush);
       keep.push({ x: bush.x, y: bush.y, r: 90 });
-      m.drawables.push({
-        x: bush.x, y: bush.y, ext: 100,
-        draw: (c, sx, sy, t) => {
-          const shake = bush.occupied ? Math.sin(t * 30) * 1.6 * Math.max(0, 1 - ((t * 2) % 2)) : 0;
-          drawSprite(c, S.bush, sx + shake, sy, 1.15);
-          if (bush.occupied) {
-            const blink = Math.sin(t * 1.3) > 0.95 ? 0.15 : 1;
-            c.fillStyle = '#fff';
-            for (const ex of [-12, 12]) { c.beginPath(); c.ellipse(sx + ex, sy - 48, 8, 9 * blink, 0, 0, 7); c.fill(); }
-            c.fillStyle = '#3b2a1e';
-            for (const ex of [-10, 14]) { c.beginPath(); c.arc(sx + ex, sy - 47, 4 * blink, 0, 7); c.fill(); }
-          }
-        },
-      });
       m.interacts.push({ id: `bush.${m.bushes.length}`, x: bush.x, y: bush.y, r: 70, label: 'Verstecken', icon: '🌿', run: () => hooks.onBush(bush) });
     }
 
@@ -188,26 +90,11 @@ export async function buildWorld(hooks: Hooks): Promise<WorldModel> {
       const star: Star = { id: `${w.id}.${s.id}`, x: x0 + s.x, y: s.y, got: !!disc[`${w.id}.${s.id}`] };
       m.stars.push(star);
       keep.push({ x: star.x, y: star.y, r: 60 });
-      m.drawables.push({
-        x: star.x, y: star.y, ext: 60,
-        draw: (c, sx, sy, t) => {
-          if (star.got) return;
-          const yy = sy - 34 + Math.sin(t * 3 + sx) * 5;
-          const g = c.createRadialGradient(sx, yy, 2, sx, yy, 32);
-          g.addColorStop(0, 'rgba(255,240,150,.9)'); g.addColorStop(1, 'rgba(255,240,150,0)');
-          c.fillStyle = g; c.fillRect(sx - 34, yy - 34, 68, 68);
-          c.fillStyle = '#f4b942'; c.strokeStyle = '#c98a14'; c.lineWidth = 3; c.lineJoin = 'round';
-          c.beginPath();
-          for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + (i * Math.PI) / 5, rr = i % 2 ? 7 : 16; c.lineTo(sx + Math.cos(a) * rr, yy + Math.sin(a) * rr); }
-          c.closePath(); c.fill(); c.stroke();
-        },
-      });
     }
 
     for (const cr of d.critters ?? []) {
       const c0: Critter = { x: x0 + cr.x, y: cr.y, vx: 0, vy: 0, hx: x0 + cr.x, hy: cr.y, tx: x0 + cr.x, ty: cr.y, wait: Math.random() * 2, face: 1, fleeing: false };
       m.critters.push(c0);
-      m.drawables.push({ get x() { return c0.x; }, get y() { return c0.y; }, ext: 80, draw: (c, sx, sy, t) => drawSquirrel(c, sx, sy, t, c0) } as Drawable);
       m.interacts.push({ id: `critter.${m.critters.length}`, x: c0.x, y: c0.y, r: 70, label: 'Streicheln', icon: '🐿️', follow: c0, run: () => hooks.onSquirrel(c0) });
     }
   }
@@ -220,24 +107,11 @@ export async function buildWorld(hooks: Hooks): Promise<WorldModel> {
     const r = rng(zi * 53 + 11);
     for (let i = 0; i < w.world.coins; i++) {
       const id = `${w.id}.c${i}`;
-      // um Wege und Lichtungen verteilt (Münzen dürfen auch weiter abseits liegen)
       const x = zi * ZW + 120 + r() * (ZW - 240);
       const y = r() < 0.5 ? pathY(x) + (r() - 0.5) * 360 : 120 + r() * (WH - 240);
       if (keep.some((k) => Math.hypot(x - k.x, y - k.y) < k.r * 0.8) || y < 80 || y > WH - 80) continue;
-      keep.push({ x, y, r: 44 }); // Bäume wachsen nicht auf Münzen
-      const coin: Coin = { id, x, y, got: !!got[id] };
-      m.coins.push(coin);
-      m.drawables.push({
-        x, y: y + 0.2, ext: 40,
-        draw: (c, sx, sy, t) => {
-          if (coin.got) return;
-          const yy = sy - 22 + Math.sin(t * 3 + x) * 3, wd = Math.abs(Math.cos(t * 2.4 + x * 0.1)) * 9 + 3;
-          ellipse(c, sx, sy, 9, 3, 'rgba(0,0,0,.18)');
-          c.fillStyle = '#f4c430'; c.strokeStyle = '#c9971c'; c.lineWidth = 2.5;
-          c.beginPath(); c.ellipse(sx, yy, wd, 10, 0, 0, 7); c.fill(); c.stroke();
-          if (wd > 7) { c.fillStyle = '#c9971c'; c.font = '900 11px system-ui'; c.textAlign = 'center'; c.fillText('1', sx, yy + 4); }
-        },
-      });
+      keep.push({ x, y, r: 44 });
+      m.coins.push({ id, x, y, got: !!got[id] });
     }
   }
 
@@ -247,18 +121,9 @@ export async function buildWorld(hooks: Hooks): Promise<WorldModel> {
     keep.push({ x: bx, y: py, r: 190 });
     if (isOpen(worlds[zi])) continue;
     m.rects.push({ x: bx - 22, y: 0, w: 44, h: WH });
+    m.gates.push({ x: bx - 150, y: py + 90 });
     const r = rng(zi * 31 + 5);
     for (let y = 120; y < WH; y += 90) m.fogs.push({ x: bx + (r() - 0.5) * 110, y: y + r() * 40, s: 0.9 + r() * 0.8, ph: r() * 6 });
-    m.drawables.push({
-      x: bx - 150, y: py + 90, ext: 120,
-      draw: (c, sx, sy) => {
-        c.fillStyle = '#7a4d26'; c.fillRect(sx - 5, sy - 70, 10, 70);
-        c.fillStyle = '#c07b45'; c.strokeStyle = '#6a3f1c'; c.lineWidth = 4;
-        c.beginPath(); c.roundRect(sx - 62, sy - 100, 124, 44, 8); c.fill(); c.stroke();
-        c.fillStyle = '#3b2a1e'; c.font = '800 20px ui-rounded, system-ui, sans-serif'; c.textAlign = 'center';
-        c.fillText('Bald dabei', sx, sy - 71);
-      },
-    });
     m.interacts.push({ id: `gate.${zi}`, x: bx - 70, y: py, r: 190, label: 'Nebeltor', icon: '🌫️', run: hooks.onGate });
   }
 
@@ -268,18 +133,6 @@ export async function buildWorld(hooks: Hooks): Promise<WorldModel> {
     for (const k of keep) if (Math.hypot(x - k.x, y - k.y) < k.r) return false;
     for (const s of m.solids) if (Math.hypot(x - s.x, y - s.y) < s.r + minGap) return false;
     return true;
-  };
-  const tree = (x: number, y: number, key: string, sc: number) => {
-    addSolid(x, y, key === 'pine' ? 12 * sc : 14 * sc);
-    m.drawables.push({
-      x, y, ext: 120,
-      draw: (c, sx, sy, t) => {
-        const g = c.createRadialGradient(sx + 20 * sc, sy + 4, 2, sx + 20 * sc, sy + 4, 46 * sc);
-        g.addColorStop(0, 'rgba(15,40,10,.32)'); g.addColorStop(1, 'rgba(15,40,10,0)');
-        c.fillStyle = g; c.beginPath(); c.ellipse(sx + 20 * sc, sy + 4, 50 * sc, 15 * sc, 0, 0, 7); c.fill();
-        drawSway(c, S[key], sx, sy, sc, Math.sin(t * 1.1 + x * 0.013) * 0.022 + Math.sin(t * 2.3 + y) * 0.006);
-      },
-    });
   };
 
   for (let zi = 0; zi < worlds.length; zi++) {
@@ -299,37 +152,39 @@ export async function buildWorld(hooks: Hooks): Promise<WorldModel> {
         i++;
       }
     };
+    const tree = (x: number, y: number, kind: string, s: number) => {
+      addSolid(x, y, (kind === 'pine' ? 12 : 14) * s);
+      m.decor.push({ kind, x, y, s, rot: r() * 6.28 });
+    };
+    const rock = (x: number, y: number, s: number) => {
+      addSolid(x, y, 20 * s);
+      m.decor.push({ kind: 'rock', x, y, s, rot: r() * 6.28 });
+    };
     if (theme === 'forest') {
       place(150, 38, 105, (x, y) => tree(x, y, ['tree_forest', 'tree_dark', 'tree_forest', 'pine'][Math.floor(r() * 4)], 0.85 + r() * 0.4), 0.5);
-      place(14, 30, 100, (x, y) => { addSolid(x, y, 16); const k = 0.8 + r() * 0.3; m.drawables.push({ x, y, ext: 70, draw: (c, sx, sy) => drawSprite(c, S.rock, sx, sy, k) }); }, 0.1);
+      place(14, 30, 100, (x, y) => rock(x, y, 0.8 + r() * 0.3), 0.1);
     } else if (theme === 'meadow') {
       place(22, 60, 130, (x, y) => tree(x, y, 'tree_light', 0.9 + r() * 0.3), 0.3);
-      place(18, 40, 120, (x, y) => { addSolid(x, y, 16); m.drawables.push({ x, y, ext: 70, draw: (c, sx, sy) => drawSprite(c, S.rock, sx, sy, 0.7) }); }, 0);
+      place(18, 40, 120, (x, y) => rock(x, y, 0.7), 0);
     } else if (theme === 'river') {
       place(50, 50, 130, (x, y) => tree(x, y, ['tree_light', 'tree_forest'][Math.floor(r() * 2)], 0.9 + r() * 0.3), 0.4);
     } else if (theme === 'mountain') {
-      place(10, 130, 150, (x, y) => { addSolid(x - 50, y, 40); addSolid(x + 50, y, 40); addSolid(x, y, 45); m.drawables.push({ x, y, ext: 190, draw: (c, sx, sy) => drawSprite(c, S.mountain, sx, sy, 1.1) }); }, 0.9);
+      place(10, 130, 150, (x, y) => { addSolid(x - 50, y, 40); addSolid(x + 50, y, 40); addSolid(x, y, 45); m.decor.push({ kind: 'mountain', x, y, s: 1.1 + r() * 0.5, rot: r() * 6.28 }); }, 0.9);
       place(55, 40, 120, (x, y) => tree(x, y, 'pine', 0.9 + r() * 0.4), 0.45);
-      place(26, 40, 110, (x, y) => { addSolid(x, y, 20); const k = 0.9 + r() * 0.5; m.drawables.push({ x, y, ext: 70, draw: (c, sx, sy) => drawSprite(c, S.rock, sx, sy, k) }); }, 0.2);
+      place(26, 40, 110, (x, y) => rock(x, y, 0.9 + r() * 0.5), 0.2);
     } else if (theme === 'village') {
       for (let k = 0; k < 6; k++) {
         const hx = x0 + 260 + k * 300, hy = pathY(hx) + (k % 2 ? 250 : -230);
-        const key = k % 2 ? 'house_blue' : 'house_red';
         m.rects.push({ x: hx - 78, y: hy - 56, w: 156, h: 56 });
         keep.push({ x: hx, y: hy, r: 130 });
-        m.drawables.push({ x: hx, y: hy, ext: 160, draw: (c, sx, sy) => drawSprite(c, S[key], sx, sy, 0.95) });
+        m.decor.push({ kind: k % 2 ? 'house_blue' : 'house_red', x: hx, y: hy, s: 1, rot: 0 });
       }
       place(34, 50, 150, (x, y) => tree(x, y, ['tree_autumn', 'tree_light'][Math.floor(r() * 2)], 0.9 + r() * 0.3), 0.5);
     }
   }
 
-  // Schmetterlinge
   const br = rng(99);
   for (let i = 0; i < 40; i++) m.butterflies.push({ x: br() * Math.min(WW, ZW * 2), y: 200 + br() * (WH - 400), ph: br() * 6.3, col: ['#ff8fab', '#ffd166', '#8fd3ff', '#c3a6ff'][i % 4] });
 
   return m;
 }
-
-/** Mias aktuelle Position (für Beschriftungen, die auf Nähe reagieren) */
-export const mia = { x: 0, y: 0, d(x: number, y: number) { return Math.hypot(this.x - x, this.y - y); } };
-void textOf;

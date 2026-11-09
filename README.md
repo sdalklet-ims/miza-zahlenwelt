@@ -58,8 +58,9 @@ content/
   worlds/<id>.json       je Gebiet: Kartenposition, Texte (stabile IDs), world.* (Startpunkt, Auftraggeber,
                          Büsche, Sterne, Tiere), Aufgabenregeln, Videoskript
 src/
-  world/                 Engine: worldScreen (Schleife, Kamera, Kollision, Interaktion), world (Aufbau aus JSON),
-                         terrain (Boden-Kacheln), sprites, miaSprite (Mia in 4 Richtungen)
+  world/                 worldScreen (Schleife, Kollision, Interaktion), world (Aufbau aus JSON),
+  world3d/               3D-Darstellung: scene, models, decor, fx
+                         terrain (Boden-Kacheln-Maler, Höhenfunktion)
   input/controls.ts      Joystick, Pfoten- und Schleichen-Knopf, Tastatur
   stations/              Mathe-Spiele als Module (stations/<welt>/: games, tasks, generators, video) + Register
   core/                  Karte, Router, Fortschritt, Belohnungen, adaptive Schwierigkeit, Textzugriff
@@ -68,7 +69,7 @@ src/
   worlds/                Register der Gebiete (enter())
 ```
 
-**Engine-Wahl:** eigener Canvas-2D-Renderer statt Phaser/Pixi. Die Welt braucht nur Kamera, gecachte Boden-Kacheln, Sprites, Tiefensortierung und Kreis-Kollisionen; das ist klein, lädt sofort und braucht keine Zusatzbibliothek. Spielschleife mit festem Zeitschritt (60 Hz), Zeichnen pro Bildschirmbild. Die Spiel-Bildschirme (Stellentafel usw.) bleiben DOM.
+**Engine:** three.js (WebGL). Die Spiellogik (Bewegung, Kollisionen, Interaktionen) läuft weiter in der Fläche in `src/world/`, dargestellt wird in 3D in `src/world3d/`: Low-Poly-Figuren aus Grundformen mit Laufanimation (`models.ts`), Boden-Kacheln mit sanften Hügeln, instanziertes Gras/Bäume mit Wind (`decor.ts`), Himmel, Wolken, Sonne mit weichen Schatten, Fluss und Brücke (`scene.ts`), Partikel (`fx.ts`). Verfolgerkamera schräg von oben. Mia bleibt hinter Bäumen als leuchtende Silhouette sichtbar. Die Spiel-Bildschirme (Stellentafel usw.) bleiben DOM.
 
 ## Wie es funktioniert
 

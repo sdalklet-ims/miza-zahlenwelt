@@ -103,3 +103,33 @@ export function getChunk(cx: number, cy: number): HTMLCanvasElement {
   cache.set(key, cv);
   return cv;
 }
+
+/** 1 Pixel der Spiellogik = S Einheiten in der 3D-Welt */
+export const S = 1 / 50;
+
+const smooth = (a: number, b: number, x: number) => {
+  const t = Math.max(0, Math.min(1, (x - a) / (b - a)));
+  return t * t * (3 - 2 * t);
+};
+const HILL: Record<string, number> = { forest: 0.55, meadow: 0.75, river: 0.3, mountain: 1.7, village: 0.25 };
+const hillAmp = (x: number) => {
+  const zi = zoneIndex(x), lx = x - zi * ZW;
+  const a = HILL[worlds[zi].meta.theme] ?? 0.5;
+  const nxt = worlds[Math.min(worlds.length - 1, zi + 1)];
+  const b = HILL[nxt.meta.theme] ?? 0.5;
+  return a + (b - a) * smooth(ZW * 0.8, ZW, lx);
+};
+
+/** Höhe des Bodens (3D-Einheiten) an einer Stelle in Spiel-Pixeln. Wege, Flüsse und Brücken bleiben flach. */
+export function heightAt(x: number, y: number): number {
+  const n = Math.sin(x * 0.0021) * Math.cos(y * 0.0017) * 0.5 + Math.sin(x * 0.0047 + 1.3) * Math.sin(y * 0.0039 + 0.7) * 0.25 + Math.sin(x * 0.011 + y * 0.009) * 0.08;
+  let flat = smooth(110, 340, Math.abs(y - pathY(x)));
+  for (let i = 0; i < worlds.length; i++) {
+    const rv = riverOf(i);
+    if (rv) flat *= smooth(120, 420, Math.max(rv.x0 - x, x - rv.x1, 0));
+  }
+  // an der Zonengrenze (Nebeltor) auch flach
+  const edge = Math.abs(((x % ZW) + ZW) % ZW - 0);
+  flat *= smooth(40, 260, Math.min(edge, ZW - edge));
+  return n * hillAmp(x) * flat;
+}

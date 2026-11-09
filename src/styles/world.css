@@ -23,3 +23,16 @@
 @keyframes bannerIn { 10%, 80% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
 
 .world-bubble { left: 330px; top: 96px; width: 520px; }
+
+/* ───────── 3D: Beschriftungen, Radar, Effekte ───────── */
+.labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.npc3-name, .npc3-mark { position: absolute; left: 0; top: 0; will-change: transform; }
+.npc3-name { background: #fff6e3; border-bottom: 4px solid #d6bf93; border-radius: 12px; padding: 2px 14px 4px; font: 900 20px var(--font); white-space: nowrap; box-shadow: 0 3px 8px rgba(0,0,0,.25); }
+.npc3-mark { font-size: 34px; text-shadow: 0 3px 6px rgba(0,0,0,.35); }
+.radar { position: absolute; left: 0; top: 0; flex-direction: column; align-items: center; pointer-events: none; margin: -20px 0 0 -20px; display: none; }
+.radar i { display: block; width: 0; height: 0; border-top: 16px solid transparent; border-bottom: 16px solid transparent; border-left: 34px solid #ffd54a; filter: drop-shadow(0 3px 3px rgba(0,0,0,.4)); animation: pulse 1s ease-in-out infinite; }
+.radar b { color: #fff; font: 800 16px var(--font); text-shadow: 0 2px 4px rgba(0,0,0,.6); margin-top: 6px; }
+.heart-pop { position: absolute; font-size: 34px; pointer-events: none; animation: heartUp 1.2s ease-out forwards; }
+@keyframes heartUp { from { transform: translateY(0) scale(.6); opacity: 1; } to { transform: translateY(-90px) scale(1.2); opacity: 0; } }
+.tap-ripple { position: absolute; width: 60px; height: 34px; margin: -17px 0 0 -30px; border: 4px solid #fff; border-radius: 50%; pointer-events: none; animation: ripple .7s ease-out forwards; }
+@keyframes ripple { from { transform: scale(.3); opacity: 1; } to { transform: scale(1.8); opacity: 0; } }

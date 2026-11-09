@@ -1,22 +1,25 @@
 /**
- * Der Welt-Bildschirm: Canvas-Renderer, fester Zeitschritt (60 Hz), weiche Kamera, Kollisionen,
- * Tiefensortierung, Interaktionen (Pfote), Verstecken, Entdecker-Sterne, Dialoge.
+ * Der Welt-Bildschirm (3D, three.js): feste Spielschleife (60 Hz), Kollisionen und Interaktionen in der Fläche (x/y in Pixeln),
+ * dargestellt als 3D-Welt mit Verfolgerkamera. Joystick, Pfote, Verstecken, Entdecker-Sterne, Münzen, Gadgets, Dialoge.
  */
+import * as THREE from 'three';
 import { h, clamp, pick } from '../core/dom';
 import { worlds, textOf } from '../core/texts';
 import { getProgress, mutate } from '../core/progress';
 import { equippedFor, hasGadget, addCoins } from '../core/rewards';
-import { openShop } from '../ui/shop';
 import { show } from '../core/router';
 import { createControls } from '../input/controls';
 import { speak } from '../audio/speak';
 import { award } from '../ui/results';
-import { getScale, layers, W as VW, H as VH } from '../ui/stage';
+import { openShop } from '../ui/shop';
+import { getScale, layers, W as VW } from '../ui/stage';
 import { stationStarters, type Npc, type Offer } from '../stations';
-import { spritesReady, fogCloud } from './sprites';
-import { drawMia, type Dir } from './miaSprite';
-import { buildWorld, mia as miaPos, type Bush, type Critter, type Drawable, type Interact, type WorldModel } from './world';
-import { getChunk, CHUNK, WW, WH, ZW, riverOf, zoneIndex } from './terrain';
+import { buildWorld, PROC_KINDS, type Bush, type Critter, type Interact } from './world';
+import { WW, WH, S, heightAt, zoneIndex, riverOf } from './terrain';
+import { createStage3D } from '../world3d/scene';
+import { buildDecor, windUniform } from '../world3d/decor';
+import { Particles } from '../world3d/fx';
+import * as M from '../world3d/models';
 import '../styles/world.css';
 import '../styles/wald.css';
 
@@ -26,30 +29,17 @@ const R = 13; // Mias Kollisionsradius (an den Füßen)
 const DT = 1 / 60;
 const RUN = 235;
 const GLITTER = ['#ff8fab', '#ffd166', '#8fd3ff', '#c3a6ff', '#9ae6a0'];
+const angDiff = (a: number, b: number) => Math.atan2(Math.sin(b - a), Math.cos(b - a));
 
-interface Particle { x: number; y: number; vx: number; vy: number; life: number; max: number; kind: 'heart' | 'spark' | 'ring' | 'dust' | 'coin'; col?: string }
-
-let vignette: HTMLCanvasElement | null = null;
-function getVignette() {
-  if (vignette) return vignette;
-  vignette = document.createElement('canvas');
-  vignette.width = VW; vignette.height = VH;
-  const g = vignette.getContext('2d')!;
-  const gr = g.createRadialGradient(VW / 2, VH / 2, VH * 0.4, VW / 2, VH / 2, VW * 0.65);
-  gr.addColorStop(0, 'rgba(255,214,140,0)');
-  gr.addColorStop(1, 'rgba(60,70,30,.32)');
-  g.fillStyle = gr;
-  g.fillRect(0, 0, VW, VH);
-  // Dunst in der Ferne (oben heller/bläulicher) → Tiefenwirkung
-  const hz = g.createLinearGradient(0, 0, 0, VH * 0.55);
-  hz.addColorStop(0, 'rgba(205,232,255,.22)'); hz.addColorStop(1, 'rgba(205,232,255,0)');
-  g.fillStyle = hz;
-  g.fillRect(0, 0, VW, VH * 0.55);
-  return vignette;
+function fogTexture() {
+  return M.canvasTex(128, 128, (c) => {
+    const g = c.createRadialGradient(64, 64, 6, 64, 64, 62);
+    g.addColorStop(0, 'rgba(245,249,253,.95)'); g.addColorStop(0.55, 'rgba(236,243,250,.7)'); g.addColorStop(1, 'rgba(236,243,250,0)');
+    c.fillStyle = g; c.fillRect(0, 0, 128, 128);
+  });
 }
 
 export async function enterWorld(opts: EnterOpts = {}) {
-  await spritesReady;
   const first = worlds[0].id;
 
   /* ── Zustand ── */
@@ -58,17 +48,14 @@ export async function enterWorld(opts: EnterOpts = {}) {
   let bubble: HTMLElement | null = null;
   let hidden: Bush | null = null;
   let tap: { x: number; y: number } | null = null;
-  const parts: Particle[] = [];
+  let shakeFog = 0;
 
-  // Hooks werden unten gefüllt, brauchen aber Zustand → Funktionen sind hoisted
-  const model: WorldModel = await buildWorld({
+  const model = buildWorld({
     onNpc: (npc, wid) => openDialog(npc, wid),
     onGate: () => { speak('common.gate.soon'); shakeFog = 1; },
     onBush: (b) => toggleHide(b),
     onSquirrel: (c) => pet(c),
   });
-  let shakeFog = 0;
-
   // Wasser (mit Lücke an der Brücke)
   worlds.forEach((_, i) => {
     const rv = riverOf(i);
@@ -78,29 +65,111 @@ export async function enterWorld(opts: EnterOpts = {}) {
 
   const saved = getProgress().pos;
   const spawnZone = opts.spawnWorld ? worlds.findIndex((w) => w.id === opts.spawnWorld) : -1;
-  // Schnellreise in dieselbe Zone: dort weitermachen, wo Mia stand; sonst an den Zonen-Startpunkt
   const spawn = opts.spawnWorld && !(saved && zoneIndex(saved.x) === spawnZone) ? model.spawns[opts.spawnWorld] : saved ?? model.spawns[first];
-  const st = { x: spawn.x, y: spawn.y, vx: 0, vy: 0, dir: 'down' as Dir, t: 0, phase: 0 };
+  const st = { x: spawn.x, y: spawn.y, vx: 0, vy: 0, t: 0, phase: 0, yaw: 0 };
   let dustT = 0;
-  const cam = { x: clamp(st.x - VW / 2, 0, WW - VW), y: clamp(st.y - VH / 2, 0, WH - VH) };
-  miaPos.x = st.x; miaPos.y = st.y;
 
-  /* ── Aufbau der Oberfläche ── */
+  /* ── Oberfläche ── */
   const cv = h('canvas', { class: 'world-canvas' });
-  const ctx = cv.getContext('2d')!;
-  let k = 1;
-  const fit = () => {
-    k = clamp(getScale() * (window.devicePixelRatio || 1), 1, 2);
-    cv.width = Math.round(VW * k);
-    cv.height = Math.round(VH * k);
-  };
-  fit();
-  window.addEventListener('resize', fit);
-
+  const labels = h('div', { class: 'labels' });
+  const radar = h('div', { class: 'radar' }, h('i', {}), h('b', {}));
   const controls = createControls(() => act());
   const banner = h('div', { class: 'zone-banner' });
-  const el = h('div', { class: 'worldscreen' }, cv, banner, controls.el);
+  const el = h('div', { class: 'worldscreen' }, cv, labels, radar, banner, controls.el);
+  const pixelRatio = () => clamp(getScale() * (window.devicePixelRatio || 1), 1, 2);
+  const stage = createStage3D(cv, pixelRatio());
+  const fit = () => stage.setPixelRatio(pixelRatio());
+  window.addEventListener('resize', fit);
 
+  /* ── 3D-Inhalte ── */
+  const scene = stage.scene;
+  scene.add(buildDecor(model));
+  const fx = new Particles();
+  scene.add(fx.points);
+
+  const miaRig = M.createMia(equippedFor('mia'));
+  scene.add(miaRig.root);
+  // Silhouette: Mia bleibt auch hinter Bäumen und Häusern sichtbar (zeichnet nur dort, wo etwas davor ist)
+  const silhouette = new THREE.MeshBasicMaterial({ color: '#ffb84d', transparent: true, opacity: 0.5, depthFunc: THREE.GreaterDepth, depthWrite: false });
+  const bodyMeshes: THREE.Mesh[] = [];
+  miaRig.root.traverse((o) => { if ((o as THREE.Mesh).isMesh && o.visible) bodyMeshes.push(o as THREE.Mesh); });
+  for (const m of bodyMeshes) { const sm = new THREE.Mesh(m.geometry, silhouette); sm.renderOrder = 20; m.add(sm); }
+
+  interface NpcView { ent: (typeof model.npcs)[number]; root: THREE.Object3D; rig?: M.NpcRig; label: HTMLElement; mark: HTMLElement; top: number }
+  const npcViews: NpcView[] = [];
+  const eulerAcc = equippedFor('eule');
+  for (const e of model.npcs) {
+    let root: THREE.Object3D, rig: M.NpcRig | undefined, top = 3.4;
+    if (e.kind === 'chest') { root = M.createChest(); top = 1.9; }
+    else if (e.kind === 'board') { root = M.createBoard(); top = 2.6; }
+    else if (e.kind === 'shroom') { root = M.createShroomRing(); top = 1.8; }
+    else { rig = M.createNpc(e.kind, e.id === 'eule' ? eulerAcc : []); root = rig.root; top = e.kind === 'owl' ? 3.3 : e.kind === 'fox' ? 2.7 : e.kind === 'hare' ? 3.0 : 2.1; }
+    root.position.set(e.x * S, heightAt(e.x, e.y), e.y * S);
+    scene.add(root);
+    if (e.kind === 'fox') {
+      const stall = M.createStall();
+      stall.position.set(e.x * S, heightAt(e.x, e.y + 40), (e.y + 40) * S);
+      stall.scale.setScalar(1.25);
+      scene.add(stall);
+    }
+    const label = h('div', { class: 'npc3-name' }, e.name);
+    const mark = h('div', { class: 'npc3-mark' }, e.kind === 'chest' ? '⭐' : PROC_KINDS.includes(e.kind) ? '🎮' : e.kind === 'fox' ? '🛒' : '💬');
+    labels.append(label, mark);
+    npcViews.push({ ent: e, root, rig, label, mark, top });
+  }
+
+  const critters = model.critters.map((c) => {
+    const sq = M.createSquirrel();
+    sq.root.scale.setScalar(1.3);
+    scene.add(sq.root);
+    return { c, sq, yaw: 0 };
+  });
+
+  const bushViews = model.bushes.map((b) => {
+    const v = M.createBush();
+    v.root.scale.setScalar(1.15);
+    v.root.position.set(b.x * S, heightAt(b.x, b.y) - 0.05, b.y * S);
+    v.root.rotation.y = (b.x * 0.37) % 6.28;
+    scene.add(v.root);
+    return { b, ...v };
+  });
+
+  const starViews = model.stars.map((s) => {
+    const m = M.createStar();
+    m.position.set(s.x * S, heightAt(s.x, s.y) + 1.1, s.y * S);
+    m.visible = !s.got;
+    scene.add(m);
+    return { s, m };
+  });
+  const coinViews = model.coins.map((c) => {
+    const m = M.createCoin();
+    m.position.set(c.x * S, heightAt(c.x, c.y) + 0.7, c.y * S);
+    m.visible = !c.got;
+    scene.add(m);
+    return { c, m };
+  });
+  for (const g of model.gates) {
+    const s = M.createGateSign();
+    s.position.set(g.x * S, heightAt(g.x, g.y), g.y * S);
+    s.rotation.y = 0.25;
+    scene.add(s);
+  }
+  const fogTex = fogTexture();
+  const fogSprites = model.fogs.map((f) => {
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: fogTex, transparent: true, depthWrite: false, opacity: 0.95 }));
+    const sc = 7.5 * f.s;
+    sp.scale.set(sc, sc * 0.8, 1);
+    sp.position.set(f.x * S, 2.4 + (f.ph % 1) * 1.2, f.y * S);
+    scene.add(sp);
+    return { f, sp, sc };
+  });
+  const flies = model.butterflies.map((b) => {
+    const v = M.createButterfly(b.col);
+    scene.add(v.root);
+    return { b, v };
+  });
+
+  /* ── Gebietsname ── */
   let lastZone = -1;
   function showZone(i: number) {
     const w = worlds[i];
@@ -114,6 +183,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
   /* ── Interaktionen ── */
   let near: Interact | null = null;
   const pos = (i: Interact) => i.follow ?? i;
+  const frozen = () => frozenByDialog || layers.overlay.childElementCount > 0;
 
   function act() {
     if (dead || frozen()) return;
@@ -121,15 +191,11 @@ export async function enterWorld(opts: EnterOpts = {}) {
     near?.run();
   }
 
-  function frozen() {
-    return frozenByDialog || layers.overlay.childElementCount > 0;
-  }
-
   function toggleHide(b: Bush) {
     if (hidden === b) {
       b.occupied = false;
       hidden = null;
-      st.y = b.y + 34;
+      st.y = b.y + 38;
       return;
     }
     hidden = b;
@@ -138,8 +204,15 @@ export async function enterWorld(opts: EnterOpts = {}) {
     speak(pick(['wald.hide.1', 'wald.hide.2', 'wald.hide.3']));
   }
 
+  function heart(x: number, y: number, z: number) {
+    const p = stage.project(new THREE.Vector3(x, y, z));
+    const e = h('div', { class: 'heart-pop', style: { left: p.x + (Math.random() - 0.5) * 50 + 'px', top: p.y + 'px' } }, '❤️');
+    el.append(e);
+    setTimeout(() => e.remove(), 1300);
+  }
+
   function pet(c: Critter) {
-    for (let i = 0; i < 6; i++) parts.push({ x: c.x + (Math.random() - 0.5) * 30, y: c.y - 40, vx: (Math.random() - 0.5) * 40, vy: -50 - Math.random() * 30, life: 1.2, max: 1.2, kind: 'heart' });
+    for (let i = 0; i < 6; i++) setTimeout(() => heart(c.x * S, heightAt(c.x, c.y) + 1.3, c.y * S), i * 90);
     c.fleeing = false; c.wait = 3;
     const id = 'wald.squirrel';
     if (!getProgress().discovered[id]) {
@@ -153,7 +226,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
     closeDialog();
     frozenByDialog = true;
     const start = stationStarters[worldId];
-    const labels: Record<string, string> = {
+    const labelsTxt: Record<string, string> = {
       video: '▶ Erklärvideo', discover: '🔍 Ausprobieren', check: '⭐ Mini-Check',
       punkte: '🎯 Punkte zählen', steine: '🪨 Steine-Meister', kaertchen: '🃏 Kärtchen-Duell',
       memory: '🃏 Memory spielen', pilze: '🍄 Pilze pflücken', shop: '🛒 Zum Laden',
@@ -162,7 +235,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
     const btns = npc.offers.map((o) => {
       const s = starKey[o] ? getProgress().stars[starKey[o]] ?? 0 : null;
       return h('button', { class: 'btn ' + (o === 'video' || o === 'shop' ? 'sun' : o === 'check' ? 'coral' : ''), onclick: () => { savePos(); closeDialog(); if (o === 'shop') openShop(); else start?.(o as Offer, npc, () => void enterWorld()); } },
-        labels[o] ?? o, s != null && h('small', { class: 'btn-stars' }, '★'.repeat(s) + '☆'.repeat(3 - s)));
+        labelsTxt[o] ?? o, s != null && h('small', { class: 'btn-stars' }, '★'.repeat(s) + '☆'.repeat(3 - s)));
     });
     bubble = h('div', { class: 'bubble world-bubble' },
       h('div', { class: 'bubble-name' }, npc.name),
@@ -180,13 +253,16 @@ export async function enterWorld(opts: EnterOpts = {}) {
   // Tippen auf die Welt = dorthin laufen
   cv.addEventListener('pointerdown', (e) => {
     if (dead || frozen() || !getProgress().settings.tapWalk || hidden) return;
-    const r = layers.stage.getBoundingClientRect();
-    const sc = getScale();
-    tap = { x: cam.x + (e.clientX - r.left) / sc, y: cam.y + (e.clientY - r.top) / sc };
-    parts.push({ x: tap.x, y: tap.y, vx: 0, vy: 0, life: 0.6, max: 0.6, kind: 'ring' });
+    const g = stage.pickGround(e.clientX, e.clientY);
+    if (!g) return;
+    tap = { x: clamp(g.x, 30, WW - 30), y: clamp(g.y, 50, WH - 24) };
+    const r = layers.stage.getBoundingClientRect(), sc = getScale();
+    const rip = h('div', { class: 'tap-ripple', style: { left: (e.clientX - r.left) / sc + 'px', top: (e.clientY - r.top) / sc + 'px' } });
+    el.append(rip);
+    setTimeout(() => rip.remove(), 700);
   });
 
-  /* ── Update (fester Zeitschritt) ── */
+  /* ── Update (fester Zeitschritt, Logik in Pixeln wie bisher) ── */
   let saveT = 0;
   let stall = { x: st.x, y: st.y, t: 0 };
   const dist = (a: { x: number; y: number }) => Math.hypot(a.x - st.x, a.y - st.y);
@@ -210,12 +286,12 @@ export async function enterWorld(opts: EnterOpts = {}) {
 
     if (hidden) {
       if (Math.hypot(ix, iy) > 0.3) toggleHide(hidden);
-      else { ix = iy = 0; }
+      else ix = iy = 0;
     }
     if (!hidden) {
       const sp = hasGadget('turbo') ? RUN * 1.35 : RUN;
-      const mag = Math.min(1, Math.hypot(ix, iy));
-      const tvx = (ix / (Math.hypot(ix, iy) || 1)) * sp * mag, tvy = (iy / (Math.hypot(ix, iy) || 1)) * sp * mag;
+      const len = Math.hypot(ix, iy) || 1, mag = Math.min(1, Math.hypot(ix, iy));
+      const tvx = (ix / len) * sp * mag, tvy = (iy / len) * sp * mag;
       const a = 1 - Math.exp(-(mag > 0 ? 11 : 15) * DT); // sanftes Beschleunigen und Abbremsen
       st.vx += (tvx - st.vx) * a;
       st.vy += (tvy - st.vy) * a;
@@ -223,31 +299,24 @@ export async function enterWorld(opts: EnterOpts = {}) {
       st.y += st.vy * DT;
       collide();
       const spd = Math.hypot(st.vx, st.vy);
-      st.phase += spd * DT * 0.062; // Beinbewegung folgt der echten Geschwindigkeit
-      if (hasGadget('glitzer') && spd > 60 && Math.random() < 0.5) parts.push({ x: st.x + (Math.random() - 0.5) * 16, y: st.y - 10 - Math.random() * 30, vx: (Math.random() - 0.5) * 30, vy: -20 - Math.random() * 20, life: 0.7, max: 0.7, kind: 'spark', col: GLITTER[Math.floor(Math.random() * 5)] });
+      st.phase += spd * DT * 0.062;
+      const gy = heightAt(st.x, st.y);
+      if (hasGadget('glitzer') && spd > 60 && Math.random() < 0.6) fx.add(st.x * S + (Math.random() - 0.5) * 0.5, gy + 0.3 + Math.random() * 1.0, st.y * S + (Math.random() - 0.5) * 0.5, (Math.random() - 0.5) * 0.6, 0.6 + Math.random() * 0.5, (Math.random() - 0.5) * 0.6, 0.9, 0.22, GLITTER[Math.floor(Math.random() * 5)], -0.4);
       dustT -= DT;
       if (spd > 120 && dustT <= 0) {
-        dustT = 0.11;
-        parts.push({ x: st.x - (st.vx / spd) * 10 + (Math.random() - 0.5) * 8, y: st.y - 2, vx: -st.vx * 0.08, vy: -10 - Math.random() * 8, life: 0.45, max: 0.45, kind: 'dust' });
+        dustT = 0.09;
+        fx.add(st.x * S - (st.vx / spd) * 0.3, gy + 0.08, st.y * S - (st.vy / spd) * 0.3, (Math.random() - 0.5) * 0.4, 0.5, (Math.random() - 0.5) * 0.4, 0.55, 0.3, '#e2cda0');
       }
-      if (Math.hypot(st.vx, st.vy) > 12) st.dir = Math.abs(st.vx) > Math.abs(st.vy) ? (st.vx < 0 ? 'left' : 'right') : st.vy < 0 ? 'up' : 'down';
+      if (spd > 12) st.yaw += angDiff(st.yaw, Math.atan2(st.vx, st.vy)) * Math.min(1, 13 * DT);
     }
-    miaPos.x = st.x; miaPos.y = st.y;
 
-    // Kamera (weich nachgezogen, leicht vorausschauend)
-    const tx = clamp(st.x + st.vx * 0.3 - VW / 2, 0, WW - VW), ty = clamp(st.y + st.vy * 0.3 - VH / 2, 0, WH - VH);
-    const c = 1 - Math.exp(-5 * DT);
-    cam.x += (tx - cam.x) * c;
-    cam.y += (ty - cam.y) * c;
-
-    // Zone
     const z = zoneIndex(st.x);
     if (z !== lastZone) { lastZone = z; showZone(z); }
 
     // Tiere
     for (const cr of model.critters) {
       const d = Math.hypot(cr.x - st.x, cr.y - st.y);
-      const scare = 80; // nur wer nah ran will, erschreckt sie
+      const scare = 80;
       if (d < scare && !hidden) {
         const ang = Math.atan2(cr.y - st.y, cr.x - st.x);
         cr.vx = Math.cos(ang) * 190; cr.vy = Math.sin(ang) * 190; cr.fleeing = true; cr.wait = 1;
@@ -264,39 +333,36 @@ export async function enterWorld(opts: EnterOpts = {}) {
         }
       } else cr.wait -= DT;
       cr.x = clamp(cr.x + cr.vx * DT, 40, WW - 40); cr.y = clamp(cr.y + cr.vy * DT, 60, WH - 40);
-      if (Math.abs(cr.vx) > 5) cr.face = cr.vx < 0 ? -1 : 1;
     }
 
-    // Entdecker-Sterne einsammeln
-    for (const s of model.stars) {
-      if (s.got || Math.hypot(s.x - st.x, s.y - st.y) > 48) continue;
+    // Entdecker-Sterne
+    for (const sv of starViews) {
+      const s = sv.s;
+      if (s.got || Math.hypot(s.x - st.x, s.y - st.y) > 52) continue;
       s.got = true;
+      sv.m.visible = false;
       mutate((p) => void (p.discovered[s.id] = true));
-      for (let i = 0; i < 14; i++) { const a = (i / 14) * 6.28; parts.push({ x: s.x, y: s.y - 34, vx: Math.cos(a) * 90, vy: Math.sin(a) * 90, life: 0.8, max: 0.8, kind: 'spark', col: '#ffd54a' }); }
+      for (let i = 0; i < 26; i++) { const a = (i / 26) * 6.28; fx.add(s.x * S, heightAt(s.x, s.y) + 1.1, s.y * S, Math.cos(a) * 2.6, 1 + Math.random() * 2, Math.sin(a) * 2.6, 0.9, 0.3, '#ffd54a', -3); }
       speak('wald.star.found');
       award(`wald.entdecker.${s.id}`, 1);
     }
 
     // Münzen (mit Magnet fliegen sie zu Mia)
     const mag = hasGadget('magnet');
-    for (const co of model.coins) {
+    for (const cw of coinViews) {
+      const co = cw.c;
       if (co.got) continue;
       const d = Math.hypot(co.x - st.x, co.y - st.y);
       if (mag && d < 170 && d > 20) { co.x += ((st.x - co.x) / d) * 260 * DT; co.y += ((st.y - co.y) / d) * 260 * DT; }
       if (d < 30) {
         co.got = true;
+        cw.m.visible = false;
         mutate((p) => void (p.coinsGot[co.id] = true));
         addCoins(1);
-        for (let i = 0; i < 6; i++) parts.push({ x: co.x, y: co.y - 20, vx: (Math.random() - 0.5) * 80, vy: -60 - Math.random() * 40, life: 0.5, max: 0.5, kind: 'spark', col: '#ffd54a' });
+        for (let i = 0; i < 10; i++) fx.add(co.x * S, heightAt(co.x, co.y) + 0.8, co.y * S, (Math.random() - 0.5) * 2.2, 1.5 + Math.random() * 1.5, (Math.random() - 0.5) * 2.2, 0.6, 0.22, '#ffd54a', -4);
       }
     }
 
-    // Partikel
-    for (let i = parts.length - 1; i >= 0; i--) {
-      const p = parts[i];
-      p.life -= DT; p.x += p.vx * DT; p.y += p.vy * DT;
-      if (p.life <= 0) parts.splice(i, 1);
-    }
     if (shakeFog > 0) shakeFog = Math.max(0, shakeFog - DT);
 
     // Aktionsknopf: nächstes Ziel in Reichweite
@@ -307,7 +373,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
         const p = pos(i);
         const d = dist(p);
         if (d > i.r) continue;
-        if (hidden && i.id.indexOf('bush.') !== 0) continue;
+        if (hidden && !i.id.startsWith('bush.')) continue;
         if (d / i.r < best) { best = d / i.r; near = i; }
       }
     }
@@ -351,91 +417,98 @@ export async function enterWorld(opts: EnterOpts = {}) {
     mutate((p) => void (p.pos = { x: Math.round(st.x), y: Math.round(st.y) }));
   }
 
-  /* ── Zeichnen ── */
-  const miaDrawable: Drawable = {
-    get x() { return st.x; }, get y() { return st.y; }, ext: 90,
-    draw: (c, sx, sy, t) => {
-      if (hidden) return;
-      drawMia(c, sx, sy, { dir: st.dir, t, phase: st.phase, speed: Math.min(1, Math.hypot(st.vx, st.vy) / RUN), acc: equippedFor('mia') });
-    },
-  } as Drawable;
-
-  function render() {
-    const c = ctx;
-    c.setTransform(k, 0, 0, k, 0, 0);
-    const cx = Math.round(cam.x * k) / k, cy = Math.round(cam.y * k) / k;
+  /* ── Darstellung ── */
+  const v3 = new THREE.Vector3();
+  function render(timeSec: number) {
     const t = st.t;
+    windUniform.value = timeSec;
+    const gy = heightAt(st.x, st.y);
+    const spd = Math.hypot(st.vx, st.vy);
+    miaRig.root.visible = !hidden;
+    miaRig.root.position.set(st.x * S, gy, st.y * S);
+    miaRig.root.rotation.y = st.yaw;
+    miaRig.animate(t, st.phase, Math.min(1, spd / RUN));
 
-    // Boden
-    const c0 = Math.floor(cx / CHUNK), c1 = Math.floor((cx + VW) / CHUNK), r0 = Math.floor(cy / CHUNK), r1 = Math.floor((cy + VH) / CHUNK);
-    for (let gy = r0; gy <= r1; gy++) for (let gx = c0; gx <= c1; gx++) c.drawImage(getChunk(gx, gy), gx * CHUNK - cx, gy * CHUNK - cy);
+    stage.follow(st.x, st.y, st.vx, st.vy, DT);
+    stage.streamChunks(st.x, st.y, 2);
+    stage.tick(timeSec);
 
-    // Dinge (Tiefensortierung nach Fußposition)
-    const vis: Drawable[] = [miaDrawable];
-    for (const d of model.drawables) {
-      if (d.x < cx - d.ext || d.x > cx + VW + d.ext || d.y < cy - 60 || d.y > cy + VH + d.ext) continue;
-      vis.push(d);
-    }
-    vis.sort((a, b) => a.y - b.y);
-    c.textAlign = 'left';
-    for (const d of vis) { c.save(); d.draw(c, d.x - cx, d.y - cy, t); c.restore(); }
-
-    // Schmetterlinge und Partikel
-    for (const b of model.butterflies) {
-      const bx = b.x + Math.sin(t * 0.6 + b.ph) * 70 - cx, by = b.y + Math.cos(t * 0.8 + b.ph) * 36 - cy - 30;
-      if (bx < -20 || bx > VW + 20 || by < -20 || by > VH + 20) continue;
-      const fl = Math.abs(Math.sin(t * 12 + b.ph));
-      c.fillStyle = b.col;
-      c.beginPath(); c.ellipse(bx - 4 * fl, by, 5 * fl + 1, 6, 0, 0, 7); c.ellipse(bx + 4 * fl, by, 5 * fl + 1, 6, 0, 0, 7); c.fill();
-    }
-    for (const p of parts) {
-      const a = p.life / p.max, sx = p.x - cx, sy = p.y - cy;
-      c.globalAlpha = a;
-      if (p.kind === 'heart') { c.font = '24px system-ui'; c.fillText('❤️', sx - 12, sy); }
-      else if (p.kind === 'spark') { c.fillStyle = p.col ?? '#fff'; c.beginPath(); c.arc(sx, sy, 5 * a + 1, 0, 7); c.fill(); }
-      else if (p.kind === 'dust') { c.fillStyle = 'rgba(226,205,160,.8)'; c.beginPath(); c.arc(sx, sy, 4 + (1 - a) * 9, 0, 7); c.fill(); }
-      else { c.strokeStyle = '#fff'; c.lineWidth = 4; c.beginPath(); c.ellipse(sx, sy, 30 * (1 - a) + 6, 15 * (1 - a) + 3, 0, 0, 7); c.stroke(); }
-      c.globalAlpha = 1;
+    for (const nv of npcViews) {
+      nv.rig?.update(timeSec);
+      const d = Math.hypot(nv.ent.x - st.x, nv.ent.y - st.y);
+      if (nv.rig && d < 420) {
+        const want = Math.atan2(st.x - nv.ent.x, st.y - nv.ent.y);
+        nv.root.rotation.y += angDiff(nv.root.rotation.y, want) * 0.06;
+      } else if (nv.rig) nv.root.rotation.y += angDiff(nv.root.rotation.y, 0) * 0.03;
+      v3.set(nv.ent.x * S, heightAt(nv.ent.x, nv.ent.y) + nv.top, nv.ent.y * S);
+      const p = stage.project(v3);
+      const vis = !p.behind && p.x > -60 && p.x < VW + 60 && p.y > -40;
+      nv.mark.style.display = vis && d < 900 ? '' : 'none';
+      nv.label.style.display = vis && d < 280 ? '' : 'none';
+      nv.mark.style.transform = `translate(${p.x}px, ${p.y - 6 + Math.sin(timeSec * 3 + nv.ent.x) * 5}px) translate(-50%, -100%)`;
+      nv.label.style.transform = `translate(${p.x}px, ${p.y + 6}px) translate(-50%, 0)`;
     }
 
-    // Nebel an den Toren
-    for (const f of model.fogs) {
-      if (f.x < cx - 200 || f.x > cx + VW + 200 || f.y < cy - 200 || f.y > cy + VH + 200) continue;
-      const w = 260 * f.s, hh = 190 * f.s, sh = shakeFog * Math.sin(t * 40) * 6;
-      c.globalAlpha = 0.96;
-      c.drawImage(fogCloud, f.x - cx - w / 2 + Math.sin(t * 0.5 + f.ph) * 18 + sh, f.y - cy - hh / 2, w, hh);
-      c.globalAlpha = 1;
+    for (const c of critters) {
+      const cr = c.c, moving = Math.hypot(cr.vx, cr.vy) > 8;
+      c.sq.root.position.set(cr.x * S, heightAt(cr.x, cr.y), cr.y * S);
+      if (moving) c.yaw += angDiff(c.yaw, Math.atan2(cr.vx, cr.vy)) * 0.2;
+      c.sq.root.rotation.y = c.yaw;
+      c.sq.update(timeSec, moving);
     }
+    for (const bv of bushViews) {
+      bv.eyes.visible = bv.b.occupied;
+      bv.root.rotation.z = bv.b.occupied ? Math.sin(timeSec * 30) * 0.02 * Math.max(0, 1 - ((timeSec * 1.5) % 2)) : 0;
+    }
+    for (const sv of starViews) if (sv.m.visible) { sv.m.rotation.y = timeSec * 1.8; sv.m.position.y = heightAt(sv.s.x, sv.s.y) + 1.2 + Math.sin(timeSec * 2.6 + sv.s.x) * 0.18; }
+    for (const cw of coinViews) if (cw.m.visible) {
+      cw.m.rotation.z = timeSec * 2.6 + cw.c.x;
+      cw.m.position.set(cw.c.x * S, heightAt(cw.c.x, cw.c.y) + 0.75 + Math.sin(timeSec * 3 + cw.c.y) * 0.1, cw.c.y * S);
+    }
+    for (const f of flies) {
+      const b = f.b, bx = b.x + Math.sin(timeSec * 0.6 + b.ph) * 70, by = b.y + Math.cos(timeSec * 0.8 + b.ph) * 36;
+      f.v.root.position.set(bx * S, heightAt(bx, by) + 1.2 + Math.sin(timeSec * 2 + b.ph) * 0.2, by * S);
+      f.v.root.rotation.y = timeSec * 0.6 + b.ph;
+      const fl = Math.sin(timeSec * 16 + b.ph) * 0.9;
+      f.v.wings[0].rotation.z = fl; f.v.wings[1].rotation.z = -fl;
+    }
+    for (const fs of fogSprites) {
+      const sh = shakeFog * Math.sin(timeSec * 40) * 0.2;
+      fs.sp.position.x = fs.f.x * S + Math.sin(timeSec * 0.5 + fs.f.ph) * 0.5 + sh;
+    }
+    fx.update(DT);
 
     // Sternen-Fernglas: Pfeil zum nächsten versteckten Stern
+    let showRadar = false;
     if (hasGadget('fernglas')) {
       let best: { x: number; y: number } | null = null, bd = 1e9;
       for (const s of model.stars) { if (s.got) continue; const d = Math.hypot(s.x - st.x, s.y - st.y); if (d < bd) { bd = d; best = s; } }
-      if (best && bd > 140) {
-        const a = Math.atan2(best.y - st.y, best.x - st.x), ax = clamp(st.x - cx + Math.cos(a) * 190, 60, VW - 60), ay = clamp(st.y - cy - 40 + Math.sin(a) * 150, 110, VH - 90);
-        c.save(); c.translate(ax, ay); c.rotate(a);
-        c.fillStyle = '#ffd54a'; c.strokeStyle = '#c98a14'; c.lineWidth = 3; c.lineJoin = 'round';
-        const pulse = 1 + Math.sin(t * 5) * 0.1; c.scale(pulse, pulse);
-        c.beginPath(); c.moveTo(22, 0); c.lineTo(-10, -16); c.lineTo(-2, 0); c.lineTo(-10, 16); c.closePath(); c.fill(); c.stroke();
-        c.restore();
-        c.fillStyle = '#fff'; c.font = '800 16px system-ui'; c.textAlign = 'center'; c.fillText('⭐ ' + Math.round(bd / 10) + ' m', ax, ay + 34);
+      if (best && bd > 160) {
+        v3.set(best.x * S, heightAt(best.x, best.y) + 1.2, best.y * S);
+        const p = stage.project(v3);
+        const cx = VW / 2, cy = 410, a = Math.atan2(p.y - cy, p.x - cx) + (p.behind ? Math.PI : 0);
+        const inside = !p.behind && p.x > 60 && p.x < VW - 60 && p.y > 110 && p.y < 720;
+        const ax = inside ? p.x : clamp(cx + Math.cos(a) * 520, 70, VW - 70), ay = inside ? p.y - 60 : clamp(cy + Math.sin(a) * 330, 120, 700);
+        radar.style.transform = `translate(${ax}px, ${ay}px)`;
+        (radar.firstChild as HTMLElement).style.transform = `rotate(${inside ? 90 : a * 57.3}deg)`;
+        (radar.lastChild as HTMLElement).textContent = `⭐ ${Math.round(bd / 50)} m`;
+        showRadar = true;
       }
     }
+    radar.style.display = showRadar ? 'flex' : 'none';
 
-    // Stimmung: warme Tönung + Vignette
-    c.fillStyle = 'rgba(255,205,120,.06)';
-    c.fillRect(0, 0, VW, VH);
-    c.drawImage(getVignette(), 0, 0);
+    stage.renderer.render(scene, stage.camera);
   }
 
   /* ── Schleife ── */
   let acc = 0, last = performance.now(), raf = 0;
+  const t0 = last;
   const frame = (now: number) => {
     if (dead) return;
     acc += Math.min(0.1, (now - last) / 1000);
     last = now;
     while (acc >= DT) { update(); acc -= DT; }
-    render();
+    render((now - t0) / 1000);
     raf = requestAnimationFrame(frame);
   };
 
@@ -447,11 +520,13 @@ export async function enterWorld(opts: EnterOpts = {}) {
       window.removeEventListener('resize', fit);
       controls.dispose();
       savePos();
+      stage.dispose();
     },
   };
+  stage.follow(st.x, st.y, 0, 0, DT, true);
+  stage.streamChunks(st.x, st.y, 30); // die nächsten Kacheln sofort, der Rest läuft nach
   if (import.meta.env.DEV) (window as unknown as { __mia: unknown }).__mia = st;
   show(screen, { back: null });
   if (opts.spawnWorld && model.spawns[opts.spawnWorld] === spawn) speak(`${opts.spawnWorld}.arrive`);
   raf = requestAnimationFrame(frame);
-  void ZW;
 }
