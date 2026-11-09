@@ -59,6 +59,36 @@
       "pitch": 1.1,
       "rate": 1.15,
       "color": "#6bb33f"
+    },
+    "bruno": {
+      "name": "Biber Bruno",
+      "pitch": 0.75,
+      "rate": 0.95,
+      "color": "#a8703a"
+    },
+    "fred": {
+      "name": "Frosch Fred",
+      "pitch": 1.0,
+      "rate": 1.15,
+      "color": "#4aa83a"
+    },
+    "emma": {
+      "name": "Ente Emma",
+      "pitch": 1.45,
+      "rate": 1.05,
+      "color": "#e9b410"
+    },
+    "otto": {
+      "name": "Otter Otto",
+      "pitch": 0.9,
+      "rate": 1.1,
+      "color": "#8a5a3a"
+    },
+    "rocky": {
+      "name": "Waschbär Rocky",
+      "pitch": 0.85,
+      "rate": 1.1,
+      "color": "#7a7f8c"
     }
   },
   "texts": {

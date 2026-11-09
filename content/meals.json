@@ -1,0 +1,82 @@
+{
+  "meals": [
+    {
+      "id": "apfel",
+      "name": "Apfel",
+      "icon": "🍎",
+      "price": 2,
+      "fill": 14
+    },
+    {
+      "id": "banane",
+      "name": "Banane",
+      "icon": "🍌",
+      "price": 2,
+      "fill": 16
+    },
+    {
+      "id": "brot",
+      "name": "Butterbrot",
+      "icon": "🥪",
+      "price": 4,
+      "fill": 30
+    },
+    {
+      "id": "kuchen",
+      "name": "Kuchen",
+      "icon": "🍰",
+      "price": 5,
+      "fill": 26
+    },
+    {
+      "id": "nudeln",
+      "name": "Nudeln",
+      "icon": "🍝",
+      "price": 6,
+      "fill": 45
+    },
+    {
+      "id": "pizza",
+      "name": "Pizza",
+      "icon": "🍕",
+      "price": 8,
+      "fill": 60
+    },
+    {
+      "id": "eis",
+      "name": "Eis",
+      "icon": "🍦",
+      "price": 3,
+      "fill": 10
+    },
+    {
+      "id": "saft",
+      "name": "Apfelsaft",
+      "icon": "🧃",
+      "price": 2,
+      "fill": 10
+    }
+  ],
+  "texts": {
+    "mia.hunger.rumble": [
+      "mia",
+      "Mein Magen knurrt ein bisschen. Zeit für einen Snack aus dem Rucksack!"
+    ],
+    "mia.hunger.hungry": [
+      "mia",
+      "Ich habe großen Hunger und werde ganz müde. Im Supermarkt gibt es leckeres Essen!"
+    ],
+    "mia.hunger.nofood": [
+      "mia",
+      "In meinem Rucksack ist kein Essen mehr. Auf zum Supermarkt!"
+    ],
+    "mia.eat": [
+      "mia",
+      "Mmm, lecker! {name} schmeckt toll."
+    ],
+    "mia.eat.full": [
+      "mia",
+      "Ich bin schon pappsatt, danke."
+    ]
+  }
+}

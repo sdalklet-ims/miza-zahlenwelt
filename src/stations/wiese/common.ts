@@ -44,13 +44,13 @@ export async function playRounds(o: { shell: Shell; total: number; key: string; 
   return hits;
 }
 
-export async function finish(shell: Shell, key: string, stars: number, text: string, done: () => void, again: () => void, bonus = 3) {
+export async function finish(shell: Shell, key: string, stars: number, text: string, done: () => void, again: () => void, bonus = 3, backLabel = 'Zurück auf die Wiese') {
   shell.pay(stars * bonus);
   await award(key, stars);
   if (shell.dead) return;
   shell.pulseHint(false);
   showResult({
     title: 'Geschafft!', stars, text: `${text}  Verdient: ${shell.earned} 🪙`, speakId: 'common.round.done',
-    buttons: [{ label: '🔁 Nochmal', cls: 'sun', onClick: again }, { label: 'Zurück auf die Wiese', onClick: done }],
+    buttons: [{ label: '🔁 Nochmal', cls: 'sun', onClick: again }, { label: backLabel, onClick: done }],
   });
 }

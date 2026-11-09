@@ -41,6 +41,12 @@ export interface Progress {
   pack: Record<string, boolean>;
   /** Freigeschaltete Welten (die erste ist immer offen) */
   unlocked: Record<string, boolean>;
+  /** Mias eigener Hunger (Sättigung 0–100 zum Zeitpunkt t) und Essensvorrat im Rucksack */
+  hunger: { fill: number; t: number };
+  meals: Record<string, number>;
+  /** Gekaufte Fahrzeuge und das gerade benutzte (null = zu Fuß) */
+  vehicles: Record<string, boolean>;
+  ride: string | null;
 }
 
 const KEY = 'mia.progress.v1';
@@ -64,6 +70,10 @@ const defaults = (): Progress => ({
   petStock: {},
   pack: { umbrella: true },
   unlocked: {},
+  hunger: { fill: 85, t: Date.now() },
+  meals: { apfel: 2 },
+  vehicles: {},
+  ride: null,
 });
 
 let state: Progress = load();

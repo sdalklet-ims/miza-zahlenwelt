@@ -1,0 +1,84 @@
+{
+  "vehicles": [
+    {
+      "id": "roller",
+      "name": "Tretroller",
+      "icon": "🛴",
+      "price": 30,
+      "speed": 1.25,
+      "blurb": "Flink und wendig – der Einstieg."
+    },
+    {
+      "id": "fahrrad",
+      "name": "Fahrrad",
+      "icon": "🚲",
+      "price": 60,
+      "speed": 1.5,
+      "blurb": "Klingeling! Viel schneller als zu Fuß."
+    },
+    {
+      "id": "gokart",
+      "name": "Go-Kart",
+      "icon": "🏎️",
+      "price": 110,
+      "speed": 1.8,
+      "blurb": "Tief, laut und gelb. Driften erlaubt!"
+    },
+    {
+      "id": "cabrio",
+      "name": "Cabrio",
+      "icon": "🚗",
+      "price": 180,
+      "speed": 2.1,
+      "blurb": "Fahrtwind im Fell. Mit Hupe!"
+    },
+    {
+      "id": "rennauto",
+      "name": "Rennauto",
+      "icon": "🏁",
+      "price": 280,
+      "speed": 2.6,
+      "canopy": true,
+      "blurb": "Mit Dach, Spoiler und Streifen."
+    },
+    {
+      "id": "rakete",
+      "name": "Raketenwagen",
+      "icon": "🚀",
+      "price": 450,
+      "speed": 3.2,
+      "canopy": true,
+      "blurb": "Das schnellste Gefährt der ganzen Welt!"
+    }
+  ],
+  "texts": {
+    "wald.rocky.hello": [
+      "rocky",
+      "Brumm, brumm! Ich bin Rocky. In meinem Autohaus gibt es Fahrzeuge für jeden Geldbeutel. Die Welt ist groß, da lohnt sich Tempo!"
+    ],
+    "car.buy": [
+      "mia",
+      "Der {name} gehört jetzt mir! Auf geht's!"
+    ],
+    "car.poor": [
+      "mia",
+      "Dafür fehlen mir noch ein paar Münzen. Ich sammle weiter bei den Aufgaben."
+    ],
+    "car.ride.on": [
+      "mia",
+      "Los geht's mit dem {name}! Brumm, brumm!"
+    ],
+    "car.ride.off": [
+      "mia",
+      "Ich gehe wieder zu Fuß."
+    ],
+    "car.house": [
+      "mia",
+      "Im Haus laufe ich lieber zu Fuß."
+    ],
+    "car.rocky.visit": [
+      "rocky",
+      "Schau dich in Ruhe um. Probefahren ist inklusive, sobald du dein Fahrzeug gekauft hast!"
+    ]
+  }
+}

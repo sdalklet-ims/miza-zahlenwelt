@@ -12,6 +12,7 @@ import { onProgress } from '../core/progress';
 import { show } from '../core/router';
 import { createControls } from '../input/controls';
 import { speak } from '../audio/speak';
+import { hungerLevel, hungerSpeed, mealStock, meals } from '../core/hunger';
 import { tickWeather, weather, forceRain } from '../core/weather';
 import { award } from '../ui/results';
 import { openHouseUi, setBuilder, setHomeNav } from '../ui/houseUi';
@@ -34,6 +35,10 @@ import { createMiaSprite, svgFigure, SPR_Y, type Billboard } from '../world3d/sp
 import type { Dir } from '../world3d/comic';
 import { npcSvg, squirrelSvg, petSvg, type PetKind } from '../ui/art';
 import { mouseSvg } from '../ui/artWiese';
+import { chickSvg } from '../ui/artFluss';
+import { createCarShop, createVehicle, type Vehicle3D } from '../world3d/vehicles';
+import { currentRide, rideSpeed } from '../core/vehicles';
+import { openCarShop } from '../ui/carshop';
 import '../styles/world.css';
 import '../styles/wald.css';
 
@@ -255,12 +260,15 @@ export async function enterWorld(opts: EnterOpts = {}) {
   const rainCtx = rainCv.getContext('2d')!;
   const drops = Array.from({ length: 260 }, () => ({ x: Math.random() * 1180, y: Math.random() * 820, v: 700 + Math.random() * 500, l: 14 + Math.random() * 16 }));
   let umbT = 0;
+  let hungerTick = 3, lastHunger = hungerLevel();
+  let vehicle: Vehicle3D | null = null, vehKind = '', vehYaw = 0, lastRiding = false;
   let miaDir: Dir = 'down';
 
   interface NpcView { ent: (typeof model.npcs)[number]; root: THREE.Object3D; fig?: Billboard; label: HTMLElement; mark: HTMLElement; top: number }
   const npcViews: NpcView[] = [];
+  let shopTick: ((t: number) => void) | null = null;
   const eulerAcc = equippedFor('eule');
-  const FIG_H: Record<string, number> = { owl: 2.5, hedgehog: 1.3, badger: 1.7, hare: 2.1, fox: 2.0, bee: 2.0, snail: 1.4, butterfly: 2.1, grasshopper: 2.0 };
+  const FIG_H: Record<string, number> = { owl: 2.5, hedgehog: 1.3, badger: 1.7, hare: 2.1, fox: 2.0, bee: 2.0, snail: 1.4, butterfly: 2.1, grasshopper: 2.0, beaver: 2.0, frog: 1.5, duck: 1.8, otter: 2.0 };
   for (const e of model.npcs) {
     let root: THREE.Object3D, fig: Billboard | undefined, top = 3.4;
     if (e.kind === 'chest') { root = M.createChest(); top = 1.9; }
@@ -274,20 +282,26 @@ export async function enterWorld(opts: EnterOpts = {}) {
     }
     root.position.set(e.x * S, heightAt(e.x, e.y), e.y * S);
     scene.add(root);
+    if (e.kind === 'raccoon') {
+      const shop = createCarShop();
+      shop.position.set(e.x * S, heightAt(e.x, e.y - 230), (e.y - 230) * S);
+      scene.add(shop);
+      shopTick = shop.userData.tick as (t: number) => void;
+    }
     if (e.kind === 'fox') {
       const market = M.createSupermarket();
       market.position.set(e.x * S, heightAt(e.x, e.y - 230), (e.y - 230) * S);
       scene.add(market);
     }
     const label = h('div', { class: 'npc3-name' }, e.name);
-    const mark = h('div', { class: 'npc3-mark' }, e.kind === 'chest' ? '⭐' : PROC_KINDS.includes(e.kind) ? '🎮' : e.kind === 'fox' ? '🛒' : '💬');
+    const mark = h('div', { class: 'npc3-mark' }, e.kind === 'chest' ? '⭐' : PROC_KINDS.includes(e.kind) ? '🎮' : e.kind === 'fox' ? '🛒' : e.kind === 'raccoon' ? '🚗' : '💬');
     labels.append(label, mark);
     npcViews.push({ ent: e, root, fig, label, mark, top });
   }
 
   const critters: { c: (typeof model.critters)[number]; fig: Billboard }[] = [];
   for (const c of model.critters) {
-    const fig = await svgFigure(c.kind === 'mouse' ? mouseSvg() : squirrelSvg(), c.kind === 'mouse' ? 0.8 : 1.0);
+    const fig = await svgFigure(c.kind === 'mouse' ? mouseSvg() : c.kind === 'chick' ? chickSvg() : squirrelSvg(), c.kind === 'squirrel' ? 1.0 : 0.8);
     scene.add(fig.group);
     critters.push({ c, fig });
   }
@@ -376,7 +390,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
     for (let i = 0; i < 6; i++) setTimeout(() => heart(c.x * S, heightAt(c.x, c.y) + 1.3, c.y * S), i * 90);
     c.fleeing = false; c.wait = 3;
     const wid = worlds[zoneIndex(c.x)].id;
-    const kind = c.kind === 'mouse' ? 'critter' : 'squirrel';
+    const kind = c.kind === 'squirrel' ? 'squirrel' : 'critter';
     const id = `${wid}.${kind}`;
     if (!getProgress().discovered[id]) {
       mutate((p) => void (p.discovered[id] = true));
@@ -391,14 +405,15 @@ export async function enterWorld(opts: EnterOpts = {}) {
     const start = stationStarters[worldId];
     const labelsTxt: Record<string, string> = {
       video: '▶ Erklärvideo', discover: '🔍 Ausprobieren', check: '⭐ Mini-Check',
+      mal: '🪵 Baumstamm-Mal', teilen: '🦆 Fische teilen', reihe: '🐸 Seerosen-Reihen', malpaare: '🦦 Mal-Paare',
       plus: '🍯 Honig-Plus', minus: '🐌 Minus-Wanderung', partner: '🦋 Schmetterlings-Paare', strahl: '🦗 Zahlenstrahl-Hüpfer',
       punkte: '🎯 Punkte zählen', steine: '🪨 Steine-Meister', kaertchen: '🃏 Kärtchen-Duell',
-      angeln: '🎣 Zahlen-Angeln', pilze: '🍄 Pilze pflücken', shop: '🛒 Zum Laden',
+      angeln: '🎣 Zahlen-Angeln', pilze: '🍄 Pilze pflücken', shop: '🛒 Zum Laden', autos: '🚗 Zum Autohaus',
     };
-    const starKey: Record<string, string> = { check: `${worldId}.check`, punkte: `${worldId}.punkte`, steine: `${worldId}.steine`, kaertchen: `${worldId}.kaertchen`, angeln: `${worldId}.angeln`, pilze: `${worldId}.pilze`, plus: `${worldId}.plus`, minus: `${worldId}.minus`, partner: `${worldId}.partner`, strahl: `${worldId}.strahl` };
+    const starKey: Record<string, string> = { check: `${worldId}.check`, punkte: `${worldId}.punkte`, steine: `${worldId}.steine`, kaertchen: `${worldId}.kaertchen`, angeln: `${worldId}.angeln`, pilze: `${worldId}.pilze`, plus: `${worldId}.plus`, minus: `${worldId}.minus`, partner: `${worldId}.partner`, strahl: `${worldId}.strahl`, mal: `${worldId}.mal`, teilen: `${worldId}.teilen`, reihe: `${worldId}.reihe`, malpaare: `${worldId}.paare` };
     const btns = npc.offers.map((o) => {
       const s = starKey[o] ? getProgress().stars[starKey[o]] ?? 0 : null;
-      return h('button', { class: 'btn ' + (o === 'video' || o === 'shop' ? 'sun' : o === 'check' ? 'coral' : ''), onclick: () => { savePos(); closeDialog(); if (o === 'shop') openSupermarket(); else start?.(o as Offer, npc, () => void enterWorld()); } },
+      return h('button', { class: 'btn ' + (o === 'video' || o === 'shop' || o === 'autos' ? 'sun' : o === 'check' ? 'coral' : ''), onclick: () => { savePos(); closeDialog(); if (o === 'shop') openSupermarket(); else if (o === 'autos') openCarShop(); else start?.(o as Offer, npc, () => void enterWorld()); } },
         labelsTxt[o] ?? o, s != null && h('small', { class: 'btn-stars' }, '★'.repeat(s) + '☆'.repeat(3 - s)));
     });
     bubble = h('div', { class: 'bubble world-bubble' },
@@ -434,10 +449,20 @@ export async function enterWorld(opts: EnterOpts = {}) {
   function update() {
     st.t += DT;
     {
-      const ev = tickWeather(DT, houseInside && isBuilt('dach'));
+      const ev = tickWeather(DT, (houseInside && isBuilt('dach')) || !!currentRide()?.canopy);
       if (ev === 'start') speak('weather.rain');
       else if (ev === 'wet') speak('weather.wet');
       else if (ev === 'stop') speak('weather.dry');
+    }
+    hungerTick -= DT;
+    if (hungerTick <= 0) {
+      hungerTick = 2;
+      const lv = hungerLevel();
+      if (lv !== lastHunger) {
+        if (lv === 'rumble' && lastHunger !== 'hungry') speak('mia.hunger.rumble');
+        else if (lv === 'hungry') speak(meals.some((m) => mealStock(m.id) > 0) ? 'mia.hunger.hungry' : 'mia.hunger.nofood');
+        lastHunger = lv;
+      }
     }
     const isFrozen = frozen();
     let { x: ix, y: iy } = isFrozen ? { x: 0, y: 0 } : controls.vec();
@@ -459,22 +484,28 @@ export async function enterWorld(opts: EnterOpts = {}) {
       else ix = iy = 0;
     }
     if (!hidden) {
-      const sp = RUN * (1 - 0.22 * weather.wet);
+      const riding = !!currentRide() && !houseInside;
+      const sp = RUN * (1 - 0.22 * weather.wet) * hungerSpeed() * (riding ? rideSpeed() : 1);
       const len = Math.hypot(ix, iy) || 1, mag = Math.min(1, Math.hypot(ix, iy));
       const tvx = (ix / len) * sp * mag, tvy = (iy / len) * sp * mag;
-      const a = 1 - Math.exp(-(mag > 0 ? 11 : 15) * DT); // sanftes Beschleunigen und Abbremsen
+      const a = 1 - Math.exp(-(mag > 0 ? (riding ? 5 : 11) : riding ? 3.2 : 15) * DT); // sanftes Beschleunigen; Fahrzeuge rollen aus
       st.vx += (tvx - st.vx) * a;
       st.vy += (tvy - st.vy) * a;
-      st.x += st.vx * DT;
-      st.y += st.vy * DT;
-      collide();
+      const steps = Math.max(1, Math.ceil((Math.hypot(st.vx, st.vy) * DT) / 7)); // bei Tempo in Teilschritten, damit nichts durchrutscht
+      for (let k = 0; k < steps; k++) { st.x += (st.vx * DT) / steps; st.y += (st.vy * DT) / steps; collide(); }
       if (Math.hypot(st.x - lastTrail.x, st.y - lastTrail.y) > 12) { trail.push({ x: st.x, y: st.y }); lastTrail = { x: st.x, y: st.y }; if (trail.length > 60) trail.shift(); }
       const spd = Math.hypot(st.vx, st.vy);
       st.phase += spd * DT * 0.062;
       const gy = heightAt(st.x, st.y);
       dustT -= DT;
+      if (riding && spd > 60 && vehicle && Math.random() < 0.6) {
+        const ex = vehicle.exhaust, ca = Math.cos(vehYaw), sa = Math.sin(vehYaw);
+        const px = st.x * S + (ex.x * ca - ex.z * sa) * 0.8, pz = st.y * S - (ex.x * sa + ex.z * ca) * 0.8;
+        if (vehicle.fire) fx.add(px, gy + ex.y, pz, (Math.random() - 0.5) * 0.6 - (st.vx / spd) * 2.5, 0.4 + Math.random() * 0.6, (Math.random() - 0.5) * 0.6 - (st.vy / spd) * 2.5, 0.5, 0.45, Math.random() < 0.5 ? '#ffb347' : '#ff7a1c');
+        else fx.add(px, gy + 0.2, pz, (Math.random() - 0.5) * 0.4, 0.5, (Math.random() - 0.5) * 0.4, 0.5, 0.28, '#d8d4cc');
+      }
       if (spd > 120 && dustT <= 0) {
-        dustT = 0.09;
+        dustT = riding ? 0.04 : 0.09;
         fx.add(st.x * S - (st.vx / spd) * 0.3, gy + 0.08, st.y * S - (st.vy / spd) * 0.3, (Math.random() - 0.5) * 0.4, 0.5, (Math.random() - 0.5) * 0.4, 0.55, 0.3, '#e2cda0');
       }
     }
@@ -599,7 +630,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
         const dx = st.x - s.x, dy = st.y - s.y, d = Math.hypot(dx, dy);
         if (d < m && d > 0.001) { st.x = s.x + (dx / d) * m; st.y = s.y + (dy / d) * m; }
       }
-      for (const r of [...model.rects, ...dyn.rects]) {
+      for (const r of [...model.rects, ...dyn.rects, ...dyn.petRects]) {
         if (st.x < r.x - R || st.x > r.x + r.w + R || st.y < r.y - R || st.y > r.y + r.h + R) continue;
         const cx = clamp(st.x, r.x, r.x + r.w), cy = clamp(st.y, r.y, r.y + r.h);
         const dx = st.x - cx, dy = st.y - cy, d = Math.hypot(dx, dy);
@@ -628,11 +659,29 @@ export async function enterWorld(opts: EnterOpts = {}) {
     const spd = Math.hypot(st.vx, st.vy);
     if (spd > 12) miaDir = Math.abs(st.vx) > Math.abs(st.vy) ? (st.vx < 0 ? 'left' : 'right') : st.vy < 0 ? 'up' : 'down';
     miaSpr.setHidden(!!hidden);
-    miaSpr.group.position.set(st.x * S, gy + (sleeping ? 1.0 : 0), st.y * S);
-    miaSpr.update(t, st.phase, Math.min(1, spd / RUN), miaDir, false, sleeping);
+    const wantRide = !houseInside && !hidden && !sleeping ? currentRide() : null;
+    if ((wantRide?.id ?? '') !== vehKind) {
+      if (vehicle) scene.remove(vehicle.group);
+      vehicle = null;
+      vehKind = wantRide?.id ?? '';
+      if (wantRide) { vehicle = createVehicle(wantRide.id); scene.add(vehicle.group); if (!lastRiding) sfx.vroom(); }
+    }
+    lastRiding = !!vehicle;
+    let seatLift = 0;
+    if (vehicle) {
+      if (spd > 25) { const target = Math.atan2(st.vy, st.vx); let dA = target - vehYaw; dA = Math.atan2(Math.sin(dA), Math.cos(dA)); vehYaw += dA * 0.14; }
+      vehicle.group.position.set(st.x * S, gy, st.y * S);
+      vehicle.group.rotation.y = -vehYaw;
+      vehicle.group.rotation.z = -Math.min(0.1, spd / 5000) * Math.sin(timeSec * 30); // leichtes Rütteln bei hohem Tempo
+      vehicle.roll((spd / 60) * S, timeSec);
+      seatLift = vehicle.seat;
+    }
+    shopTick?.(timeSec);
+    miaSpr.group.position.set(st.x * S, gy + seatLift + (sleeping ? 1.0 : 0), st.y * S);
+    miaSpr.update(t, st.phase, vehicle ? 0 : Math.min(1, spd / RUN), miaDir, !!vehicle, sleeping);
 
     // Regenschirm
-    umbrella.visible = weather.umbrella && !hidden && !sleeping;
+    umbrella.visible = weather.umbrella && !hidden && !sleeping && !vehicle;
     if (umbrella.visible) {
       umbT += 1 / 60;
       umbrella.position.set(st.x * S, gy + Math.sin(umbT * 2) * 0.02, st.y * S + 0.05);
@@ -722,7 +771,8 @@ export async function enterWorld(opts: EnterOpts = {}) {
     }
     if (plot) {
       const inh = isBuilt('fundament') && Math.abs(st.x - plot.x) < IN_X && st.y > plot.y - IN_Y && st.y < plot.y + IN_Y && isBuilt('waende');
-      if (inh !== houseInside) { houseInside = inh; house.setInside(inh); stage.setZoom(inh ? 11.5 : 15); }
+      if (inh !== houseInside) { houseInside = inh; house.setInside(inh); if (inh && currentRide()) speak('car.house'); }
+      stage.setZoom(houseInside ? 11.5 : 15 + (vehicle ? (rideSpeed() - 1) * 1.5 : 0));
       house.update(timeSec, DT);
       const ch = house.chimney();
       if (ch && Math.random() < 0.06) fx.add(ch.x + (Math.random() - 0.5) * 0.2, ch.y, ch.z, 0.25, 0.9, 0.1, 2.6, 0.9, '#d8d8d8');

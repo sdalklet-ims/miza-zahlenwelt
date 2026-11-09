@@ -61,6 +61,12 @@ export const worldCfg = files['/content/world.json'] as WorldCfg;
 
 export const houseCfg = files['/content/house.json'] as HouseCfg;
 
+export interface VehicleDef { id: string; name: string; icon: string; price: number; speed: number; blurb: string; canopy?: boolean }
+export const vehicleCfg = files['/content/vehicles.json'] as { vehicles: VehicleDef[] };
+
+export interface MealDef { id: string; name: string; icon: string; price: number; fill: number }
+export const mealCfg = files['/content/meals.json'] as { meals: MealDef[] };
+
 export interface PetKindDef { id: string; name: string; icon: string; price: number; likes: string[]; names: string[] }
 export interface PetFoodDef { id: string; name: string; icon: string; price: number; fill: number }
 export const petCfg = files['/content/pets.json'] as { kinds: PetKindDef[]; foods: PetFoodDef[] };

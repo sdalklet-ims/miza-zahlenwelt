@@ -166,9 +166,16 @@ export function foxSvg(): string {
 }
 
 import { beeSvg, snailSvg, butterflySvg, grasshopperSvg } from './artWiese';
+import { raccoonSvg } from './artFluss';
+import { beaverSvg, frogSvg, duckSvg, otterSvg } from './artFluss';
 
 export function npcSvg(kind: string, acc: string[] = []): string {
   switch (kind) {
+    case 'raccoon': return raccoonSvg();
+    case 'beaver': return beaverSvg();
+    case 'frog': return frogSvg();
+    case 'duck': return duckSvg();
+    case 'otter': return otterSvg();
     case 'bee': return beeSvg();
     case 'snail': return snailSvg();
     case 'butterfly': return butterflySvg();

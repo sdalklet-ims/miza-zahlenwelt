@@ -20,3 +20,34 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* Mias Hunger */
+.hud-hunger { display: flex; align-items: center; gap: 8px; height: 56px; padding: 0 14px; border-radius: 20px; border: 0; border-bottom: 5px solid #d6bf93; background: #fff6e3; font-size: 28px; }
+.hg-bar { width: 64px; height: 14px; border-radius: 8px; background: #e6dcc4; overflow: hidden; border: 2px solid #cbb98f; } .hg-bar i { display: block; height: 100%; background: #7ddc7a; transition: width .6s, background .3s; }
+.hud-hunger[data-lvl="ok"] .hg-bar i { background: #b9df6a; } .hud-hunger[data-lvl="rumble"] .hg-bar i { background: #ffd23f; } .hud-hunger[data-lvl="hungry"] .hg-bar i { background: #ff8a6a; }
+.hud-hunger[data-lvl="hungry"], .hud-hunger[data-lvl="rumble"] { animation: breathe 1.4s ease-in-out infinite; }
+.pack-hunger { margin-bottom: 14px; font: 800 24px var(--font); } .pack-hunger .pet-bar { margin-top: 6px; }
+.pack-item.meal:disabled { opacity: .55; }
+
+/* Autohaus und Garage */
+.carshop { min-width: 880px; }
+.cs-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px; } .cs-purse { font: 900 32px var(--font); } .cs-head small { font: 700 20px var(--font); color: #6b5a44; }
+.cs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.garage .cs-grid { grid-template-columns: repeat(2, 1fr); }
+.cs-card { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 10px; border-radius: 22px; border: 4px solid #fff; background: #fff8e6; cursor: pointer; transition: transform .15s, background .2s; box-shadow: 0 4px 0 rgba(0,0,0,.1); }
+.cs-card:hover { transform: translateY(-3px); } .cs-card.sel { background: #bfe6ff; border-color: #4a90d9; } .cs-card.poor { opacity: .8; }
+.cs-icon { font-size: 64px; line-height: 1.1; } .cs-card b { font: 900 26px var(--font); } .cs-card small { font: 700 17px/1.2 var(--font); color: #6b5a44; text-align: center; min-height: 40px; }
+.cs-price { padding: 2px 18px; border-radius: 16px; background: #ffd23f; border-bottom: 4px solid #c99a00; font: 900 28px var(--font); }
+.cs-speed { display: flex; gap: 3px; } .cs-speed i { width: 14px; height: 12px; border-radius: 4px; background: #e6dcc4; } .cs-speed i.on { background: linear-gradient(#7ddc7a, #3fa83a); }
+.cs-card.own { border-color: #7ddc7a; }
+.cs-buy { margin-top: 14px; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 10px 18px; border-radius: 22px; background: #fff; border: 4px solid #e2cfa4; }
+.cs-buy.empty { justify-content: center; font: 800 22px var(--font); color: #6b5a44; } .cs-calc { display: flex; flex-direction: column; gap: 4px; font: 800 24px var(--font); } .cs-calc b { font-size: 30px; }
+.hud-btn.ride { font-size: 36px; }
+
+/* Kompaktere obere Leiste, damit auch mit Rucksack, Hunger und Garage alles Platz hat */
+.hud-bar { gap: 8px; }
+.hud-bar .hud-btn { min-width: 0; height: 58px; padding: 0 14px; font-size: 22px; border-radius: 18px; border-bottom-width: 5px; }
+.hud-bar .hud-btn.icon { width: 58px; font-size: 30px; padding: 0; }
+.hud-bar .hud-stars { height: 58px; padding: 0 14px; font-size: 25px; border-radius: 18px; border-bottom-width: 5px; white-space: nowrap; }
+.hud-bar .hud-hunger { height: 58px; }
+.hud-bar .hud-btn.ride { font-size: 32px; }

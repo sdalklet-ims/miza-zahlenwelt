@@ -97,3 +97,9 @@ Eine Zone mit bunten Blumen, 12 Entdeckersternen, Feldmäusen zum Streicheln, B�
 
 ## Feinschliff in dieser Version
 Weichere Knöpfe und Hover, Münz-/Sterne-Anzeige „hüpft“ bei Änderung, Ziffernfeld-Feedback, leuchtender Aktionsknopf, Haustier „mampft“ beim Füttern, Bienen/Schmetterlinge schweben, Grashüpfer hüpft, NPCs schauen zu Mia, Spielstand-Import übernimmt alte Einzel-Haustiere, Konsolenwarnungen von three.js beseitigt, `prefers-reduced-motion` wird beachtet.
+
+## Neu: Fluss (Einmaleins), Autohaus, Mias Hunger, Möbel
+- **Fluss** (Thema „Malnehmen & Teilen“, `content/worlds/fluss.json`): Biber Bruno (Erklärung + Baumstamm-Mal mit Punktefeld und Rechenstrich), Frosch Fred (Seerosen-Reihen), Ente Emma (Fische teilen), Otter Otto (Mal-Paare mit Tauschaufgaben), Flusstruhe (Check), Küken zum Streicheln. Freischalten wie die Wiese über die Test-Schalter in den Einstellungen (der Fluss öffnet auch die Wiese).
+- **Autohaus** bei Waschbär Rocky (Wald, hinter dem Supermarkt): 6 Fahrzeuge von Tretroller (30 🪙) bis Raketenwagen (450 🪙), Tempo ×1,25 bis ×3,2. Im Fahrzeug sitzt Mia sichtbar in der 3D-Karosserie, das Fahrzeug dreht sich in Fahrtrichtung, Räder rollen, Auspuff/Feuer, die Kamera zoomt bei hohem Tempo weiter heraus, Fahrzeuge rollen sanft aus. Im Haus geht Mia automatisch zu Fuß. Rennauto und Raketenwagen haben ein Dach (kein Regen). Garage: Knopf in der oberen Leiste. Kauf mit Rechnung „Münzen − Preis = Rest“.
+- **Mias Hunger**: Sättigung sinkt langsam (HUD-Balken). Essen im Supermarkt (Gang „Essen“), im Rucksack antippen zum Essen. Hungrig = etwas langsamer, kein Game Over.
+- **Möbel**: Mia läuft jetzt nicht mehr durch Möbel (wie die Haustiere).

@@ -72,11 +72,11 @@ export function buildWorld(hooks: Hooks): WorldModel {
       const proc = PROC_KINDS.includes(n.kind);
       m.npcs.push({ npc, id: n.id, kind: n.kind, name: n.name, x: nx, y: ny, worldId: w.id });
       addSolid(nx, ny, n.kind === 'pond' ? 100 : proc ? 28 : 20);
-      if (n.kind === 'fox') m.rects.push({ x: nx - 175, y: ny - 330, w: 350, h: 190 }); // Supermarkt-Gebäude hinter dem Händler
+      if (n.kind === 'fox' || n.kind === 'raccoon') m.rects.push({ x: nx - 175, y: ny - 330, w: 350, h: 190 }); // Supermarkt bzw. Autohaus hinter dem Händler
       m.interacts.push({
         id: `npc.${n.id}`, x: nx, y: ny, r: 120,
-        label: n.kind === 'chest' ? 'Öffnen' : proc ? 'Spielen' : n.kind === 'fox' ? 'Einkaufen' : 'Ansprechen',
-        icon: n.kind === 'chest' ? '🗝️' : proc ? '🎮' : n.kind === 'fox' ? '🛒' : '💬',
+        label: n.kind === 'chest' ? 'Öffnen' : proc ? 'Spielen' : n.kind === 'fox' ? 'Einkaufen' : n.kind === 'raccoon' ? 'Autohaus' : 'Ansprechen',
+        icon: n.kind === 'chest' ? '🗝️' : proc ? '🎮' : n.kind === 'fox' ? '🛒' : n.kind === 'raccoon' ? '🚗' : '💬',
         run: () => hooks.onNpc(npc, w.id),
       });
     }
@@ -97,7 +97,7 @@ export function buildWorld(hooks: Hooks): WorldModel {
     for (const cr of d.critters ?? []) {
       const c0: Critter = { kind: cr.kind ?? 'squirrel', x: x0 + cr.x, y: cr.y, vx: 0, vy: 0, hx: x0 + cr.x, hy: cr.y, tx: x0 + cr.x, ty: cr.y, wait: Math.random() * 2, face: 1, fleeing: false };
       m.critters.push(c0);
-      m.interacts.push({ id: `critter.${m.critters.length}`, x: c0.x, y: c0.y, r: 70, label: 'Streicheln', icon: cr.kind === 'mouse' ? '🐭' : '🐿️', follow: c0, run: () => hooks.onSquirrel(c0) });
+      m.interacts.push({ id: `critter.${m.critters.length}`, x: c0.x, y: c0.y, r: 70, label: 'Streicheln', icon: cr.kind === 'mouse' ? '🐭' : cr.kind === 'chick' ? '🐥' : '🐿️', follow: c0, run: () => hooks.onSquirrel(c0) });
     }
   }
 

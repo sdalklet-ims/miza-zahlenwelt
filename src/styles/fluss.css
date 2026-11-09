@@ -1,0 +1,30 @@
+/* ───────── Fluss: Punktefeld, Seerosen, Kiesel ───────── */
+.dots-box { min-height: 0; max-height: 0; opacity: 0; overflow: hidden; transition: opacity .4s, max-height .4s; }
+.dots-box.on { opacity: 1; max-height: 260px; }
+.dots { display: flex; flex-direction: column; gap: 5px; padding: 10px 16px; background: #fffaf0; border: 4px solid #e2cfa4; border-radius: 20px; }
+.dots-row { display: flex; gap: 8px; justify-content: center; animation: popIn .35s backwards; }
+.dot { display: block; width: 24px; height: 24px; border-radius: 50%; box-shadow: inset -3px -3px 0 rgba(0,0,0,.18), 0 2px 0 rgba(0,0,0,.12); }
+.task.calc.mul .dots { transform-origin: top center; }
+.video-dots { margin: 8px auto 12px; max-height: 200px; } .video-dots .dot { width: 32px; height: 32px; }
+
+/* Seerosen */
+.task.reihe { position: relative; height: 100%; }
+.lily-count { width: fit-content; margin: 0 auto; padding: 4px 26px; font: 800 28px/48px var(--font); background: #fff; border: 5px solid var(--ink); border-radius: 26px; }
+.lily-field { position: absolute; left: 0; right: 0; top: 66px; bottom: 0; background: radial-gradient(ellipse at 50% 30%, #9fe0ff, #4aa8e8 75%); border: 5px solid #2e86c1; border-radius: 30px; overflow: hidden; }
+.lily-field:before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(100deg, transparent 0 60px, rgba(255,255,255,.12) 60px 64px); }
+.lily { position: absolute; width: 124px; height: 96px; padding: 0; border: 0; background: radial-gradient(ellipse at 40% 35%, #8be26a, #3fa83a 75%); border-radius: 50% 50% 46% 54%; box-shadow: 0 6px 0 #2a7a2a, inset 0 -6px 0 rgba(0,0,0,.1); animation: bobLily 3.2s ease-in-out infinite; transition: transform .3s, filter .3s; display: grid; place-items: center; cursor: pointer; }
+.lily:after { content: ''; position: absolute; right: 50%; top: 0; width: 0; height: 0; border-left: 14px solid transparent; border-right: 0 solid transparent; border-top: 34px solid #4aa8e8; transform: translateX(14px) rotate(-8deg); transform-origin: top; }
+.lily b { position: relative; z-index: 1; background: #fff; border-radius: 14px; padding: 0 12px; font: 900 34px/44px var(--font); color: #2a5a1a; }
+.lily.got { filter: drop-shadow(0 0 12px #fff06a); background: radial-gradient(ellipse at 40% 35%, #ffe76a, #f2b92a 75%); box-shadow: 0 6px 0 #a67c00; }
+@keyframes bobLily { 0%, 100% { translate: 0 0; } 50% { translate: 0 6px; } }
+.lily-frog { position: absolute; z-index: 3; font-size: 56px; line-height: 1; transition: left .45s cubic-bezier(.3, .8, .4, 1), top .45s cubic-bezier(.3, .8, .4, 1); pointer-events: none; filter: drop-shadow(0 4px 2px rgba(0,0,0,.25)); }
+.lily-frog.jump { animation: frogJump .45s; }
+@keyframes frogJump { 0% { scale: 1 1; } 40% { scale: .9 1.2; } 100% { scale: 1 1; } }
+
+/* Kiesel */
+.task.paare { position: relative; height: 100%; }
+.peb-field { position: absolute; left: 0; right: 0; top: 52px; bottom: 0; display: grid; grid-template-columns: repeat(5, 1fr); grid-auto-rows: 1fr; gap: 16px; padding: 18px; background: radial-gradient(ellipse at 50% 40%, #cfe9f5, #9dc8dc 80%); border: 5px solid #6aa6c2; border-radius: 30px; }
+.peb { border: 0; border-radius: 46% 54% 50% 50% / 56% 50% 50% 44%; background: radial-gradient(circle at 35% 30%, #fff, var(--c) 70%); box-shadow: 0 7px 0 rgba(60,50,40,.28), inset 0 -5px 0 rgba(0,0,0,.08); font: 900 36px var(--font); color: #3b2a1e; cursor: pointer; animation: bobLily 3.6s ease-in-out infinite; transition: transform .35s, opacity .4s, filter .2s; }
+.peb.sel { filter: drop-shadow(0 0 14px #fff06a) drop-shadow(0 0 4px #ffb300); transform: scale(1.1); }
+.peb.gone { transform: scale(.2) translateY(-80px); opacity: 0; pointer-events: none; }
+.dots.sm { gap: 3px; padding: 8px 14px; } .dots.sm .dots-row { gap: 5px; } .dots.sm .dot { width: 16px; height: 16px; }

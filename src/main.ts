@@ -1,4 +1,5 @@
 import { openBackpack } from './ui/backpack';
+import { openGarage } from './ui/carshop';
 import './styles/base.css';
 import './styles/map.css';
 import './styles/polish.css';
@@ -13,6 +14,7 @@ import { openAlbum } from './ui/album';
 import { openHouseUi } from './ui/houseUi';
 import { speak, unlockAudio } from './audio/speak';
 import './worlds/wald'; // registriert die Welt "wald"
+import './worlds/fluss'; // registriert die Welt "fluss"
 import './worlds/wiese'; // registriert die Welt "wiese" (gesperrt, bis freigeschaltet)
 
 initStage();
@@ -21,7 +23,7 @@ function goMap() {
   show(mapScreen(), { back: null });
 }
 
-hud.init({ onMap: goMap, onAlbum: openAlbum, onSettings: openSettings, onHouse: () => openHouseUi({ mode: 'plan' }), onPack: openBackpack });
+hud.init({ onMap: goMap, onAlbum: openAlbum, onSettings: openSettings, onHouse: () => openHouseUi({ mode: 'plan' }), onPack: openBackpack, onRide: openGarage });
 
 show(
   startScreen(() => {

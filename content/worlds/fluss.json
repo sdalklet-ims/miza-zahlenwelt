@@ -1,8 +1,370 @@
 {
   "id": "fluss",
   "meta": {
-    "title": "Fluss", "topic": "Zahlenstrahl", "order": 3, "icon": "🌊", "theme": "river",
-    "color": "#4a90d9", "map": { "x": 640, "y": 600 }, "status": "locked"
+    "title": "Fluss",
+    "topic": "Malnehmen & Teilen",
+    "order": 3,
+    "icon": "🌊",
+    "theme": "river",
+    "color": "#4a90d9",
+    "map": {
+      "x": 640,
+      "y": 600
+    },
+    "status": "open"
   },
-  "texts": {}
+  "world": {
+    "spawn": {
+      "x": 330,
+      "y": 1555
+    },
+    "npcs": [
+      {
+        "id": "bruno",
+        "kind": "beaver",
+        "name": "Biber Bruno",
+        "x": 650,
+        "y": 1125,
+        "hello": "fluss.bruno.hello",
+        "offers": [
+          "video",
+          "mal"
+        ]
+      },
+      {
+        "id": "fred",
+        "kind": "frog",
+        "name": "Frosch Fred",
+        "x": 1250,
+        "y": 1503,
+        "hello": "fluss.fred.hello",
+        "offers": [
+          "reihe"
+        ]
+      },
+      {
+        "id": "emma",
+        "kind": "duck",
+        "name": "Ente Emma",
+        "x": 2050,
+        "y": 1457,
+        "hello": "fluss.emma.hello",
+        "offers": [
+          "teilen"
+        ]
+      },
+      {
+        "id": "otto",
+        "kind": "otter",
+        "name": "Otter Otto",
+        "x": 2550,
+        "y": 1950,
+        "hello": "fluss.otto.hello",
+        "offers": [
+          "malpaare"
+        ]
+      },
+      {
+        "id": "truhe",
+        "kind": "chest",
+        "name": "Flusstruhe",
+        "x": 2950,
+        "y": 1604,
+        "hello": "fluss.truhe.hello",
+        "offers": [
+          "check"
+        ]
+      }
+    ],
+    "bushes": [
+      {
+        "x": 1992,
+        "y": 2452
+      },
+      {
+        "x": 2047,
+        "y": 2010
+      },
+      {
+        "x": 2220,
+        "y": 2565
+      },
+      {
+        "x": 917,
+        "y": 916
+      },
+      {
+        "x": 2236,
+        "y": 2108
+      },
+      {
+        "x": 2719,
+        "y": 2674
+      },
+      {
+        "x": 902,
+        "y": 545
+      },
+      {
+        "x": 2346,
+        "y": 2758
+      },
+      {
+        "x": 311,
+        "y": 2598
+      },
+      {
+        "x": 1762,
+        "y": 2015
+      },
+      {
+        "x": 2802,
+        "y": 805
+      },
+      {
+        "x": 2692,
+        "y": 221
+      }
+    ],
+    "stars": [
+      {
+        "id": "s1",
+        "x": 2304,
+        "y": 418
+      },
+      {
+        "id": "s2",
+        "x": 383,
+        "y": 306
+      },
+      {
+        "id": "s3",
+        "x": 940,
+        "y": 2286
+      },
+      {
+        "id": "s4",
+        "x": 1097,
+        "y": 2782
+      },
+      {
+        "id": "s5",
+        "x": 1344,
+        "y": 2207
+      },
+      {
+        "id": "s6",
+        "x": 158,
+        "y": 508
+      },
+      {
+        "id": "s7",
+        "x": 1431,
+        "y": 1100
+      },
+      {
+        "id": "s8",
+        "x": 1780,
+        "y": 601
+      },
+      {
+        "id": "s9",
+        "x": 354,
+        "y": 2085
+      },
+      {
+        "id": "s10",
+        "x": 202,
+        "y": 1839
+      },
+      {
+        "id": "s11",
+        "x": 623,
+        "y": 711
+      },
+      {
+        "id": "s12",
+        "x": 911,
+        "y": 1992
+      }
+    ],
+    "critters": [
+      {
+        "kind": "chick",
+        "x": 2224,
+        "y": 941
+      },
+      {
+        "kind": "chick",
+        "x": 676,
+        "y": 1877
+      },
+      {
+        "kind": "chick",
+        "x": 1863,
+        "y": 1031
+      },
+      {
+        "kind": "chick",
+        "x": 141,
+        "y": 1265
+      },
+      {
+        "kind": "chick",
+        "x": 2567,
+        "y": 1405
+      },
+      {
+        "kind": "chick",
+        "x": 220,
+        "y": 1023
+      }
+    ]
+  },
+  "texts": {
+    "fluss.arrive": [
+      "mia",
+      "Ein glitzernder Fluss! Hier plätschert und quakt es."
+    ],
+    "fluss.bruno.hello": [
+      "bruno",
+      "Hallo! Ich bin Biber Bruno. Ich staple Baumstämme in Reihen. Soll ich dir zeigen, wie das Malnehmen funktioniert?"
+    ],
+    "fluss.fred.hello": [
+      "fred",
+      "Quak! Ich bin Fred. Ich hüpfe von Seerosen zu Seerosen, immer im gleichen Abstand. Hüpfst du mit?"
+    ],
+    "fluss.emma.hello": [
+      "emma",
+      "Schnatter! Ich bin Emma. Meine Fische müssen gerecht verteilt werden. Dabei brauche ich deine Hilfe!"
+    ],
+    "fluss.otto.hello": [
+      "otto",
+      "Hi! Ich bin Otto. Ich sammle Kieselsteine mit Mal-Aufgaben und Ergebnissen. Welche gehören zusammen?"
+    ],
+    "fluss.truhe.hello": [
+      "mia",
+      "Eine Truhe am Ufer! Darin liegt der Fluss-Check mit sechs Mal- und Teilaufgaben."
+    ],
+    "fluss.critter.pet": [
+      "mia",
+      "Ein flauschiges Küken! Piep, piep. Es freut sich über das Streicheln."
+    ],
+    "fluss.critter.again": [
+      "mia",
+      "Das Küken kuschelt sich an meine Hand."
+    ],
+    "fluss.star.found": [
+      "mia",
+      "Ein Entdeckerstern am Ufer! Glitzer, glitzer!"
+    ],
+    "fluss.video.01": [
+      "bruno",
+      "Malnehmen heißt: gleich große Gruppen zusammenzählen. So sparen wir uns das lange Plus-Rechnen."
+    ],
+    "fluss.video.02": [
+      "bruno",
+      "Hier liegen drei Reihen mit je vier Baumstämmen. Das ist drei mal vier. Wir schreiben: 3 mal 4."
+    ],
+    "fluss.video.03": [
+      "bruno",
+      "Auf dem Rechenstrich gehe ich dreimal vier weiter: 4, 8, 12. Also ist 3 mal 4 gleich 12."
+    ],
+    "fluss.video.04": [
+      "bruno",
+      "Jetzt drehe ich das Bild um: vier Reihen mit je drei Stämmen. Das ist 4 mal 3."
+    ],
+    "fluss.video.05": [
+      "bruno",
+      "Auch hier kommt 12 heraus! Man darf die Zahlen beim Malnehmen tauschen. Das nennt man Tauschaufgabe."
+    ],
+    "fluss.video.06": [
+      "bruno",
+      "Teilen ist die Umkehrung. Zwölf Stämme sollen in Gruppen zu je vier. Wie viele Gruppen sind das?"
+    ],
+    "fluss.video.07": [
+      "bruno",
+      "Wie oft passt die 4 in die 12? Ich hüpfe in Viererschritten: 4, 8, 12. Das sind drei Sprünge. Also 12 geteilt durch 4 ergibt 3."
+    ],
+    "fluss.video.08": [
+      "bruno",
+      "Ein Trick: Wenn du 3 mal 4 kennst, ist 6 mal 4 genau das Doppelte, also 24. Verdoppeln hilft bei schweren Reihen!"
+    ],
+    "fluss.video.09": [
+      "bruno",
+      "Jetzt kennst du meine Tricks. Probier sie bei mir, bei Fred, bei Emma und bei Otto aus!"
+    ],
+    "fluss.video.done": [
+      "bruno",
+      "Prima! Malnehmen und Teilen sind jetzt deine Werkzeuge."
+    ],
+    "fluss.mal.prompt": [
+      "mia",
+      "Wie viel ist {a} mal {b}? Tipp: Das sind {a} Gruppen mit je {b}."
+    ],
+    "fluss.geteilt.prompt": [
+      "mia",
+      "Wie viel ist {a} geteilt durch {b}? Tipp: Wie oft passt die {b} in die {a}?"
+    ],
+    "fluss.mal.hint": [
+      "mia",
+      "{a} mal {b}: Wir gehen {a} Mal in {b}er-Schritten weiter. Das sind {list}."
+    ],
+    "fluss.geteilt.hint": [
+      "mia",
+      "Wie oft passt die {b} in die {n}? Wir hüpfen in {b}er-Schritten: {list}. Das sind {k} Sprünge."
+    ],
+    "fluss.mal.hint.plus": [
+      "mia",
+      "Achtung, hier wird nicht plus gerechnet. Malnehmen heißt: gleich große Gruppen."
+    ],
+    "fluss.geteilt.hint.mal": [
+      "mia",
+      "Fast! Beim Teilen wird die Zahl kleiner. Wie oft passt die kleine Zahl hinein?"
+    ],
+    "fluss.mal.reveal": [
+      "mia",
+      "{a} mal {b} ergibt {r}. Das merken wir uns."
+    ],
+    "fluss.geteilt.reveal": [
+      "mia",
+      "{a} geteilt durch {b} ergibt {r}."
+    ],
+    "fluss.reihe.prompt": [
+      "fred",
+      "Wir hüpfen in der {t}er-Reihe! Tippe alle Seerosen, deren Zahl in die {t}er-Reihe gehört."
+    ],
+    "fluss.reihe.hint": [
+      "fred",
+      "Die {t}er-Reihe geht so: {list} und immer weiter. Suche diese Zahlen."
+    ],
+    "fluss.reihe.oops": [
+      "fred",
+      "Die {n} gehört nicht in die {t}er-Reihe. Zähle die Reihe in {t}er-Schritten."
+    ],
+    "fluss.paare.prompt": [
+      "otto",
+      "Welche Kiesel gehören zusammen? Aufgabe und Ergebnis, oder zwei gleiche Aufgaben mit getauschten Zahlen. Tippe zwei an."
+    ],
+    "fluss.paare.hint": [
+      "otto",
+      "Rechne die Aufgabe im Kopf aus und suche den Kiesel mit dem Ergebnis. Bei einer Tauschaufgabe sind die Zahlen vertauscht."
+    ],
+    "fluss.check.intro": [
+      "bruno",
+      "Der Fluss-Check! Sechs Aufgaben, ganz ohne Zeitdruck. Du schaffst das."
+    ],
+    "fluss.check.done.3": [
+      "bruno",
+      "Fantastisch! Fast alles auf Anhieb richtig. Du bist ein Einmaleins-Meister!"
+    ],
+    "fluss.check.done.2": [
+      "bruno",
+      "Prima, das war schon richtig gut. Mit etwas Übung wirst du noch sicherer."
+    ],
+    "fluss.check.done.1": [
+      "bruno",
+      "Geschafft! Übe ruhig noch bei meinen Freunden, dann klappt es immer besser."
+    ]
+  }
 }

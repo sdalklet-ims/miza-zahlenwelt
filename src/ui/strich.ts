@@ -6,7 +6,7 @@ export interface Strich {
   /** Startpunkt setzen (löscht alte Sprünge) */
   start(n: number): void;
   /** Sprung von der aktuellen Position um delta (negativ = rückwärts); wartet, bis der Bogen gezeichnet ist */
-  hop(delta: number, label?: string, color?: string): Promise<number>;
+  hop(delta: number, label?: string, color?: string, fast?: boolean): Promise<number>;
   /** Punkt markieren (z. B. das Ergebnis) */
   mark(n: number, label?: string, color?: string): void;
   clear(): void;
@@ -55,7 +55,7 @@ export function createStrich(lo: number, hi: number): Strich {
       layer.append(el('circle', { cx: x(n), cy: Y, r: 11, fill: color, stroke: '#fff', 'stroke-width': 3 }));
       if (label) layer.append(el('text', { x: x(n), y: Y - 24, class: 'st-lab', fill: color, 'text-anchor': 'middle' }, label));
     },
-    async hop(delta, label, color = '#e9a24b') {
+    async hop(delta, label, color = '#e9a24b', fast = false) {
       const a = cur, b = cur + delta;
       const xa = x(a), xb = x(b), mid = (xa + xb) / 2;
       const up = Y - 22 - Math.min(78, 28 + Math.abs(xb - xa) * 0.18) * (flip === 1 ? 1 : 0.55);
@@ -65,13 +65,13 @@ export function createStrich(lo: number, hi: number): Strich {
       layer.append(path);
       await wait(30);
       path.classList.add('draw');
-      await wait(520);
+      await wait(fast ? 260 : 520);
       layer.append(arrow);
       layer.append(el('text', { x: mid, y: up - 6, class: 'st-lab', fill: color, 'text-anchor': 'middle' }, label ?? (delta > 0 ? `+${delta}` : `${delta}`)));
       tick(b, true);
       layer.append(el('circle', { cx: xb, cy: Y, r: 9, class: 'st-dot' }));
       cur = b;
-      await wait(380);
+      await wait(fast ? 120 : 380);
       return b;
     },
   };
