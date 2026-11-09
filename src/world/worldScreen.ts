@@ -106,9 +106,15 @@ export async function enterWorld(opts: EnterOpts = {}) {
     house.group.position.set(plot.x * S, heightAt(plot.x, plot.y), plot.y * S);
     scene.add(house.group);
   }
+  const plotMarker = M.createPlotMarker();
+  if (plot) { plotMarker.position.set(plot.x * S, heightAt(plot.x, plot.y), plot.y * S); scene.add(plotMarker); }
+  const plotName = h('div', { class: 'npc3-name' }, 'Mias Bauplatz');
+  const plotMark = h('div', { class: 'npc3-mark' }, '🏠');
+  labels.append(plotName, plotMark);
   let houseInside = false;
   function syncHouse(animate: boolean) {
     if (!plot) return;
+    plotMarker.visible = !isBuilt('fundament');
     const hs = getProgress().house;
     house.sync(hs.built, { roof: hs.roof, wall: hs.wall }, animate);
     dyn = house.collisions(hs.built, plot.x, plot.y);
@@ -579,6 +585,19 @@ export async function enterWorld(opts: EnterOpts = {}) {
       if (ch && Math.random() < 0.06) fx.add(ch.x + (Math.random() - 0.5) * 0.2, ch.y, ch.z, 0.25, 0.9, 0.1, 2.6, 0.9, '#d8d8d8');
     }
     fx.update(DT);
+
+    // Beschriftung des Bauplatzes (solange nichts gebaut ist)
+    if (plot) {
+      const empty = !isBuilt('fundament');
+      v3.set(plot.x * S, 2.6, plot.y * S);
+      const bp = stage.project(v3);
+      const dd0 = Math.hypot(plot.x - st.x, plot.y - st.y);
+      const on = empty && bp.x > -60 && bp.x < VW + 60 && bp.y > -40 && dd0 < 1100;
+      plotMark.style.display = on ? '' : 'none';
+      plotName.style.display = on && dd0 < 420 ? '' : 'none';
+      plotMark.style.transform = `translate(${bp.x}px, ${bp.y - 6 + Math.sin(timeSec * 3) * 5}px) translate(-50%, -100%)`;
+      plotName.style.transform = `translate(${bp.x}px, ${bp.y + 6}px) translate(-50%, 0)`;
+    }
 
     // Pfeil zum Haus, wenn es nicht im Bild ist
     let showRadar = false;
