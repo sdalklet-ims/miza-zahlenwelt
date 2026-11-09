@@ -3,6 +3,7 @@ import { h } from '../core/dom';
 import { getProgress, mutate, resetProgress } from '../core/progress';
 import { openModal } from './modal';
 import { applyMusicSettings, sfx } from '../audio/music';
+import { exportSave, importSave } from '../core/save';
 
 export function openSettings() {
   const p = getProgress().settings;
@@ -46,6 +47,22 @@ export function openSettings() {
     location.reload();
   });
 
+  const box = h('textarea', { class: 'save-box', rows: '3', placeholder: 'Spielstand-Code hier einfügen oder kopieren' }) as HTMLTextAreaElement;
+  const msg = h('div', { class: 'set-hint' }, '');
+  const file = h('input', { type: 'file', accept: '.txt,text/plain', style: { display: 'none' } }) as HTMLInputElement;
+  const doLoad = (text: string) => {
+    const r = importSave(text);
+    msg.textContent = r.msg;
+    if (r.ok) setTimeout(() => location.reload(), 900);
+  };
+  file.addEventListener('change', async () => { const f = file.files?.[0]; if (f) doLoad(await f.text()); });
+  const saveRow = h('div', { class: 'set-row' },
+    h('button', { class: 'btn sky', onclick: async () => { box.value = exportSave(); box.focus(); box.select(); try { await navigator.clipboard.writeText(box.value); msg.textContent = 'Code kopiert – an einem sicheren Ort einfügen (z. B. Notizen).'; } catch { msg.textContent = 'Code markiert – bitte kopieren (lange tippen).'; } } }, '💾 Spielstand sichern'),
+    h('button', { class: 'btn ghost', onclick: () => { const url = URL.createObjectURL(new Blob([exportSave()], { type: 'text/plain' })); const a = h('a', { href: url, download: 'mia-spielstand.txt' }); document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000); msg.textContent = 'Datei gespeichert.'; } }, '⬇️ Als Datei'),
+    h('button', { class: 'btn sun', onclick: () => doLoad(box.value) }, '📂 Code laden'),
+    h('button', { class: 'btn ghost', onclick: () => file.click() }, '📄 Datei laden'),
+    file);
+
   openModal({
     title: 'Einstellungen',
     wide: true,
@@ -54,7 +71,8 @@ export function openSettings() {
       h('div', { class: 'set-row' },
         toggle('Musik an', () => getProgress().settings.musicOn, (v) => mutate((s) => void (s.settings.musicOn = v))),
         toggle('Tippen = dorthin laufen', () => getProgress().settings.tapWalk, (v) => mutate((s) => void (s.settings.tapWalk = v)))),
-      h('div', { class: 'set-hint' }, 'Alle Texte werden gelesen – es gibt keine Stimmen.'),
+      h('div', { class: 'set-hint' }, 'Alle Texte werden gelesen – es gibt keine Stimmen. Der Spielstand wird automatisch auf diesem Gerät gespeichert.'),
+      h('h3', { class: 'set-h' }, '💾 Spielstand sichern'), box, saveRow, msg,
       h('div', { class: 'set-row' }, resetBtn)),
   });
 }
