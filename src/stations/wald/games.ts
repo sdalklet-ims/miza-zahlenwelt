@@ -7,7 +7,6 @@ import { createShell, type Shell } from '../../ui/shell';
 import { createBoard } from '../../ui/board';
 import { createStoneBoard } from '../../ui/stones';
 import { award, showResult } from '../../ui/results';
-import { addCoins } from '../../core/rewards';
 import type { Screen } from '../../core/router';
 import { runBuild, runCards, runCount, type TaskHooks, type TaskResult } from './tasks';
 import { genCards, NumberGen, numOf, type CardRule, type PunkteRule } from './generators';
@@ -44,6 +43,7 @@ async function playRounds(o: { shell: Shell; total: number; key: string; ad: Ada
     shell.setInfo(`Aufgabe ${i + 1} von ${o.total} · Stufe ${ad.level}`);
     const res = await o.task(ad.level, i, hooks);
     if (shell.dead) return -1;
+    shell.pay(res.firstTry ? 4 : 1);
     if (res.firstTry) hits++;
     await wait(500);
   }
@@ -52,14 +52,14 @@ async function playRounds(o: { shell: Shell; total: number; key: string; ad: Ada
 
 async function finishRound(shell: Shell, key: string, hits: number, total: number, done: () => void, again: () => void) {
   const stars = starsFor(hits, total);
-  addCoins(stars * 2);
+  shell.pay(stars * 3);
   await award(key, stars);
   if (shell.dead) return;
   shell.pulseHint(false);
   showResult({
     title: 'Geschafft!',
     stars,
-    text: `${hits} von ${total} gleich beim ersten Versuch richtig.  +${stars * 2} 🪙`,
+    text: `${hits} von ${total} gleich beim ersten Versuch richtig.  Verdient: ${shell.earned} 🪙`,
     speakId: 'common.round.done',
     buttons: [{ label: '🔁 Nochmal', cls: 'sun', onClick: again }, { label: 'Zurück in den Wald', onClick: done }],
   });
@@ -167,7 +167,7 @@ export function steineScreen(done: () => void): Screen {
       await shell.speakId('wald.steine.dup', { n });
     } else {
       found.add(n);
-      addCoins(1);
+      shell.pay(2);
       mutate((p) => void p.found.push(n));
       refresh();
       chips.get(n)?.classList.add('new');
@@ -235,6 +235,7 @@ export function checkScreen(done: () => void, again: () => void): Screen {
         res = await runCards(shell, genCards(cardRules[Math.min(cardRules.length, lvlK) - 1], mode), mode);
       }
       if (shell.dead) return;
+      shell.pay(res.firstTry ? 4 : 1);
       marks[i] = res.firstTry ? '●' : '◐';
       if (res.firstTry) hits++;
       await wait(500);
@@ -242,13 +243,13 @@ export function checkScreen(done: () => void, again: () => void): Screen {
     if (shell.dead) return;
     shell.setInfo(`Geschafft!   ${marks.join(' ')}`);
     const stars = hits >= 5 ? 3 : hits >= 3 ? 2 : 1;
-    addCoins(stars * 3);
+    shell.pay(stars * 4);
     await award('wald.check', stars);
     if (shell.dead) return;
     showResult({
       title: 'Mini-Check geschafft!',
       stars,
-      text: `${hits} von ${tasks.length} gleich beim ersten Versuch richtig.`,
+      text: `${hits} von ${tasks.length} gleich beim ersten Versuch richtig.  Verdient: ${shell.earned} 🪙`,
       speakId: `wald.check.done.${stars}`,
       buttons: [{ label: '🔁 Nochmal', cls: 'sun', onClick: again }, { label: 'Zurück in den Wald', onClick: done }],
     });

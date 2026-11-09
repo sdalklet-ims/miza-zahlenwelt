@@ -279,7 +279,6 @@
         "y": 775
       }
     ],
-    "coins": 90,
     "plot": {
       "x": 520,
       "y": 2250
@@ -883,7 +882,7 @@
     ],
     "wald.fuchs.hello": [
       "fuchs",
-      "Willkommen im Supermarkt, Mia! Vom Fundament bis zur Deko, dazu Tierbedarf. Sammle Münzen und füll deinen Einkaufswagen!"
+      "Willkommen im Supermarkt, Mia! Vom Fundament bis zur Deko, dazu Tierbedarf. Münzen verdienst du mit deinen Mathe-Aufgaben!"
     ],
     "wald.fuchs.buy": [
       "fuchs",

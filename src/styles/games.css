@@ -204,3 +204,6 @@
 .pet-food.fav { border-color: #ffb3c0; } .pet-food:disabled { opacity: .45; } .pf-icon { font-size: 36px; } .pf-name { font: 800 16px var(--font); } .pet-food small { font: 700 14px var(--font); color: #6b5a44; }
 .pet-hint { display: block; margin-top: 10px; font: 700 16px var(--font); color: #6b5a44; }
 .pet-mark { position: absolute; left: 0; top: 0; font-size: 32px; pointer-events: none; will-change: transform; }
+
+.coin-pop { position: absolute; right: 40px; top: 84px; z-index: 30; padding: 6px 22px; border-radius: 20px; background: #ffd23f; border-bottom: 5px solid #c99a00; font: 900 36px var(--font); box-shadow: 0 6px 12px rgba(0,0,0,.25); animation: coinPop 1.5s ease-out forwards; pointer-events: none; }
+@keyframes coinPop { 0% { transform: translateY(14px) scale(.6); opacity: 0; } 15% { transform: scale(1.15); opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(-30px); opacity: 0; } }

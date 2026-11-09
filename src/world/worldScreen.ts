@@ -6,14 +6,14 @@ import * as THREE from 'three';
 import { h, clamp, pick } from '../core/dom';
 import { worlds, textOf } from '../core/texts';
 import { getProgress, mutate } from '../core/progress';
-import { equippedFor, addCoins } from '../core/rewards';
+import { equippedFor } from '../core/rewards';
 import { build as buildPart, isBuilt } from '../core/house';
 import { onProgress } from '../core/progress';
 import { show } from '../core/router';
 import { createControls } from '../input/controls';
 import { speak } from '../audio/speak';
 import { award } from '../ui/results';
-import { openHouseUi, setBuilder } from '../ui/houseUi';
+import { openHouseUi, setBuilder, setHomeNav } from '../ui/houseUi';
 import { openSupermarket } from '../ui/supermarket';
 import { openPetUi } from '../ui/petUi';
 import { pet as getPet, mood as petMood } from '../core/pet';
@@ -83,9 +83,10 @@ export async function enterWorld(opts: EnterOpts = {}) {
   /* ── Oberfläche ── */
   const cv = h('canvas', { class: 'world-canvas' });
   const labels = h('div', { class: 'labels' });
+  const radar = h('div', { class: 'radar' }, h('i', {}), h('b', {}));
   const controls = createControls(() => act());
   const banner = h('div', { class: 'zone-banner' });
-  const el = h('div', { class: 'worldscreen' }, cv, labels, banner, controls.el);
+  const el = h('div', { class: 'worldscreen' }, cv, labels, radar, banner, controls.el);
   const pixelRatio = () => clamp(getScale() * (window.devicePixelRatio || 1), 1, 2);
   const stage = createStage3D(cv, pixelRatio());
   const fit = () => stage.setPixelRatio(pixelRatio());
@@ -153,6 +154,20 @@ export async function enterWorld(opts: EnterOpts = {}) {
     const close = openModal({ title: info[1], content: h('div', { class: 'milestone' }, h('div', { class: 'big' }, info[0]), h('p', {}, textOf(info[2])), h('button', { class: 'btn', onclick: () => close() }, 'Weiter bauen!')) });
     speak(info[2]);
   }
+  /** Wegweiser zum Haus und Schnellreise dorthin */
+  setHomeNav(plot ? {
+    dist: () => Math.hypot(st.x - plot.x, st.y - plot.y),
+    go: () => {
+      const f = h('div', { class: 'flash' });
+      el.append(f);
+      setTimeout(() => {
+        st.x = plot.x; st.y = plot.y + 340; st.vx = st.vy = 0; tap = null;
+        stage.follow(st.x, st.y, 0, 0, DT, true);
+        speak('wald.haus.plot');
+      }, 350);
+      setTimeout(() => f.remove(), 900);
+    },
+  } : null);
   /** Teil aufbauen – nur, wenn Mia beim Bauplatz ist */
   setBuilder((id) => {
     if (!plot || Math.hypot(st.x - plot.x, st.y - plot.y) > 700) return void speak('wald.haus.far');
@@ -216,13 +231,6 @@ export async function enterWorld(opts: EnterOpts = {}) {
     m.visible = !s.got;
     scene.add(m);
     return { s, m };
-  });
-  const coinViews = model.coins.map((c) => {
-    const m = M.createCoin();
-    m.position.set(c.x * S, heightAt(c.x, c.y) + 0.7, c.y * S);
-    m.visible = !c.got;
-    scene.add(m);
-    return { c, m };
   });
   for (const g of model.gates) {
     const s = M.createGateSign();
@@ -438,23 +446,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
       for (let i = 0; i < 26; i++) { const a = (i / 26) * 6.28; fx.add(s.x * S, heightAt(s.x, s.y) + 1.1, s.y * S, Math.cos(a) * 2.6, 1 + Math.random() * 2, Math.sin(a) * 2.6, 0.9, 0.3, '#ffd54a', -3); }
       speak('wald.star.found');
       sfx.star();
-      addCoins(5);
       award(`wald.entdecker.${s.id}`, 1);
-    }
-
-    // Münzen
-    for (const cw of coinViews) {
-      const co = cw.c;
-      if (co.got) continue;
-      const d = Math.hypot(co.x - st.x, co.y - st.y);
-      if (d < 30) {
-        co.got = true;
-        sfx.coin();
-        cw.m.visible = false;
-        mutate((p) => void (p.coinsGot[co.id] = true));
-        addCoins(1);
-        for (let i = 0; i < 10; i++) fx.add(co.x * S, heightAt(co.x, co.y) + 0.8, co.y * S, (Math.random() - 0.5) * 2.2, 1.5 + Math.random() * 1.5, (Math.random() - 0.5) * 2.2, 0.6, 0.22, '#ffd54a', -4);
-      }
     }
 
     if (shakeFog > 0) shakeFog = Math.max(0, shakeFog - DT);
@@ -558,10 +550,6 @@ export async function enterWorld(opts: EnterOpts = {}) {
       bv.root.rotation.z = bv.b.occupied ? Math.sin(timeSec * 30) * 0.02 * Math.max(0, 1 - ((timeSec * 1.5) % 2)) : 0;
     }
     for (const sv of starViews) if (sv.m.visible) { sv.m.rotation.y = timeSec * 1.8; sv.m.position.y = heightAt(sv.s.x, sv.s.y) + 1.2 + Math.sin(timeSec * 2.6 + sv.s.x) * 0.18; }
-    for (const cw of coinViews) if (cw.m.visible) {
-      cw.m.rotation.z = timeSec * 2.6 + cw.c.x;
-      cw.m.position.set(cw.c.x * S, heightAt(cw.c.x, cw.c.y) + 0.75 + Math.sin(timeSec * 3 + cw.c.y) * 0.1, cw.c.y * S);
-    }
     for (const f of flies) {
       const b = f.b, bx = b.x + Math.sin(timeSec * 0.6 + b.ph) * 70, by = b.y + Math.cos(timeSec * 0.8 + b.ph) * 36;
       f.v.root.position.set(bx * S, heightAt(bx, by) + 1.2 + Math.sin(timeSec * 2 + b.ph) * 0.2, by * S);
@@ -592,6 +580,22 @@ export async function enterWorld(opts: EnterOpts = {}) {
     }
     fx.update(DT);
 
+    // Pfeil zum Haus, wenn es nicht im Bild ist
+    let showRadar = false;
+    if (plot) {
+      const dd = Math.hypot(plot.x - st.x, plot.y - st.y);
+      v3.set(plot.x * S, 2.5, plot.y * S);
+      const pp = stage.project(v3);
+      if (dd > 450 && (pp.x < 80 || pp.x > VW - 80 || pp.y < 110 || pp.y > 720)) {
+        const cx = VW / 2, cy = 410, a = Math.atan2(pp.y - cy, pp.x - cx);
+        radar.style.transform = `translate(${clamp(cx + Math.cos(a) * 540, 70, VW - 70)}px, ${clamp(cy + Math.sin(a) * 330, 120, 700)}px)`;
+        (radar.firstChild as HTMLElement).style.transform = `rotate(${a * 57.3}deg)`;
+        (radar.lastChild as HTMLElement).textContent = `🏠 Zuhause · ${Math.round(dd / 50)} m`;
+        showRadar = true;
+      }
+    }
+    radar.style.display = showRadar ? 'flex' : 'none';
+
     stage.renderer.render(scene, stage.camera);
   }
 
@@ -618,6 +622,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
       stage.dispose();
       offHouse();
       setBuilder(null);
+      setHomeNav(null);
     },
   };
   stage.follow(st.x, st.y, 0, 0, DT, true);

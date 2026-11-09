@@ -21,6 +21,10 @@ export function priceDots(n: number) {
   return h('div', { class: 'mini-board tiny', title: String(n) }, col('H', a), col('Z', b), col('E', c));
 }
 
+/** Wegweiser zum Haus: Entfernung in Pixeln und Schnellreise dorthin */
+let nav: { dist: () => number; go: () => void } | null = null;
+export const setHomeNav = (n: typeof nav) => void (nav = n);
+
 /** Wird vom Welt-Bildschirm gesetzt: baut ein Teil am Bauplatz (nur wenn Mia dort ist) */
 let builder: ((id: string) => void) | null = null;
 export const setBuilder = (fn: ((id: string) => void) | null) => void (builder = fn);
@@ -45,6 +49,7 @@ export function openHouseUi(o: HouseUiOpts) {
   const tabs = h('div', { class: 'hu-tabs' });
   const grid = h('div', { class: 'hu-grid' });
   const colors = h('div', { class: 'hu-colors' });
+  let closeFn: () => void = () => {};
 
   function render() {
     const st = stageNow();
@@ -53,6 +58,7 @@ export function openHouseUi(o: HouseUiOpts) {
       h('div', { class: 'hu-prog' }, h('b', {}, `🏠 ${builtCount()} von ${parts.length} Teilen gebaut`),
         h('span', { class: 'hu-bar' }, h('i', { style: { width: (builtCount() / parts.length) * 100 + '%' } })),
         h('small', {}, st === 0 ? 'Ziel: Rohbau (Gerüst + 4 Wände)' : st === 1 ? 'Ziel: bewohnbar (Boden, Dach, Tür, Fenster)' : st === 2 ? 'Ziel: alles fertig und schön eingerichtet!' : '🏆 Alles gebaut – Meister-Baumeisterin!')),
+      ...(nav && nav.dist() > 500 ? [h('button', { class: 'btn sky', onclick: () => { closeFn(); nav!.go(); } }, '🏃 Zum Haus gehen')] : []),
       ...(o.mode === 'plan' && readyCount() > 0 && builder
         ? [h('button', { class: 'btn sun', onclick: () => buildAll() }, `🔨 Alles bauen (${readyCount()})`)]
         : [])
@@ -99,7 +105,7 @@ export function openHouseUi(o: HouseUiOpts) {
   }
   render();
   const off = onProgress(render);
-  openModal({
+  closeFn = openModal({
     title: o.mode === 'shop' ? '🛒 Fritz’ Baumarkt' : '🏠 Mias Bauplan',
     wide: true,
     onClose: () => { off(); o.onClose?.(); },

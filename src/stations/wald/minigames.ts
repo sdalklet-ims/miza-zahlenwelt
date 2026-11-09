@@ -1,7 +1,6 @@
 /** Kleine Spiele für Sterne und Münzen: Memory (Zahl ↔ Punkte) und Zahlenpilze (Zahlen ordnen). Kein Zeitdruck. */
 import { h, rnd, shuffle, wait } from '../../core/dom';
 import { getProgress } from '../../core/progress';
-import { addCoins } from '../../core/rewards';
 import { createShell } from '../../ui/shell';
 import { award, showResult } from '../../ui/results';
 import { digitsOf, NumberGen, type PunkteRule } from './generators';
@@ -12,11 +11,11 @@ const world = getWorld('wald')!;
 const MIA = { id: 'mia', kind: 'mia', name: 'Mia' };
 
 async function finish(shell: ReturnType<typeof createShell>, key: string, stars: number, text: string, done: () => void, again: () => void) {
-  addCoins(stars * 3);
+  shell.pay(stars * 5);
   await award(key, stars);
   if (shell.dead) return;
   showResult({
-    title: 'Geschafft!', stars, text: `${text}  +${stars * 3} 🪙`, speakId: 'common.round.done',
+    title: 'Geschafft!', stars, text: `${text}  Verdient: ${shell.earned} 🪙`, speakId: 'common.round.done',
     buttons: [{ label: '🔁 Nochmal', cls: 'sun', onClick: again }, { label: 'Zurück in den Wald', onClick: done }],
   });
 }
@@ -71,6 +70,7 @@ export function memoryScreen(done: () => void, again: () => void): Screen {
     if (a.dataset.n === b.dataset.n) {
       a.classList.add('done'); b.classList.add('done');
       matched++;
+      shell.pay(1);
       shell.face('happy');
       const said = shell.speakId('wald.memory.match', { n: a.dataset.n! });
       if (matched === 6 && !shell.dead) {
@@ -147,6 +147,7 @@ export function pilzeScreen(done: () => void, again: () => void): Screen {
         shell.setPrompt(up ? 'wald.pilze.prompt.up' : 'wald.pilze.prompt.down');
         shell.onHint = () => void shell.speakId(up ? 'wald.pilze.oops.up' : 'wald.pilze.oops.down');
       });
+      shell.pay(3);
     }
     if (shell.dead) return;
     const stars = wrong <= 1 ? 3 : wrong <= 4 ? 2 : 1;

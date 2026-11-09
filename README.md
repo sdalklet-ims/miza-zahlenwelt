@@ -29,7 +29,8 @@ Technik: Vite + TypeScript, three.js (WebGL), kein UI-Framework (kleiner DOM-Hel
 
 ## Das Spiel
 
-- **Münzen** liegen im Wald, gibt es für Spiele und für versteckte Sterne.
+- **Münzen** verdient man **nur mit Mathe-Aufgaben**: 4 🪙 für jede Aufgabe, die gleich beim ersten Versuch stimmt (1 🪙 nach einem Fehler), dazu Bonus für die Sterne einer Runde. Im Wald liegt kein Geld herum.
+- **Weg zum Haus:** Liegt das Haus außerhalb des Bildes, zeigt ein Pfeil „🏠 Zuhause · N m“ den Weg. Oben im Menü öffnet 🏠 den Bauplan; dort bringt „Zum Haus gehen“ Mia per Schnellreise vor die Haustür.
 - **Supermarkt** (Fuchs Fritz): Gänge mit Regalen, Preisschildern, Einkaufswagen und Kasse. An der Kasse wird die Summe addiert (und als Mini-Stellentafel gezeigt). Gänge: Rohbau, Außen, Garten, Innen, Tierbedarf.
 - **Hausbau:** Ein einfacher Rohbau (Fundament, Boden, Wände, Dach, Tür, Fenster), danach geht es um die **Deko**: 64 Teile (Veranda, Schornstein mit Rauch, Wimpel, Zaun mit Lichterkette, Teich, Schaukel, Feuerstelle, Gewächshaus … innen Sofa, Bett, Aquarium, Kamin, Bücherregal …). Gekauftes Material baut Mia am **Bauplatz** auf (Pfote). Dach- und Wandfarbe sind frei wählbar. Meilensteine: Rohbau, bewohnbar, alles gebaut (1–3 ⭐). Im fertigen Haus verschwinden Dach und Vorderwand (Puppenhaus-Ansicht).
 - **Haustier** (ab „bewohnbar“): Im Supermarkt (Tierbedarf) aussuchen – Meerschweinchen, Kaninchen, Hamster oder Wellensittich – und benennen. Es läuft im Haus umher, wird mit der Zeit hungrig (nur traurig, nie Game Over) und freut sich über Futter aus dem Supermarkt; Lieblingsfutter macht extra satt.

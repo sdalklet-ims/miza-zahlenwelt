@@ -14,7 +14,6 @@ export interface Interact { id: string; x: number; y: number; r: number; label: 
 export interface Critter { x: number; y: number; vx: number; vy: number; hx: number; hy: number; tx: number; ty: number; wait: number; face: number; fleeing: boolean }
 export interface Bush { x: number; y: number; occupied: boolean }
 export interface Star { id: string; x: number; y: number; got: boolean }
-export interface Coin { id: string; x: number; y: number; got: boolean }
 export interface NpcEnt { npc: Npc; id: string; kind: string; name: string; x: number; y: number; worldId: string }
 export interface Decor { kind: string; x: number; y: number; s: number; rot: number }
 
@@ -22,7 +21,7 @@ export interface WorldModel {
   solids: Circle[]; rects: Rect[]; interacts: Interact[];
   fogs: { x: number; y: number; s: number; ph: number }[];
   gates: { x: number; y: number }[];
-  critters: Critter[]; bushes: Bush[]; stars: Star[]; coins: Coin[]; npcs: NpcEnt[]; decor: Decor[];
+  critters: Critter[]; bushes: Bush[]; stars: Star[]; npcs: NpcEnt[]; decor: Decor[];
   butterflies: { x: number; y: number; ph: number; col: string }[];
   spawns: Record<string, { x: number; y: number }>;
   plot: { x: number; y: number } | null;
@@ -51,7 +50,7 @@ function rng(seed: number) {
 }
 
 export function buildWorld(hooks: Hooks): WorldModel {
-  const m: WorldModel = { solids: [], rects: [], interacts: [], fogs: [], gates: [], critters: [], bushes: [], stars: [], coins: [], npcs: [], decor: [], butterflies: [], spawns: {}, plot: PLOT };
+  const m: WorldModel = { solids: [], rects: [], interacts: [], fogs: [], gates: [], critters: [], bushes: [], stars: [], npcs: [], decor: [], butterflies: [], spawns: {}, plot: PLOT };
   const keep: Circle[] = [];
   const disc = getProgress().discovered;
   const addSolid = (x: number, y: number, r: number) => m.solids.push({ x, y, r });
@@ -104,22 +103,6 @@ export function buildWorld(hooks: Hooks): WorldModel {
   if (PLOT) {
     keep.push({ x: PLOT.x, y: PLOT.y, r: 430 });
     m.interacts.push({ id: 'plot', x: PLOT.x, y: PLOT.y + 330, r: 170, label: 'Bauplatz', icon: '🏠', run: hooks.onPlot });
-  }
-
-  /* ── Münzen (einmal einsammelbar, gespeichert) ── */
-  const got = getProgress().coinsGot;
-  for (let zi = 0; zi < worlds.length; zi++) {
-    const w = worlds[zi];
-    if (!w.world?.coins) continue;
-    const r = rng(zi * 53 + 11);
-    for (let i = 0; i < w.world.coins; i++) {
-      const id = `${w.id}.c${i}`;
-      const x = zi * ZW + 120 + r() * (ZW - 240);
-      const y = r() < 0.5 ? pathY(x) + (r() - 0.5) * 360 : 120 + r() * (WH - 240);
-      if (keep.some((k) => Math.hypot(x - k.x, y - k.y) < k.r * 0.8) || y < 80 || y > WH - 80) continue;
-      keep.push({ x, y, r: 44 });
-      m.coins.push({ id, x, y, got: !!got[id] });
-    }
   }
 
   /* ── Nebeltore zwischen gesperrten Gebieten ── */

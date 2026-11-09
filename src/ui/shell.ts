@@ -4,6 +4,8 @@ import { textOf, type Params } from '../core/texts';
 import { equippedFor } from '../core/rewards';
 import { miaSvg, npcSvg, type Expr } from './art';
 import { speak, say } from '../audio/speak';
+import { addCoins } from '../core/rewards';
+import { sfx } from '../audio/music';
 
 export interface NpcInfo { id: string; kind: string; name: string }
 
@@ -21,6 +23,10 @@ export interface Shell {
   onHint: (() => void) | null;
   pulseHint(on: boolean): void;
   dead: boolean;
+  /** Münzen, die in diesem Spiel verdient wurden */
+  earned: number;
+  /** Münzen für richtige Aufgaben gutschreiben (mit kleiner Anzeige) */
+  pay(n: number): void;
 }
 
 export function createShell(npc: NpcInfo): Shell {
@@ -52,6 +58,16 @@ export function createShell(npc: NpcInfo): Shell {
     el,
     main,
     dead: false,
+    earned: 0,
+    pay(n) {
+      if (n <= 0) return;
+      addCoins(n);
+      shell.earned += n;
+      sfx.coin();
+      const pop = h('div', { class: 'coin-pop' }, `+${n} 🪙`);
+      el.append(pop);
+      setTimeout(() => pop.remove(), 1500);
+    },
     onHint: null,
     async setPrompt(id, params) {
       lastPrompt = [id, params];
