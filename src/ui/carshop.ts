@@ -2,7 +2,7 @@
 import { h } from '../core/dom';
 import { coins } from '../core/rewards';
 import { onProgress } from '../core/progress';
-import { buyVehicle, currentRide, owns, setRide, vehicles } from '../core/vehicles';
+import { buyVehicle, chargeOf, currentRide, owns, setRide, vehicles } from '../core/vehicles';
 import { openModal } from './modal';
 import { priceDots } from './houseUi';
 import { speak } from '../audio/speak';
@@ -23,6 +23,7 @@ export function openCarShop() {
         return h('div', { class: 'cs-card' + (mine ? ' own' : '') + (sel ? ' sel' : '') + (!mine && !can ? ' poor' : ''), onclick: () => { pick = v.id; sfx.pop(); render(); } },
           h('div', { class: 'cs-icon' }, v.icon), h('b', {}, v.name), bars(v.speed),
           h('small', {}, v.blurb),
+          v.range ? h('div', { class: 'cs-bat' }, `🔋 Reichweite ≈ ${Math.round(v.range / 60 * 10) / 10} Min.`, mine ? h('div', { class: 'hg-bar' }, h('i', { style: { width: Math.round(chargeOf(v.id)) + '%' } })) : null) : h('div', { class: 'cs-bat' }, '🦵 Ohne Strom'),
           mine ? h('button', { class: 'btn ' + (on ? 'ghost' : 'sun'), onclick: (e: Event) => { e.stopPropagation(); setRide(on ? null : v.id); sfx.honk(); speak(on ? 'car.ride.off' : 'car.ride.on', { name: v.name }); } }, on ? '🚶 Aussteigen' : '▶ Fahren')
             : h('div', { class: 'cs-price' }, `🪙 ${v.price}`));
       })),
@@ -54,7 +55,7 @@ export function openGarage() {
     const ride = currentRide();
     body.replaceChildren(h('div', { class: 'cs-grid' },
       h('div', { class: 'cs-card own' + (!ride ? ' sel' : ''), onclick: () => { setRide(null); sfx.pop(); speak('car.ride.off'); } }, h('div', { class: 'cs-icon' }, '🚶'), h('b', {}, 'Zu Fuß'), h('small', {}, 'Immer dabei')),
-      ...vehicles.filter((v) => owns(v.id)).map((v) => h('div', { class: 'cs-card own' + (ride?.id === v.id ? ' sel' : ''), onclick: () => { setRide(v.id); sfx.honk(); speak('car.ride.on', { name: v.name }); } }, h('div', { class: 'cs-icon' }, v.icon), h('b', {}, v.name), bars(v.speed)))));
+      ...vehicles.filter((v) => owns(v.id)).map((v) => h('div', { class: 'cs-card own' + (ride?.id === v.id ? ' sel' : ''), onclick: () => { setRide(v.id); sfx.honk(); speak('car.ride.on', { name: v.name }); } }, h('div', { class: 'cs-icon' }, v.icon), h('b', {}, v.name), bars(v.speed), v.range ? h('div', { class: 'hg-bar' }, h('i', { style: { width: Math.round(chargeOf(v.id)) + '%' } })) : null))));
   }
   render();
   const off = onProgress(render);

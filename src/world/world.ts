@@ -26,6 +26,8 @@ export interface WorldModel {
   butterflies: { x: number; y: number; ph: number; col: string }[];
   spawns: Record<string, { x: number; y: number }>;
   plot: { x: number; y: number } | null;
+  /** Ladestationen für E-Roller und E-Auto */
+  stations: { x: number; y: number }[];
 }
 
 export interface Hooks {
@@ -34,6 +36,7 @@ export interface Hooks {
   onBush: (b: Bush) => void;
   onSquirrel: (c: Critter) => void;
   onPlot: () => void;
+  onCharge: (s: { x: number; y: number }) => void;
 }
 
 const AREA = (ZW * WH) / (1400 * 1800); // Dichte der Dekoration wächst mit der Zonengröße
@@ -51,7 +54,7 @@ function rng(seed: number) {
 }
 
 export function buildWorld(hooks: Hooks): WorldModel {
-  const m: WorldModel = { solids: [], rects: [], interacts: [], fogs: [], gates: [], critters: [], bushes: [], stars: [], npcs: [], decor: [], butterflies: [], spawns: {}, plot: PLOT };
+  const m: WorldModel = { solids: [], rects: [], interacts: [], fogs: [], gates: [], critters: [], bushes: [], stars: [], npcs: [], decor: [], butterflies: [], spawns: {}, plot: PLOT, stations: [] };
   const keep: Circle[] = [];
   const disc = getProgress().discovered;
   const addSolid = (x: number, y: number, r: number) => m.solids.push({ x, y, r });
@@ -105,6 +108,17 @@ export function buildWorld(hooks: Hooks): WorldModel {
     keep.push({ x: PLOT.x, y: PLOT.y, r: 560 });
     m.interacts.push({ id: 'plot', x: PLOT.x, y: PLOT.y + 330, r: 170, label: 'Bauplatz', icon: '🏠', run: hooks.onPlot });
   }
+
+  /* ── Ladestationen: drei je Zone am Weg, eine am Bauplatz ── */
+  const addStation = (x: number, y: number) => {
+    const s = { x, y };
+    m.stations.push(s);
+    keep.push({ x, y, r: 110 });
+    addSolid(x, y - 6, 16);
+    m.interacts.push({ id: `station.${m.stations.length}`, x, y: y + 20, r: 120, label: 'Aufladen', icon: '🔋', run: () => hooks.onCharge(s) });
+  };
+  for (let zi = 0; zi < worlds.length; zi++) for (const lx of [900, 1900, 2900]) addStation(zi * ZW + lx, Math.round(pathY(zi * ZW + lx) + 140));
+  if (PLOT) addStation(PLOT.x + 520, PLOT.y + 150);
 
   /* ── Nebeltore zwischen gesperrten Gebieten ── */
   for (let zi = 1; zi < worlds.length; zi++) {

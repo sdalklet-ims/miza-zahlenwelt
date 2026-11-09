@@ -3,7 +3,8 @@
  * Wird jedes Bild in eine kleine Textur gezeichnet und als stehendes Sprite in der 2,5D-Welt gezeigt.
  */
 export type Dir = 'down' | 'up' | 'left' | 'right';
-export interface MiaPose { dir: Dir; t: number; phase: number; speed: number; acc: string[]; happy?: boolean }
+export type RideStyle = 'bike' | 'scooter' | 'car';
+export interface MiaPose { dir: Dir; t: number; phase: number; speed: number; acc: string[]; happy?: boolean; ride?: RideStyle; wind?: number }
 
 export const MIA_CANVAS = 256;
 const INK = '#3a2412', OR = '#f5a63e', ORL = '#ffc36a', ORD = '#cf7420', CR = '#fff2da', PK = '#ff9fa8';
@@ -34,12 +35,14 @@ function eye(c: C, x: number, y: number, happy: boolean, blink: boolean, look = 
 export function drawMia(c: C, cx: number, cy: number, p: MiaPose) {
   const { dir, t, phase, speed, acc } = p;
   const side = dir === 'left' || dir === 'right', back = dir === 'up';
+  const ride = p.ride, car = ride === 'car', wind = p.wind ?? 0;
   const mv = speed > 0.05;
-  const bob = mv ? Math.abs(Math.cos(phase)) * 9 * speed : Math.sin(t * 2.1) * 1.6;
-  const sq = 1 + (mv ? Math.cos(phase * 2) * 0.035 * speed : Math.sin(t * 2.1) * 0.014);
+  const bob = ride ? Math.sin(t * 2.1) * 1.2 + Math.sin(t * 17) * 2.2 * wind : mv ? Math.abs(Math.cos(phase)) * 9 * speed : Math.sin(t * 2.1) * 1.6;
+  const sq = ride ? 1 + Math.sin(t * 2.1) * 0.01 : 1 + (mv ? Math.cos(phase * 2) * 0.035 * speed : Math.sin(t * 2.1) * 0.014);
+  const fl = ride ? Math.sin(t * 21) * 6 * wind : 0; // Ohren flattern im Fahrtwind
   const wag = Math.sin(t * (mv ? 9 : 2.4));
   const blink = Math.sin(t * 0.8) > 0.985;
-  const lean = (dir === 'right' ? 1 : dir === 'left' ? -1 : 0) * 0.07 * speed;
+  const lean = (dir === 'right' ? 1 : dir === 'left' ? -1 : 0) * (ride === 'bike' ? 0.09 : ride === 'scooter' ? 0.05 + wind * 0.05 : ride ? 0 : 0.07 * speed);
 
   c.save();
   c.translate(cx, cy);
@@ -56,7 +59,7 @@ export function drawMia(c: C, cx: number, cy: number, p: MiaPose) {
     c.setLineDash([9, 16]); stroke(16, ORD); c.setLineDash([]);
     c.restore();
   };
-  if (!back) tail();
+  if (!back && !car) tail();
 
   // Beine
   const leg = (x: number, off: number, front: boolean) => {
@@ -65,10 +68,13 @@ export function drawMia(c: C, cx: number, cy: number, p: MiaPose) {
     path(c, () => { c.moveTo(x - 9, -40); c.lineTo(px - 10, py - 4); c.quadraticCurveTo(px, py + 12, px + 14, py - 4); c.lineTo(x + 9, -40); c.closePath(); }, front ? OR : ORD);
     ell(c, px + 2, py, 14, 9, CR);
   };
-  if (side) { leg(-26, 0, false); leg(30, Math.PI, false); } else { leg(-20, 0, true); leg(20, Math.PI, true); }
+  if (!car) { if (side) { leg(-26, 0, false); leg(30, Math.PI, false); } else { leg(-20, 0, true); leg(20, Math.PI, true); } }
 
-  // Körper
-  if (side) {
+  // Körper (im Auto: nur Hals und Schultern über der Tür)
+  if (car) {
+    ell(c, side ? 10 : 0, -88, side ? 30 : 38, 26, OR);
+    if (!back) path(c, () => c.ellipse(side ? 14 : 0, -84, 18, 18, 0, 0, Math.PI * 2), CR, false);
+  } else if (side) {
     ell(c, 0, -62, 52, 36, OR);
     path(c, () => c.ellipse(4, -44, 34, 16, 0, 0, Math.PI * 2), CR, false);
     c.strokeStyle = ORD; c.lineWidth = 7; c.lineCap = 'round';
@@ -79,17 +85,22 @@ export function drawMia(c: C, cx: number, cy: number, p: MiaPose) {
     c.strokeStyle = ORD; c.lineWidth = 7; c.lineCap = 'round';
     c.beginPath(); c.moveTo(-38, -78); c.lineTo(-24, -72); c.moveTo(-40, -58); c.lineTo(-26, -56); c.moveTo(38, -78); c.lineTo(24, -72); c.moveTo(40, -58); c.lineTo(26, -56); c.stroke();
   }
-  if (back) tail();
-  if (side) { leg(-10, Math.PI, true); leg(44, 0, true); }
+  if (back && !car) tail();
+  if (side && !car) { leg(-10, Math.PI, true); leg(44, 0, true); }
 
   if (acc.includes('mia-halstuch')) tri(c, side ? [8, -96] : [-26, -98], side ? [40, -92] : [26, -98], side ? [24, -64] : [0, -62], '#e0483f');
+  if (acc.includes('mia-halstuch') && ride && side && wind > 0.05) { // Halstuch flattert nach hinten
+    const len = 36 + wind * 70, w2 = Math.sin(t * 19) * 11 * wind;
+    c.beginPath(); c.moveTo(8, -100); c.quadraticCurveTo(8 - len * 0.5, -108 + w2, 8 - len, -96 - w2); c.lineTo(8 - len + 4, -80 - w2); c.quadraticCurveTo(8 - len * 0.5, -92 + w2, 14, -84); c.closePath();
+    c.fillStyle = '#e0483f'; c.fill(); c.strokeStyle = INK; c.lineWidth = 4; c.lineJoin = 'round'; c.stroke();
+  }
 
   // Kopf
   const hx = side ? 30 : 0, hy = -130 + (mv ? Math.sin(phase * 2) * 2 : 0);
   const rx = side ? 50 : 58, ry = side ? 46 : 50;
   // Ohren
-  tri(c, [hx - rx + 6, hy - 14], [hx - rx + 12, hy - 78], [hx - 8, hy - ry + 8], OR);
-  tri(c, [hx + rx - 6, hy - 14], [hx + rx - 12, hy - 78], [hx + 8, hy - ry + 8], side ? ORD : OR);
+  tri(c, [hx - rx + 6, hy - 14], [hx - rx + 12 - fl, hy - 78], [hx - 8, hy - ry + 8], OR);
+  tri(c, [hx + rx - 6, hy - 14], [hx + rx - 12 + fl, hy - 78], [hx + 8, hy - ry + 8], side ? ORD : OR);
   if (!back) {
     tri(c, [hx - rx + 16, hy - 24], [hx - rx + 18, hy - 62], [hx - 14, hy - ry + 12], PK, false);
     tri(c, [hx + rx - 16, hy - 24], [hx + rx - 18, hy - 62], [hx + 14, hy - ry + 12], PK, false);

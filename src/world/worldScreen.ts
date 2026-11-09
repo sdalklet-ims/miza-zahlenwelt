@@ -36,8 +36,8 @@ import type { Dir } from '../world3d/comic';
 import { npcSvg, squirrelSvg, petSvg, type PetKind } from '../ui/art';
 import { mouseSvg } from '../ui/artWiese';
 import { chickSvg } from '../ui/artFluss';
-import { createCarShop, createVehicle, type Vehicle3D } from '../world3d/vehicles';
-import { currentRide, rideSpeed } from '../core/vehicles';
+import { createCarShop, createChargeStation, createVehicle, rideKindOf, type ChargeStation3D, type Vehicle3D } from '../world3d/vehicles';
+import { batteryEmpty, chargeAll, chargeOf, currentRide, drainBattery, needsCharge, ownsElectric, rideSpeed, saveCharge } from '../core/vehicles';
 import { openCarShop } from '../ui/carshop';
 import '../styles/world.css';
 import '../styles/wald.css';
@@ -75,6 +75,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
     onBush: (b) => toggleHide(b),
     onSquirrel: (c) => pet(c),
     onPlot: () => { speak('wald.haus.plot'); openHouseUi({ mode: 'plan' }); },
+    onCharge: (s) => startCharge(s),
   });
   // Wasser (mit Lücke an der Brücke)
   worlds.forEach((_, i) => {
@@ -260,8 +261,17 @@ export async function enterWorld(opts: EnterOpts = {}) {
   const rainCtx = rainCv.getContext('2d')!;
   const drops = Array.from({ length: 260 }, () => ({ x: Math.random() * 1180, y: Math.random() * 820, v: 700 + Math.random() * 500, l: 14 + Math.random() * 16 }));
   let umbT = 0;
-  let hungerTick = 3, lastHunger = hungerLevel();
-  let vehicle: Vehicle3D | null = null, vehKind = '', vehYaw = 0, lastRiding = false;
+  let charging: { x: number; y: number } | null = null, chargeSound = 0, lastBat = 100;
+  const chargeBar = h('div', { class: 'charge-bar off' }, h('span', {}, '🔋 Akku lädt …'), h('div', { class: 'cb-track' }, h('i', {})));
+  el.append(chargeBar);
+  let hungerTick = 3, lastHunger = hungerLevel(), lastSpd = 0;
+  let vehicle: Vehicle3D | null = null, vehKind = '', vehYaw = 0, lastRiding = false, pedal = 0, steerNow = 0, leanNow = 0;
+  const stationViews: { s: { x: number; y: number }; v: ChargeStation3D }[] = model.stations.map((s) => {
+    const v = createChargeStation();
+    v.group.position.set(s.x * S, heightAt(s.x, s.y), s.y * S);
+    scene.add(v.group);
+    return { s, v };
+  });
   let miaDir: Dir = 'down';
 
   interface NpcView { ent: (typeof model.npcs)[number]; root: THREE.Object3D; fig?: Billboard; label: HTMLElement; mark: HTMLElement; top: number }
@@ -358,7 +368,19 @@ export async function enterWorld(opts: EnterOpts = {}) {
   let near: Interact | null = null;
   const pos = (i: Interact) => i.follow ?? i;
   let sleeping = false;
-  const frozen = () => frozenByDialog || sleeping || layers.overlay.childElementCount > 0;
+  const frozen = () => frozenByDialog || sleeping || !!charging || layers.overlay.childElementCount > 0;
+
+  function startCharge(s: { x: number; y: number }) {
+    if (dead || charging) return;
+    if (!ownsElectric()) { speak('car.charge.none'); return; }
+    if (!needsCharge()) { speak('car.charge.full'); return; }
+    charging = s;
+    chargeSound = 0;
+    st.vx = st.vy = 0;
+    tap = null;
+    chargeBar.classList.remove('off');
+    speak('car.charge.start');
+  }
 
   function act() {
     if (dead || frozen()) return;
@@ -464,6 +486,16 @@ export async function enterWorld(opts: EnterOpts = {}) {
         lastHunger = lv;
       }
     }
+    if (charging) {
+      chargeAll(DT, 100 / 5.5);
+      chargeSound -= DT;
+      if (chargeSound <= 0) { chargeSound = 0.35; sfx.zap(); }
+      if (Math.random() < 0.5) fx.add(charging.x * S + (Math.random() - 0.5) * 0.8, 2.2 + Math.random() * 0.6, charging.y * S + 0.3, (Math.random() - 0.5) * 0.8, 0.6, 0.2, 0.7, 0.22, Math.random() < 0.5 ? '#fff6a0' : '#7dff9a');
+      const v = currentRide();
+      const lvl = v && v.range ? chargeOf(v.id) : 100;
+      (chargeBar.querySelector('i') as HTMLElement).style.width = lvl + '%';
+      if (!needsCharge()) { chargeAll(10, 100); charging = null; chargeBar.classList.add('off'); saveCharge(); sfx.star(); speak('car.charge.done'); lastBat = 100; }
+    }
     const isFrozen = frozen();
     let { x: ix, y: iy } = isFrozen ? { x: 0, y: 0 } : controls.vec();
     const stick = ix !== 0 || iy !== 0;
@@ -495,14 +527,20 @@ export async function enterWorld(opts: EnterOpts = {}) {
       for (let k = 0; k < steps; k++) { st.x += (st.vx * DT) / steps; st.y += (st.vy * DT) / steps; collide(); }
       if (Math.hypot(st.x - lastTrail.x, st.y - lastTrail.y) > 12) { trail.push({ x: st.x, y: st.y }); lastTrail = { x: st.x, y: st.y }; if (trail.length > 60) trail.shift(); }
       const spd = Math.hypot(st.vx, st.vy);
+      if (riding && currentRide()?.range) {
+        const lv = drainBattery(DT, Math.min(1, spd / (RUN * Math.max(1, rideSpeed()))));
+        if (lastBat > 25 && lv <= 25 && lv > 0.5) speak('car.battery.low');
+        if (lastBat > 0.5 && lv <= 0.5) speak('car.battery.empty');
+        lastBat = lv;
+      }
       st.phase += spd * DT * 0.062;
       const gy = heightAt(st.x, st.y);
       dustT -= DT;
-      if (riding && spd > 60 && vehicle && Math.random() < 0.6) {
+      if (riding && spd > 60 && vehicle && Math.random() < (vehicle.electric ? 0.3 : 0.5)) {
         const ex = vehicle.exhaust, ca = Math.cos(vehYaw), sa = Math.sin(vehYaw);
         const px = st.x * S + (ex.x * ca - ex.z * sa) * 0.8, pz = st.y * S - (ex.x * sa + ex.z * ca) * 0.8;
-        if (vehicle.fire) fx.add(px, gy + ex.y, pz, (Math.random() - 0.5) * 0.6 - (st.vx / spd) * 2.5, 0.4 + Math.random() * 0.6, (Math.random() - 0.5) * 0.6 - (st.vy / spd) * 2.5, 0.5, 0.45, Math.random() < 0.5 ? '#ffb347' : '#ff7a1c');
-        else fx.add(px, gy + 0.2, pz, (Math.random() - 0.5) * 0.4, 0.5, (Math.random() - 0.5) * 0.4, 0.5, 0.28, '#d8d4cc');
+        if (vehicle.electric && !batteryEmpty()) fx.add(px, gy + ex.y, pz, (Math.random() - 0.5) * 0.6, 0.3 + Math.random() * 0.5, (Math.random() - 0.5) * 0.6, 0.45, 0.16, Math.random() < 0.5 ? '#7dffcf' : '#fff6a0'); // Funken statt Abgase
+        else fx.add(px, gy + 0.2, pz, (Math.random() - 0.5) * 0.4, 0.5, (Math.random() - 0.5) * 0.4, 0.5, 0.26, '#d8d4cc');
       }
       if (spd > 120 && dustT <= 0) {
         dustT = riding ? 0.04 : 0.09;
@@ -664,21 +702,32 @@ export async function enterWorld(opts: EnterOpts = {}) {
       if (vehicle) scene.remove(vehicle.group);
       vehicle = null;
       vehKind = wantRide?.id ?? '';
-      if (wantRide) { vehicle = createVehicle(wantRide.id); scene.add(vehicle.group); if (!lastRiding) sfx.vroom(); }
+      if (wantRide) { vehicle = createVehicle(wantRide.id); scene.add(vehicle.group); if (!lastRiding) (wantRide.range ? sfx.whirr : sfx.pop)(); }
     }
     lastRiding = !!vehicle;
     let seatLift = 0;
+    let rideStyle: 'bike' | 'scooter' | 'car' | undefined, wind = 0;
     if (vehicle) {
-      if (spd > 25) { const target = Math.atan2(st.vy, st.vx); let dA = target - vehYaw; dA = Math.atan2(Math.sin(dA), Math.cos(dA)); vehYaw += dA * 0.14; }
-      vehicle.group.position.set(st.x * S, gy, st.y * S);
+      let dA = 0;
+      if (spd > 25) { const target = Math.atan2(st.vy, st.vx); dA = target - vehYaw; dA = Math.atan2(Math.sin(dA), Math.cos(dA)); vehYaw += dA * 0.14; }
+      steerNow += (Math.max(-0.5, Math.min(0.5, dA * 1.6)) - steerNow) * 0.2; // Vorderräder schlagen ein
+      leanNow += (Math.max(-0.22, Math.min(0.22, dA * (spd / 400))) - leanNow) * 0.15; // Neigung in Kurven
+      const accel = Math.max(-0.08, Math.min(0.08, (spd - lastSpd) * -0.004));
+      lastSpd = spd;
+      vehicle.group.position.set(st.x * S, gy + Math.abs(Math.sin(timeSec * 22)) * 0.012 * Math.min(1, spd / 200), st.y * S);
       vehicle.group.rotation.y = -vehYaw;
-      vehicle.group.rotation.z = -Math.min(0.1, spd / 5000) * Math.sin(timeSec * 30); // leichtes Rütteln bei hohem Tempo
-      vehicle.roll((spd / 60) * S, timeSec);
+      vehicle.group.rotation.x = leanNow;
+      vehicle.group.rotation.z = accel + Math.sin(timeSec * 26) * 0.006 * Math.min(1, spd / 300); // Nicken beim Beschleunigen, feines Rütteln
+      vehicle.update((spd / 60) * S, timeSec, steerNow);
       seatLift = vehicle.seat;
+      rideStyle = rideKindOf(vehKind);
+      wind = Math.min(1, spd / (RUN * 2.2));
+      pedal += (spd / 60) * 0.1;
     }
     shopTick?.(timeSec);
     miaSpr.group.position.set(st.x * S, gy + seatLift + (sleeping ? 1.0 : 0), st.y * S);
-    miaSpr.update(t, st.phase, vehicle ? 0 : Math.min(1, spd / RUN), miaDir, !!vehicle, sleeping);
+    miaSpr.update(t, vehicle ? pedal : st.phase, vehicle ? (rideStyle === 'bike' && spd > 20 ? 0.6 : 0) : Math.min(1, spd / RUN), miaDir, !!vehicle, sleeping, rideStyle, wind);
+    for (const sv of stationViews) sv.v.setCharging(charging === sv.s, timeSec, vehicle ? chargeOf(vehKind) : 100);
 
     // Regenschirm
     umbrella.visible = weather.umbrella && !hidden && !sleeping && !vehicle;

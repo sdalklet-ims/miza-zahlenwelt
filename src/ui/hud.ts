@@ -5,7 +5,7 @@ import { onProgress } from '../core/progress';
 import { layers } from './stage';
 import { onWeather, weather } from '../core/weather';
 import { fullness, hungerLevel } from '../core/hunger';
-import { currentRide, ownedAny } from '../core/vehicles';
+import { chargeOf, currentRide, hasBattery, ownedAny } from '../core/vehicles';
 
 export interface HudHandlers {
   onMap?: () => void;
@@ -24,6 +24,8 @@ let houseEl: HTMLElement;
 let packEl: HTMLElement | null = null;
 let hungerEl: HTMLElement;
 let rideEl: HTMLElement;
+let batEl: HTMLElement;
+let batFill: HTMLElement;
 let hungerFill: HTMLElement;
 
 export const hud = {
@@ -33,6 +35,8 @@ export const hud = {
     coinEl = h('div', { class: 'hud-stars coin', 'aria-label': 'Münzen' });
     hungerFill = h('i', {});
     hungerEl = h('button', { class: 'hud-hunger', 'aria-label': 'Hunger – Rucksack öffnen', onclick: () => handlers.onPack?.() }, h('span', { class: 'hg-icon' }, '🍽️'), h('div', { class: 'hg-bar' }, hungerFill));
+    batFill = h('i', {});
+    batEl = h('button', { class: 'hud-hunger bat', 'aria-label': 'Akku – Garage öffnen', onclick: () => handlers.onRide?.() }, h('span', { class: 'hg-icon' }, '⚡'), h('div', { class: 'hg-bar' }, batFill));
     rideEl = h('button', { class: 'hud-btn icon ride', 'aria-label': 'Garage', title: 'Garage', onclick: () => handlers.onRide?.() }, '🚶');
     houseEl = h('button', { class: 'hud-stars house', 'aria-label': 'Mias Haus', onclick: () => handlers.onHouse?.() });
     const btn = (icon: string, label: string, fn?: () => void) =>
@@ -46,6 +50,7 @@ export const hud = {
       hungerEl,
       coinEl,
       starsEl,
+      batEl,
       rideEl,
       (packEl = btn('🎒', 'Rucksack', handlers.onPack)),
       btn('🗺️', 'Karte', handlers.onMap),
@@ -54,7 +59,7 @@ export const hud = {
     );
     layers.hud.append(root);
     onProgress(hud.refresh);
-    window.setInterval(hud.refresh, 5000);
+    window.setInterval(hud.refresh, 1000);
     onWeather(() => packEl?.classList.toggle('pulse', weather.raining && !weather.umbrella));
     hud.refresh();
     hud.show(false);
@@ -78,6 +83,16 @@ export const hud = {
       hungerFill.style.width = Math.round(fullness()) + '%';
       hungerEl.dataset.lvl = lvl;
       (hungerEl.firstChild as HTMLElement).textContent = lvl === 'hungry' ? '😫' : lvl === 'rumble' ? '😋' : '🍽️';
+    }
+    if (batEl) {
+      const v = currentRide(), on = hasBattery(v);
+      batEl.style.display = on ? '' : 'none';
+      if (on) {
+        const c = chargeOf(v!.id);
+        batFill.style.width = Math.round(c) + '%';
+        batEl.dataset.lvl = c > 50 ? 'full' : c > 25 ? 'rumble' : 'hungry';
+        (batEl.firstChild as HTMLElement).textContent = c <= 0.5 ? '🪫' : '⚡';
+      }
     }
     if (rideEl) {
       rideEl.style.display = ownedAny() ? '' : 'none';

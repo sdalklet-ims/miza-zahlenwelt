@@ -1,60 +1,36 @@
 {
   "vehicles": [
     {
-      "id": "roller",
-      "name": "Tretroller",
-      "icon": "🛴",
-      "price": 30,
-      "speed": 1.25,
-      "blurb": "Flink und wendig – der Einstieg."
-    },
-    {
       "id": "fahrrad",
       "name": "Fahrrad",
       "icon": "🚲",
-      "price": 60,
-      "speed": 1.5,
-      "blurb": "Klingeling! Viel schneller als zu Fuß."
+      "price": 40,
+      "speed": 1.35,
+      "blurb": "Klingeling! Etwas schneller als zu Fuß und braucht keinen Strom."
     },
     {
-      "id": "gokart",
-      "name": "Go-Kart",
-      "icon": "🏎️",
-      "price": 110,
+      "id": "eroller",
+      "name": "E-Roller",
+      "icon": "🛴",
+      "price": 120,
       "speed": 1.8,
-      "blurb": "Tief, laut und gelb. Driften erlaubt!"
+      "range": 200,
+      "blurb": "Leise und flott. Der Akku muss ab und zu an die Ladestation."
     },
     {
-      "id": "cabrio",
-      "name": "Cabrio",
+      "id": "eauto",
+      "name": "E-Auto (Cabrio)",
       "icon": "🚗",
-      "price": 180,
-      "speed": 2.1,
-      "blurb": "Fahrtwind im Fell. Mit Hupe!"
-    },
-    {
-      "id": "rennauto",
-      "name": "Rennauto",
-      "icon": "🏁",
-      "price": 280,
-      "speed": 2.6,
-      "canopy": true,
-      "blurb": "Mit Dach, Spoiler und Streifen."
-    },
-    {
-      "id": "rakete",
-      "name": "Raketenwagen",
-      "icon": "🚀",
-      "price": 450,
-      "speed": 3.2,
-      "canopy": true,
-      "blurb": "Das schnellste Gefährt der ganzen Welt!"
+      "price": 300,
+      "speed": 2.5,
+      "range": 160,
+      "blurb": "Das schnellste Fahrzeug. Auch hier muss der Akku geladen werden."
     }
   ],
   "texts": {
     "wald.rocky.hello": [
       "rocky",
-      "Brumm, brumm! Ich bin Rocky. In meinem Autohaus gibt es Fahrzeuge für jeden Geldbeutel. Die Welt ist groß, da lohnt sich Tempo!"
+      "Brumm, brumm! Ich bin Rocky. Bei mir gibt es ein Fahrrad, einen E-Roller und ein E-Auto. Die Welt ist groß, da lohnt sich Tempo! Die Elektro-Fahrzeuge laden an den Ladestationen."
     ],
     "car.buy": [
       "mia",
@@ -66,7 +42,7 @@
     ],
     "car.ride.on": [
       "mia",
-      "Los geht's mit dem {name}! Brumm, brumm!"
+      "Los geht's mit dem {name}!"
     ],
     "car.ride.off": [
       "mia",
@@ -79,6 +55,30 @@
     "car.rocky.visit": [
       "rocky",
       "Schau dich in Ruhe um. Probefahren ist inklusive, sobald du dein Fahrzeug gekauft hast!"
+    ],
+    "car.battery.low": [
+      "mia",
+      "Der Akku wird leer. Ich suche eine Ladestation!"
+    ],
+    "car.battery.empty": [
+      "mia",
+      "Akku leer! Jetzt geht es nur noch im Schneckentempo. Zur Ladestation!"
+    ],
+    "car.charge.none": [
+      "mia",
+      "Hier kann ich meinen E-Roller und mein E-Auto aufladen. Dafür brauche ich erst eins davon."
+    ],
+    "car.charge.full": [
+      "mia",
+      "Der Akku ist schon voll. Weiter geht's!"
+    ],
+    "car.charge.start": [
+      "mia",
+      "Stecker rein! Der Akku lädt."
+    ],
+    "car.charge.done": [
+      "mia",
+      "Voll geladen! Die Fahrt kann weitergehen."
     ]
   }
 }

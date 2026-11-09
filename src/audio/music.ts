@@ -224,6 +224,8 @@ export const sfx = {
   munch: () => { tone(220, 0.07, 'square', 0.05); tone(260, 0.07, 'square', 0.05, 0.1); tone(220, 0.07, 'square', 0.05, 0.2); },
   click: () => tone(1200, 0.05, 'square', 0.04),
   honk: () => { tone(330, 0.16, 'sawtooth', 0.09); tone(415, 0.16, 'sawtooth', 0.08, 0.02); tone(330, 0.22, 'sawtooth', 0.09, 0.22); tone(415, 0.22, 'sawtooth', 0.08, 0.24); },
+  whirr: () => { tone(180, 0.45, 'sine', 0.07, 0, 720); tone(360, 0.45, 'triangle', 0.03, 0.02, 1100); },
+  zap: () => { tone(900, 0.08, 'square', 0.04, 0, 1800); },
   vroom: () => { tone(70, 0.5, 'sawtooth', 0.07, 0, 260); tone(140, 0.5, 'square', 0.03, 0.02, 520); },
 };
 

@@ -47,6 +47,8 @@ export interface Progress {
   /** Gekaufte Fahrzeuge und das gerade benutzte (null = zu Fuß) */
   vehicles: Record<string, boolean>;
   ride: string | null;
+  /** Akkustand (0–100) der Elektro-Fahrzeuge */
+  charge: Record<string, number>;
 }
 
 const KEY = 'mia.progress.v1';
@@ -74,6 +76,7 @@ const defaults = (): Progress => ({
   meals: { apfel: 2 },
   vehicles: {},
   ride: null,
+  charge: {},
 });
 
 let state: Progress = load();

@@ -51,3 +51,11 @@
 .hud-bar .hud-stars { height: 58px; padding: 0 14px; font-size: 25px; border-radius: 18px; border-bottom-width: 5px; white-space: nowrap; }
 .hud-bar .hud-hunger { height: 58px; }
 .hud-bar .hud-btn.ride { font-size: 32px; }
+
+.cs-grid { grid-template-columns: repeat(3, 1fr); }
+.cs-bat { display: flex; flex-direction: column; align-items: center; gap: 4px; font: 800 17px var(--font); color: #2a7a5a; margin: 2px 0; } .cs-bat .hg-bar { width: 110px; }
+.hud-hunger.bat { background: #e0f7ec; border-bottom-color: #8fd9b6; }
+.charge-bar { position: absolute; left: 50%; bottom: 70px; transform: translateX(-50%); z-index: 40; width: 420px; padding: 12px 22px 14px; border-radius: 24px; background: #fff; border-bottom: 7px solid #8fd9b6; box-shadow: 0 8px 18px rgba(0,0,0,.3); font: 900 28px var(--font); text-align: center; transition: opacity .3s, transform .3s; }
+.charge-bar.off { opacity: 0; transform: translateX(-50%) translateY(20px); pointer-events: none; }
+.cb-track { height: 24px; margin-top: 8px; border-radius: 14px; background: #e6dcc4; overflow: hidden; border: 3px solid #cbb98f; } .cb-track i { display: block; height: 100%; width: 0; background: repeating-linear-gradient(115deg, #7dff9a 0 16px, #4fd978 16px 32px); background-size: 45px 100%; animation: chargeFlow .6s linear infinite; }
+@keyframes chargeFlow { to { background-position: 45px 0; } }
