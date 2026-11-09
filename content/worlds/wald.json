@@ -114,6 +114,8 @@
     "wald.kaertchen.tie":     ["hase", "Wir haben beide {me}! Unentschieden!"],
     "wald.kaertchen.reveal":  ["hase", "So geht es: {n}. Probier es gleich noch einmal!"],
 
+    "wald.build.hint":    ["eule", "In der Zahl {n} stecken {h} Hunderter, {z} Zehner und {e} Einer. Lege genau so viele Steine in jede Spalte."],
+    "wald.build.reveal":  ["eule", "So sieht die Zahl {n} aus: {h} Hunderter, {z} Zehner und {e} Einer."],
     "wald.check.intro":   ["eule", "Zeit für den Mini-Check! Sechs Aufgaben, ganz ohne Zeitdruck. Du schaffst das!"],
     "wald.check.build":   ["eule", "Lege die Zahl {n} mit Steinen in die Tafel."],
     "wald.check.done.3":  ["eule", "Hu-hu! Perfekt! Drei Sterne für dich!"],
