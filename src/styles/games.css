@@ -207,3 +207,19 @@
 
 .coin-pop { position: absolute; right: 40px; top: 84px; z-index: 30; padding: 6px 22px; border-radius: 20px; background: #ffd23f; border-bottom: 5px solid #c99a00; font: 900 36px var(--font); box-shadow: 0 6px 12px rgba(0,0,0,.25); animation: coinPop 1.5s ease-out forwards; pointer-events: none; }
 @keyframes coinPop { 0% { transform: translateY(14px) scale(.6); opacity: 0; } 15% { transform: scale(1.15); opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(-30px); opacity: 0; } }
+
+/* ───────── Zahlen-Angeln ───────── */
+.task.angeln { position: relative; height: 100%; }
+.pond-field { position: absolute; inset: 0 0 70px 0; background: radial-gradient(ellipse at 50% 40%, #8fd9ff, #4aa8e8 70%); border-radius: 30px; border: 5px solid #2e86c1; overflow: hidden; }
+.pond-field:before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(100deg, transparent 0 60px, rgba(255,255,255,.12) 60px 64px); }
+.fish { position: absolute; width: 190px; height: 120px; padding: 0; border: 0; background: none; animation: swim 3.2s ease-in-out infinite; transition: transform .6s, opacity .6s; }
+@keyframes swim { 50% { transform: translate(14px, -10px) rotate(2deg); } }
+.fish-body { position: relative; display: block; width: 150px; height: 96px; border-radius: 50% 60% 60% 50%; background: radial-gradient(circle at 35% 30%, #ffd08a, #ff9a3c 70%); border: 5px solid #3a2412; box-shadow: 0 5px 0 rgba(0,0,0,.18); display: grid; place-items: center; }
+.fish-body b { background: #fff; border-radius: 14px; padding: 0 12px; font: 900 40px/52px var(--font); color: #3a2412; }
+.fish-tail { position: absolute; right: -34px; top: 22px; width: 0; height: 0; border-left: 40px solid #ff9a3c; border-top: 26px solid transparent; border-bottom: 26px solid transparent; filter: drop-shadow(-2px 0 0 #3a2412); }
+.fish-eye { position: absolute; left: 20px; top: 18px; width: 16px; height: 16px; border-radius: 50%; background: #3a2412; box-shadow: inset 4px -4px 0 #fff; }
+.fish:nth-child(2n) .fish-body { background: radial-gradient(circle at 35% 30%, #ffb3d1, #ff5a8a 70%); } .fish:nth-child(2n) .fish-tail { border-left-color: #ff5a8a; }
+.fish:nth-child(3n) .fish-body { background: radial-gradient(circle at 35% 30%, #c6f0ff, #4aa8e8 70%); } .fish:nth-child(3n) .fish-tail { border-left-color: #4aa8e8; }
+.fish.caught { transform: translateY(300px) scale(.2) rotate(30deg); opacity: 0; pointer-events: none; }
+.fish.glow { animation: pulse .6s ease-in-out infinite; filter: drop-shadow(0 0 14px #fff6a0); }
+.bucket { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); font: 900 34px var(--font); background: #fff; border: 4px solid var(--wood); border-radius: 20px; padding: 4px 24px; }

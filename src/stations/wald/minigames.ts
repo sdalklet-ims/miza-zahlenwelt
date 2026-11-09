@@ -1,4 +1,4 @@
-/** Kleine Spiele für Sterne und Münzen: Memory (Zahl ↔ Punkte) und Zahlenpilze (Zahlen ordnen). Kein Zeitdruck. */
+/** Kleine Spiele für Sterne und Münzen: Zahlenpilze (Zahlen ordnen); Zahlen-Angeln steht in angeln.ts. Kein Zeitdruck. */
 import { h, rnd, shuffle, wait } from '../../core/dom';
 import { getProgress } from '../../core/progress';
 import { createShell } from '../../ui/shell';
@@ -10,7 +10,7 @@ import type { Screen } from '../../core/router';
 const world = getWorld('wald')!;
 const MIA = { id: 'mia', kind: 'mia', name: 'Mia' };
 
-async function finish(shell: ReturnType<typeof createShell>, key: string, stars: number, text: string, done: () => void, again: () => void) {
+export async function finish(shell: ReturnType<typeof createShell>, key: string, stars: number, text: string, done: () => void, again: () => void) {
   shell.pay(stars * 5);
   await award(key, stars);
   if (shell.dead) return;
@@ -18,75 +18,6 @@ async function finish(shell: ReturnType<typeof createShell>, key: string, stars:
     title: 'Geschafft!', stars, text: `${text}  Verdient: ${shell.earned} 🪙`, speakId: 'common.round.done',
     buttons: [{ label: '🔁 Nochmal', cls: 'sun', onClick: again }, { label: 'Zurück in den Wald', onClick: done }],
   });
-}
-
-/** Mini-Stellentafel als Kartenbild */
-function dotsCard(n: number) {
-  const [a, b, c] = digitsOf(n);
-  const col = (cls: string, k: number) => h('div', { class: 'mb-col ' + cls }, ...Array.from({ length: k }, () => h('i', { class: 'mb-dot ' + cls })));
-  return h('div', { class: 'mini-board' }, col('H', a), col('Z', b), col('E', c));
-}
-
-/* ───────────── Memory ───────────── */
-export function memoryScreen(done: () => void, again: () => void): Screen {
-  const shell = createShell(MIA);
-  const rules = world.games.punkte.levels as PunkteRule[];
-  const lvl = Math.max(2, getProgress().levels['wald.punkte'] ?? 1);
-  const gen = new NumberGen(rules);
-  const nums = new Set<number>();
-  while (nums.size < 6) nums.add(gen.next(lvl));
-  const cards = shuffle([...nums].flatMap((n) => [{ n, kind: 'num' as const }, { n, kind: 'dots' as const }]));
-
-  let moves = 0, matched = 0, open: HTMLElement[] = [], busy = false;
-  const grid = h('div', { class: 'mem-grid' });
-  const els = cards.map((cd) => {
-    const front = cd.kind === 'num' ? h('div', { class: 'mem-num' }, String(cd.n)) : dotsCard(cd.n);
-    const el = h('button', { class: 'mem-card', 'data-n': String(cd.n) }, h('div', { class: 'mem-back' }, '?'), h('div', { class: 'mem-front' }, front));
-    el.addEventListener('click', () => flip(el));
-    return el;
-  });
-  grid.append(...els);
-  shell.main.append(h('div', { class: 'task mem' }, grid));
-  shell.setInfo('Züge: 0');
-  shell.setPrompt('wald.memory.prompt');
-  shell.onHint = async () => {
-    const pair = els.filter((e) => !e.classList.contains('done') && !e.classList.contains('up'));
-    const n = pair[0]?.dataset.n;
-    pair.filter((e) => e.dataset.n === n).forEach((e) => e.classList.add('glow'));
-    await shell.speakId('wald.memory.hint');
-    els.forEach((e) => e.classList.remove('glow'));
-  };
-
-  async function flip(el: HTMLElement) {
-    if (busy || shell.dead || el.classList.contains('up') || el.classList.contains('done')) return;
-    el.classList.add('up');
-    open.push(el);
-    if (open.length < 2) return;
-    busy = true;
-    moves++;
-    shell.setInfo(`Züge: ${moves}`);
-    const [a, b] = open;
-    open = [];
-    if (a.dataset.n === b.dataset.n) {
-      a.classList.add('done'); b.classList.add('done');
-      matched++;
-      shell.pay(1);
-      shell.face('happy');
-      const said = shell.speakId('wald.memory.match', { n: a.dataset.n! });
-      if (matched === 6 && !shell.dead) {
-        await said;
-        const stars = moves <= 8 ? 3 : moves <= 12 ? 2 : 1;
-        await finish(shell, 'wald.memory', stars, `Geschafft in ${moves} Zügen.`, done, again);
-      }
-    } else {
-      shell.face('think');
-      await wait(1100);
-      a.classList.remove('up'); b.classList.remove('up');
-      shell.face('neutral');
-    }
-    busy = false;
-  }
-  return { el: shell.el, dispose: () => void (shell.dead = true) };
 }
 
 /* ───────────── Zahlenpilze ───────────── */

@@ -188,7 +188,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
   for (const e of model.npcs) {
     let root: THREE.Object3D, fig: Billboard | undefined, top = 3.4;
     if (e.kind === 'chest') { root = M.createChest(); top = 1.9; }
-    else if (e.kind === 'board') { root = M.createBoard(); top = 2.6; }
+    else if (e.kind === 'pond') { root = M.createPond(); top = 2.4; }
     else if (e.kind === 'shroom') { root = M.createShroomRing(); top = 1.8; }
     else {
       const fh = FIG_H[e.kind] ?? 1.8;
@@ -313,9 +313,9 @@ export async function enterWorld(opts: EnterOpts = {}) {
     const labelsTxt: Record<string, string> = {
       video: '▶ Erklärvideo', discover: '🔍 Ausprobieren', check: '⭐ Mini-Check',
       punkte: '🎯 Punkte zählen', steine: '🪨 Steine-Meister', kaertchen: '🃏 Kärtchen-Duell',
-      memory: '🃏 Memory spielen', pilze: '🍄 Pilze pflücken', shop: '🛒 Zum Laden',
+      angeln: '🎣 Zahlen-Angeln', pilze: '🍄 Pilze pflücken', shop: '🛒 Zum Laden',
     };
-    const starKey: Record<string, string> = { check: `${worldId}.check`, punkte: `${worldId}.punkte`, steine: `${worldId}.steine`, kaertchen: `${worldId}.kaertchen`, memory: `${worldId}.memory`, pilze: `${worldId}.pilze` };
+    const starKey: Record<string, string> = { check: `${worldId}.check`, punkte: `${worldId}.punkte`, steine: `${worldId}.steine`, kaertchen: `${worldId}.kaertchen`, angeln: `${worldId}.angeln`, pilze: `${worldId}.pilze` };
     const btns = npc.offers.map((o) => {
       const s = starKey[o] ? getProgress().stars[starKey[o]] ?? 0 : null;
       return h('button', { class: 'btn ' + (o === 'video' || o === 'shop' ? 'sun' : o === 'check' ? 'coral' : ''), onclick: () => { savePos(); closeDialog(); if (o === 'shop') openSupermarket(); else start?.(o as Offer, npc, () => void enterWorld()); } },

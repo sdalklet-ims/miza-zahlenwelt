@@ -38,7 +38,7 @@ export interface Hooks {
 const AREA = (ZW * WH) / (1400 * 1800); // Dichte der Dekoration wächst mit der Zonengröße
 
 export const isOpen = (w: WorldContent) => w.meta.status === 'open' && !!stationStarters[w.id];
-export const PROC_KINDS = ['chest', 'board', 'shroom'];
+export const PROC_KINDS = ['chest', 'pond', 'shroom'];
 
 function rng(seed: number) {
   return () => {
@@ -70,7 +70,7 @@ export function buildWorld(hooks: Hooks): WorldModel {
       const npc: Npc = { ...n, x: nx, y: ny };
       const proc = PROC_KINDS.includes(n.kind);
       m.npcs.push({ npc, id: n.id, kind: n.kind, name: n.name, x: nx, y: ny, worldId: w.id });
-      addSolid(nx, ny, proc ? 28 : 20);
+      addSolid(nx, ny, n.kind === 'pond' ? 100 : proc ? 28 : 20);
       if (n.kind === 'fox') m.rects.push({ x: nx - 175, y: ny - 330, w: 350, h: 190 }); // Supermarkt-Gebäude hinter dem Händler
       m.interacts.push({
         id: `npc.${n.id}`, x: nx, y: ny, r: 120,

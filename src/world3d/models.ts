@@ -256,3 +256,29 @@ export function createSupermarket(): THREE.Group {
   for (const sx of [-1, 1]) g.add(at(cyl(0.3, 0.24, 0.5, '#c0704a', 8), sx * 3.5, 0.25, D / 2 + 0.6), at(sph(0.38, '#4f9d5d', 1, 1, 1, 8), sx * 3.5, 0.75, D / 2 + 0.6), at(sph(0.1, '#ff8fab', 1, 1, 1, 6), sx * 3.5 + 0.1, 1.0, D / 2 + 0.75));
   return g;
 }
+
+
+/** Angelteich: Wasserfläche mit Steg, Schilf und Angel */
+export function createPond(): THREE.Group {
+  const g = new THREE.Group();
+  const water = new THREE.Mesh(new THREE.CylinderGeometry(2.3, 2.4, 0.12, 24), new THREE.MeshBasicMaterial({ color: '#5db7e8' }));
+  water.scale.z = 0.8;
+  water.position.y = 0.08;
+  g.add(at(cyl(2.55, 2.6, 0.1, '#a8a49a', 24), 0, 0.05, 0), water);
+  g.children[0].scale.z = 0.8;
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.03, 4, 28), new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.6 }));
+  ring.rotation.x = -Math.PI / 2;
+  ring.position.y = 0.16;
+  ring.scale.y = 0.8;
+  g.add(ring);
+  for (let i = 0; i < 6; i++) g.add(at(cyl(0.22, 0.22, 0.02, '#4f9d5d', 10), Math.cos(i * 2.1) * 1.2, 0.16, Math.sin(i * 2.1) * 0.8));
+  for (let i = 0; i < 9; i++) { const a = -2.6 + i * 0.28; g.add(at(cone(0.06, 0.9 + (i % 3) * 0.2, '#6aa84f', 4), Math.cos(a) * 2.5, 0.5, Math.sin(a) * 1.95)); }
+  // Steg mit Angel
+  g.add(at(box(0.9, 0.12, 2.4, '#a8693a'), 0, 0.3, 2.4));
+  for (const sx of [-1, 1]) for (const z of [1.5, 3.2]) g.add(at(cyl(0.06, 0.06, 0.5, '#7a4d26', 6), sx * 0.4, 0.15, z));
+  const rod = at(cyl(0.025, 0.04, 2.2, '#7a4d26', 6), 0.35, 1.3, 2.9);
+  rod.rotation.set(-0.9, 0, 0.15);
+  g.add(rod, at(cyl(0.006, 0.006, 1.5, '#ddd', 4), 0.4, 1.0, 1.7), at(sph(0.09, '#e8504a', 1, 1, 1, 8), 0.4, 0.2, 1.1));
+  for (let i = 0; i < 3; i++) g.add(at(sph(0.16, ['#ff8c2a', '#ff5a8a', '#ffd23f'][i], 1.5, 0.6, 0.8, 8), Math.cos(i * 2.4) * 1.0, 0.1, Math.sin(i * 2.4) * 0.6));
+  return g;
+}

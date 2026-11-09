@@ -76,14 +76,14 @@
         ]
       },
       {
-        "id": "memory",
-        "kind": "board",
-        "name": "Memory-Brett",
-        "x": 1500,
+        "id": "angeln",
+        "kind": "pond",
+        "name": "Angelteich",
+        "x": 1700,
         "y": 2450,
-        "hello": "wald.memory.hello",
+        "hello": "wald.angeln.hello",
         "offers": [
-          "memory"
+          "angeln"
         ]
       },
       {
@@ -892,26 +892,6 @@
       "fuchs",
       "Dafür brauchst du noch ein paar Münzen. Such welche im Wald oder spiel die Minispiele!"
     ],
-    "wald.memory.hello": [
-      "mia",
-      "Ein Memory-Brett! Ich suche zu jeder Zahl die passenden Punkte."
-    ],
-    "wald.memory.prompt": [
-      "mia",
-      "Finde die Paare: eine Zahl und ihre Punkte in der Stellentafel."
-    ],
-    "wald.memory.match": [
-      "mia",
-      "Ein Paar! Die Punkte passen zur Zahl {n}."
-    ],
-    "wald.memory.nomatch": [
-      "mia",
-      "Das passt nicht zusammen. Merk dir die Karten!"
-    ],
-    "wald.memory.hint": [
-      "mia",
-      "Zähle die Punkte: Hunderter, Zehner, Einer. Welche Zahl ist das?"
-    ],
     "wald.pilze.hello": [
       "mia",
       "Zahlenpilze! Wenn ich sie in der richtigen Reihenfolge pflücke, gibt es Sterne."
@@ -959,6 +939,74 @@
     "wald.haus.far": [
       "mia",
       "Dafür muss ich beim Bauplatz sein!"
+    ],
+    "wald.angeln.hello": [
+      "mia",
+      "Ein Angelteich! Die Fische tragen Zahlen. Ich fange immer die richtige!"
+    ],
+    "wald.angeln.next": [
+      "mia",
+      "Fange den Nachfolger von {n}!"
+    ],
+    "wald.angeln.prev": [
+      "mia",
+      "Fange den Vorgänger von {n}!"
+    ],
+    "wald.angeln.stellen": [
+      "mia",
+      "Fange die Zahl mit {h} Hundertern, {z} Zehnern und {e} Einern!"
+    ],
+    "wald.angeln.plus10": [
+      "mia",
+      "Fange die Zahl, die 10 mehr ist als {n}!"
+    ],
+    "wald.angeln.minus100": [
+      "mia",
+      "Fange die Zahl, die 100 weniger ist als {n}!"
+    ],
+    "wald.angeln.big": [
+      "mia",
+      "Fange die größte Zahl!"
+    ],
+    "wald.angeln.small": [
+      "mia",
+      "Fange die kleinste Zahl!"
+    ],
+    "wald.angeln.between": [
+      "mia",
+      "Fange die Zahl, die zwischen {a} und {b} liegt!"
+    ],
+    "wald.angeln.hint.next": [
+      "mia",
+      "Der Nachfolger kommt direkt nach {n}. Zähle einen weiter. Achtung bei den Zehner- und Hunderterwechseln!"
+    ],
+    "wald.angeln.hint.prev": [
+      "mia",
+      "Der Vorgänger steht direkt vor {n}. Zähle einen zurück. Achtung bei den Zehner- und Hunderterwechseln!"
+    ],
+    "wald.angeln.hint.stellen": [
+      "mia",
+      "Schreibe zuerst die Hunderter, dann die Zehner, dann die Einer: {h}, {z}, {e}. Eine Null hält den Platz frei."
+    ],
+    "wald.angeln.hint.plus10": [
+      "mia",
+      "Zehn mehr heißt: Bei den Zehnern kommt eins dazu. Die Einer bleiben gleich."
+    ],
+    "wald.angeln.hint.minus100": [
+      "mia",
+      "Hundert weniger heißt: Bei den Hundertern geht eins weg. Zehner und Einer bleiben gleich."
+    ],
+    "wald.angeln.hint.big": [
+      "mia",
+      "Vergleiche zuerst die Hunderter. Die Zahl mit den meisten Hundertern ist am größten. Bei Gleichstand zählen die Zehner."
+    ],
+    "wald.angeln.hint.small": [
+      "mia",
+      "Vergleiche zuerst die Hunderter. Die Zahl mit den wenigsten Hundertern ist am kleinsten. Bei Gleichstand zählen die Zehner."
+    ],
+    "wald.angeln.hint.between": [
+      "mia",
+      "Die Zahl muss größer als {a} und kleiner als {b} sein. Probiere die Fische einzeln aus."
     ]
   }
 }

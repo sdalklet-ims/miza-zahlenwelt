@@ -34,7 +34,7 @@ Technik: Vite + TypeScript, three.js (WebGL), kein UI-Framework (kleiner DOM-Hel
 - **Supermarkt** (Fuchs Fritz): Gänge mit Regalen, Preisschildern, Einkaufswagen und Kasse. An der Kasse wird die Summe addiert (und als Mini-Stellentafel gezeigt). Gänge: Rohbau, Außen, Garten, Innen, Tierbedarf.
 - **Hausbau:** Ein einfacher Rohbau (Fundament, Boden, Wände, Dach, Tür, Fenster), danach geht es um die **Deko**: 64 Teile (Veranda, Schornstein mit Rauch, Wimpel, Zaun mit Lichterkette, Teich, Schaukel, Feuerstelle, Gewächshaus … innen Sofa, Bett, Aquarium, Kamin, Bücherregal …). Gekauftes Material baut Mia am **Bauplatz** auf (Pfote). Dach- und Wandfarbe sind frei wählbar. Meilensteine: Rohbau, bewohnbar, alles gebaut (1–3 ⭐). Im fertigen Haus verschwinden Dach und Vorderwand (Puppenhaus-Ansicht).
 - **Haustier** (ab „bewohnbar“): Im Supermarkt (Tierbedarf) aussuchen – Meerschweinchen, Kaninchen, Hamster oder Wellensittich – und benennen. Es läuft im Haus umher, wird mit der Zeit hungrig (nur traurig, nie Game Over) und freut sich über Futter aus dem Supermarkt; Lieblingsfutter macht extra satt.
-- **Lernspiele** (Wald): Punkte zählen, Steine-Meister, Kärtchen-Duell, Memory, Zahlenpilze, Erklärvideo, Mini-Check. Adaptive Stufen, freundliche Hinweise bei Fehlern.
+- **Lernspiele** (Wald): Punkte zählen, Steine-Meister, Kärtchen-Duell, Zahlen-Angeln (Nachfolger, Vorgänger, Stellenwerte, größte/kleinste Zahl, „zwischen“), Zahlenpilze, Erklärvideo, Mini-Check. Adaptive Stufen, freundliche Hinweise bei Fehlern.
 - **Musik:** leichte Ambient-Musik, live erzeugt (WebAudio, keine Audiodateien), einstellbar unter ⚙️.
 
 ## Aufbau
