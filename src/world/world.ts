@@ -228,7 +228,7 @@ export async function buildWorld(hooks: Hooks): Promise<WorldModel> {
     };
     if (theme === 'forest') {
       place(150, 38, 105, (x, y) => tree(x, y, ['tree_forest', 'tree_dark', 'tree_forest', 'pine'][Math.floor(r() * 4)], 0.85 + r() * 0.4), 0.5);
-      place(14, 30, 100, (x, y) => { addSolid(x, y, 16); m.drawables.push({ x, y, ext: 70, draw: (c, sx, sy) => drawSprite(c, S.rock, sx, sy, 0.8 + r() * 0.3) }); }, 0.1);
+      place(14, 30, 100, (x, y) => { addSolid(x, y, 16); const k = 0.8 + r() * 0.3; m.drawables.push({ x, y, ext: 70, draw: (c, sx, sy) => drawSprite(c, S.rock, sx, sy, k) }); }, 0.1);
     } else if (theme === 'meadow') {
       place(22, 60, 130, (x, y) => tree(x, y, 'tree_light', 0.9 + r() * 0.3), 0.3);
       place(18, 40, 120, (x, y) => { addSolid(x, y, 16); m.drawables.push({ x, y, ext: 70, draw: (c, sx, sy) => drawSprite(c, S.rock, sx, sy, 0.7) }); }, 0);
@@ -237,7 +237,7 @@ export async function buildWorld(hooks: Hooks): Promise<WorldModel> {
     } else if (theme === 'mountain') {
       place(10, 130, 150, (x, y) => { addSolid(x - 50, y, 40); addSolid(x + 50, y, 40); addSolid(x, y, 45); m.drawables.push({ x, y, ext: 190, draw: (c, sx, sy) => drawSprite(c, S.mountain, sx, sy, 1.1) }); }, 0.9);
       place(55, 40, 120, (x, y) => tree(x, y, 'pine', 0.9 + r() * 0.4), 0.45);
-      place(26, 40, 110, (x, y) => { addSolid(x, y, 20); m.drawables.push({ x, y, ext: 70, draw: (c, sx, sy) => drawSprite(c, S.rock, sx, sy, 0.9 + r() * 0.5) }); }, 0.2);
+      place(26, 40, 110, (x, y) => { addSolid(x, y, 20); const k = 0.9 + r() * 0.5; m.drawables.push({ x, y, ext: 70, draw: (c, sx, sy) => drawSprite(c, S.rock, sx, sy, k) }); }, 0.2);
     } else if (theme === 'village') {
       for (let k = 0; k < 6; k++) {
         const hx = x0 + 180 + k * 190, hy = pathY(hx) + (k % 2 ? 250 : -230);
