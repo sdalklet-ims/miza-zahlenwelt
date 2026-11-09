@@ -1,0 +1,8 @@
+{
+  "id": "dorf",
+  "meta": {
+    "title": "Dorf", "topic": "Vorgänger und Nachfolger", "order": 5, "icon": "🏡", "theme": "village",
+    "color": "#d9674a", "map": { "x": 1020, "y": 590 }, "status": "locked"
+  },
+  "texts": {}
+}

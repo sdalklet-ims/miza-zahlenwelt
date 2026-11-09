@@ -1,0 +1,49 @@
+/** Lädt alle Content-JSONs (common + worlds/*) und stellt Texte per stabiler ID bereit. */
+export interface SpeakerDef { name: string; pitch: number; rate: number; color: string }
+export interface WorldMeta {
+  title: string; topic: string; order: number; icon: string; theme: string; color: string;
+  map: { x: number; y: number }; status: 'open' | 'locked';
+}
+export interface WorldContent { id: string; meta: WorldMeta; texts: Record<string, [string, string]>; [k: string]: any }
+export interface RewardItem { id: string; target: string; slot: string; name: string; stars: number }
+
+const files = import.meta.glob('/content/**/*.json', { eager: true, import: 'default' }) as Record<string, any>;
+
+export const common = files['/content/common.json'] as {
+  speakers: Record<string, SpeakerDef>;
+  texts: Record<string, [string, string]>;
+  rewards: { items: RewardItem[] };
+};
+
+export const worlds: WorldContent[] = Object.entries(files)
+  .filter(([p]) => p.startsWith('/content/worlds/'))
+  .map(([, v]) => v as WorldContent)
+  .sort((a, b) => a.meta.order - b.meta.order);
+
+const table: Record<string, [string, string]> = {};
+for (const f of Object.values(files)) Object.assign(table, f.texts ?? {});
+
+export type Params = Record<string, string | number>;
+
+export function fmt(text: string, params?: Params): string {
+  return params ? text.replace(/\{(\w+)\}/g, (_, k) => String(params[k] ?? '')) : text;
+}
+
+export function entry(id: string): [string, string] | undefined {
+  return table[id];
+}
+
+export function textOf(id: string, params?: Params): string {
+  const e = table[id];
+  if (!e) {
+    console.warn('Text-ID fehlt:', id);
+    return '';
+  }
+  return fmt(e[1], params);
+}
+
+export function speakerOf(id: string): SpeakerDef {
+  return common.speakers[id] ?? common.speakers.mia;
+}
+
+export const getWorld = (id: string) => worlds.find((w) => w.id === id);

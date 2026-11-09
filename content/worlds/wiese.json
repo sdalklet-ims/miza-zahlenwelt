@@ -1,0 +1,8 @@
+{
+  "id": "wiese",
+  "meta": {
+    "title": "Wiese", "topic": "Hunderterfeld", "order": 2, "icon": "🌼", "theme": "meadow",
+    "color": "#e9b949", "map": { "x": 420, "y": 330 }, "status": "locked"
+  },
+  "texts": {}
+}

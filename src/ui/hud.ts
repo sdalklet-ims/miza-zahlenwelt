@@ -1,0 +1,47 @@
+import { h } from '../core/dom';
+import { totalStars } from '../core/rewards';
+import { onProgress } from '../core/progress';
+import { layers } from './stage';
+
+export interface HudHandlers {
+  onMap?: () => void;
+  onAlbum?: () => void;
+  onSettings?: () => void;
+}
+
+let root: HTMLElement;
+let backBtn: HTMLButtonElement;
+let starsEl: HTMLElement;
+
+export const hud = {
+  init(handlers: HudHandlers) {
+    backBtn = h('button', { class: 'hud-btn back', 'aria-label': 'Zurück' }, '◀ Zurück');
+    starsEl = h('div', { class: 'hud-stars', 'aria-label': 'Sterne' });
+    const btn = (icon: string, label: string, fn?: () => void) =>
+      fn ? h('button', { class: 'hud-btn icon', 'aria-label': label, title: label, onclick: fn }, icon) : null;
+    root = h(
+      'div',
+      { class: 'hud-bar' },
+      backBtn,
+      h('div', { class: 'spacer' }),
+      starsEl,
+      btn('🗺️', 'Karte', handlers.onMap),
+      btn('🎩', 'Album', handlers.onAlbum),
+      btn('⚙️', 'Einstellungen', handlers.onSettings)
+    );
+    layers.hud.append(root);
+    onProgress(hud.refresh);
+    hud.refresh();
+    hud.show(false);
+  },
+  show(on: boolean) {
+    root.style.display = on ? 'flex' : 'none';
+  },
+  setBack(fn: (() => void) | null) {
+    backBtn.style.display = fn ? '' : 'none';
+    backBtn.onclick = fn;
+  },
+  refresh() {
+    if (starsEl) starsEl.textContent = `⭐ ${totalStars()}`;
+  },
+};

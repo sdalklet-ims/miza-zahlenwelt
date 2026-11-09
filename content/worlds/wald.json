@@ -1,0 +1,10 @@
+{
+  "id": "wald",
+  "meta": {
+    "title": "Wald", "topic": "Stellenwerte (H/Z/E)", "order": 1, "icon": "🌲", "theme": "forest",
+    "color": "#4f9d5d", "map": { "x": 190, "y": 610 }, "status": "open"
+  },
+  "texts": {
+    "wald.arrive": ["mia", "Der Wald! Hier riecht es nach Moos und Abenteuer."]
+  }
+}

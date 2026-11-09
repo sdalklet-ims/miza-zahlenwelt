@@ -1,0 +1,8 @@
+{
+  "id": "fluss",
+  "meta": {
+    "title": "Fluss", "topic": "Zahlenstrahl", "order": 3, "icon": "🌊", "theme": "river",
+    "color": "#4a90d9", "map": { "x": 640, "y": 600 }, "status": "locked"
+  },
+  "texts": {}
+}
