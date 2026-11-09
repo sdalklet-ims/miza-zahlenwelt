@@ -4,7 +4,120 @@
     "title": "Wald", "topic": "Stellenwerte (H/Z/E)", "order": 1, "icon": "🌲", "theme": "forest",
     "color": "#4f9d5d", "map": { "x": 190, "y": 610 }, "status": "open"
   },
+
+  "start": { "x": 600, "y": 640 },
+  "bushes": [
+    { "x": 560, "y": 470 }, { "x": 140, "y": 640 }, { "x": 880, "y": 725 }, { "x": 1090, "y": 470 }, { "x": 480, "y": 740 }
+  ],
+  "npcs": [
+    { "id": "eule",  "kind": "owl",      "name": "Eule Olga",   "x": 200,  "y": 470, "hello": "wald.eule.hello",  "offers": ["video", "discover", "check"] },
+    { "id": "igel",  "kind": "hedgehog", "name": "Igel Ingo",   "x": 410,  "y": 585, "hello": "wald.igel.hello",  "offers": ["punkte"] },
+    { "id": "dachs", "kind": "badger",   "name": "Dachs Bruno", "x": 780,  "y": 540, "hello": "wald.dachs.hello", "offers": ["steine"] },
+    { "id": "hase",  "kind": "hare",     "name": "Hase Hugo",   "x": 1010, "y": 620, "hello": "wald.hase.hello",  "offers": ["kaertchen"] }
+  ],
+
+  "games": {
+    "punkte": {
+      "rounds": 5,
+      "levels": [
+        { "h": [1, 5], "z": [1, 5], "e": [1, 5], "traps": [],                                         "trapChance": 0 },
+        { "h": [0, 6], "z": [1, 9], "e": [1, 9], "traps": ["kurz"],                                   "trapChance": 0.3 },
+        { "h": [1, 9], "z": [0, 9], "e": [0, 9], "traps": ["null", "kurz"],                           "trapChance": 0.45 },
+        { "h": [0, 9], "z": [0, 9], "e": [0, 9], "traps": ["dreher", "null", "kurz", "aehnlich"],    "trapChance": 0.55 },
+        { "h": [0, 9], "z": [0, 9], "e": [0, 9], "traps": ["dreher", "null", "kurz", "aehnlich", "uebergang"], "trapChance": 0.7 }
+      ]
+    },
+    "steine": { "stones": 5 },
+    "kaertchen": {
+      "rounds": 5,
+      "levels": [
+        { "allowZero": false, "allowDup": false },
+        { "allowZero": false, "allowDup": true },
+        { "allowZero": true,  "allowDup": false },
+        { "allowZero": true,  "allowDup": true },
+        { "allowZero": true,  "allowDup": true, "nearSame": true }
+      ]
+    }
+  },
+
+  "check": { "tasks": ["count", "count", "build", "build", "cardsMax", "cardsMin"] },
+
+  "video": {
+    "steps": [
+      { "text": "wald.video.01", "do": [{ "c": "show" }] },
+      { "text": "wald.video.02", "do": [{ "c": "hl", "col": "all" }] },
+      { "text": "wald.video.03", "do": [{ "c": "hl", "col": "E" }, { "c": "set", "e": 1 }] },
+      { "text": "wald.video.04", "do": [{ "c": "hl", "col": "Z" }, { "c": "set", "z": 1, "e": 1 }] },
+      { "text": "wald.video.05", "do": [{ "c": "hl", "col": "H" }, { "c": "set", "h": 1, "z": 1, "e": 1 }] },
+      { "text": "wald.video.06", "do": [{ "c": "hl", "col": null }, { "c": "clear" }, { "c": "set", "h": 3, "z": 4, "e": 7, "delay": 420 }] },
+      { "text": "wald.video.07", "do": [{ "c": "values", "on": true, "stagger": 1500 }] },
+      { "text": "wald.video.08", "do": [{ "c": "sum", "on": true }] },
+      { "text": "wald.video.09", "do": [{ "c": "values", "on": false }, { "c": "sum", "on": false }, { "c": "clear" }, { "c": "set", "h": 2, "z": 3, "e": 7, "delay": 220 }, { "c": "values", "on": true, "stagger": 0 }, { "c": "wait", "ms": 2600 }, { "c": "set", "h": 2, "z": 7, "e": 3, "delay": 80 }, { "c": "swap" }] },
+      { "text": "wald.video.10", "do": [{ "c": "values", "on": false }, { "c": "clear" }, { "c": "set", "h": 1, "z": 0, "e": 5, "delay": 300 }, { "c": "values", "on": true, "stagger": 900 }] },
+      { "text": "wald.video.11", "do": [{ "c": "values", "on": false }, { "c": "clear" }, { "c": "set", "e": 10, "delay": 180 }, { "c": "wait", "ms": 1400 }, { "c": "bundle", "col": "E" }] },
+      { "text": "wald.video.12", "do": [{ "c": "clear" }, { "c": "set", "z": 10, "delay": 150 }, { "c": "wait", "ms": 1200 }, { "c": "bundle", "col": "Z" }] },
+      { "text": "wald.video.13", "do": [{ "c": "clear" }, { "c": "hl", "col": null }] }
+    ]
+  },
+
   "texts": {
-    "wald.arrive": ["mia", "Der Wald! Hier riecht es nach Moos und Abenteuer."]
+    "wald.arrive":  ["mia", "Der Wald! Hier riecht es nach Moos und Abenteuer."],
+    "wald.hide.1":  ["mia", "Pssst! Hier sieht mich keiner."],
+    "wald.hide.2":  ["mia", "Schleich, schleich ... Miau!"],
+    "wald.hide.3":  ["mia", "Ich bin ein Busch. Ein ganz, ganz leiser Busch."],
+    "wald.hide.found": ["igel", "Ich sehe dich, Mia! Dein Schwanz guckt aus dem Busch heraus!"],
+
+    "wald.eule.hello":  ["eule", "Hu-hu, Mia! Schön, dass du da bist. Ich bin Olga, die Eule. Was möchtest du tun?"],
+    "wald.igel.hello":  ["igel", "Hallo Mia! Ich bin Ingo. Ich sammle Punkte, aber beim Zählen komme ich ganz durcheinander. Hilfst du mir?"],
+    "wald.dachs.hello": ["dachs", "Brumm. Ich bin Bruno. Ich habe genau fünf Steine. Wie viele Zahlen kannst du damit legen?"],
+    "wald.hase.hello":  ["hase", "Hallo, Hase Hugo hier! Ich liebe Zahlenkärtchen. Wer legt die größte Zahl, du oder ich?"],
+
+    "wald.discover.intro": ["eule", "Probiere die Stellentafel in Ruhe aus. Hier gibt es keine Punkte und keine Fehler."],
+
+    "wald.video.01": ["eule", "Hallo Mia! Ich bin Olga, die Eule. Ich bin die Lehrerin hier im Wald."],
+    "wald.video.02": ["eule", "Heute zeige ich dir ein Zauberbrett. Es heißt Stellentafel. Sie hat drei Spalten."],
+    "wald.video.03": ["eule", "Ganz rechts wohnen die Einer. Ein Punkt ist ein Einer."],
+    "wald.video.04": ["eule", "In der Mitte wohnen die Zehner. Ein Punkt hier ist so viel wert wie zehn Einer!"],
+    "wald.video.05": ["eule", "Und ganz links wohnen die Hunderter. Ein Hunderter-Punkt ist so viel wert wie hundert Einer. Das ist ein richtig dicker Punkt!"],
+    "wald.video.06": ["eule", "Schauen wir uns eine Zahl an. Wir legen drei Hunderter, vier Zehner und sieben Einer."],
+    "wald.video.07": ["eule", "Drei Hunderter sind dreihundert. Vier Zehner sind vierzig. Sieben Einer sind sieben."],
+    "wald.video.08": ["eule", "Zusammen ergibt das dreihundertsiebenundvierzig. Die Zahl schreibt man so: drei, vier, sieben."],
+    "wald.video.09": ["eule", "Merke dir: Jede Ziffer hat ihren festen Platz. Wenn man Ziffern tauscht, wird es eine ganz andere Zahl. Aus zweihundertsiebenunddreißig wird zweihundertdreiundsiebzig."],
+    "wald.video.10": ["eule", "Und wenn ein Platz leer bleibt? Dann schreiben wir eine Null. Ein Hunderter, null Zehner und fünf Einer, das ist die Zahl hundertfünf."],
+    "wald.video.11": ["eule", "Noch ein Trick: Haben wir zehn Einer, dann bündeln wir sie. Zehn Einer werden ein Zehner!"],
+    "wald.video.12": ["eule", "Und zehn Zehner werden ein Hunderter. So kommt man von Spalte zu Spalte."],
+    "wald.video.13": ["eule", "Jetzt bist du dran! Hilf meinen Freunden im Wald. Viel Spaß, Mia!"],
+
+    "wald.punkte.prompt":     ["igel", "Wie heißt die Zahl? Tippe sie ein."],
+    "wald.punkte.hint.dreher": ["igel", "Fast! Die Ziffern stimmen, aber sie stehen an der falschen Stelle. Schau: {h} Hunderter, {z} Zehner und {e} Einer."],
+    "wald.punkte.hint.null":   ["igel", "Denk an die Null! Ein leerer Platz in der Tafel bekommt eine Null. Hier sind {h} Hunderter, {z} Zehner und {e} Einer."],
+    "wald.punkte.hint.kurz":   ["igel", "Zähle die Spalten: {h} Hunderter, {z} Zehner und {e} Einer. Auch leere Spalten gehören zur Zahl!"],
+    "wald.punkte.hint.other":  ["igel", "Zähle Spalte für Spalte: {h} Hunderter, {z} Zehner und {e} Einer."],
+    "wald.punkte.reveal":      ["igel", "Die Zahl ist {n}. Das sind {h} Hunderter, {z} Zehner und {e} Einer."],
+
+    "wald.steine.prompt": ["dachs", "Lege genau fünf Steine in die Tafel. Welche Zahlen findest du?"],
+    "wald.steine.tip":    ["dachs", "Lege zuerst alle fünf Steine zu den Einern. Dann schiebe immer einen Stein weiter, zu den Zehnern. So vergisst du keine Zahl."],
+    "wald.steine.new":    ["dachs", "Die Zahl {n} ist neu. Gut gefunden!"],
+    "wald.steine.dup":    ["dachs", "Die Zahl {n} hattest du schon. Probier eine andere Aufteilung!"],
+    "wald.steine.hint":   ["dachs", "Es fehlt noch eine Zahl mit {h} Hundertern. Verschiebe die Steine und probiere es."],
+    "wald.steine.hint0":  ["dachs", "Es fehlt noch eine Zahl ohne Hunderter. Du brauchst nur Zehner und Einer."],
+    "wald.steine.done":   ["dachs", "Alle einundzwanzig Zahlen! Du bist ein Steine-Meister!"],
+
+    "wald.kaertchen.prompt.max": ["hase", "Lege die Kärtchen so, dass die größte Zahl entsteht!"],
+    "wald.kaertchen.prompt.min": ["hase", "Lege die Kärtchen so, dass die kleinste Zahl entsteht!"],
+    "wald.kaertchen.note.zero":  ["hase", "Aber Achtung: Ganz vorn darf keine Null stehen, sonst hat die Zahl nur zwei Stellen."],
+    "wald.kaertchen.hint.max":   ["hase", "Die größte Zahl bekommt vorn, bei den Hundertern, das größte Kärtchen. Dann kommt das nächstgrößte zu den Zehnern."],
+    "wald.kaertchen.hint.min":   ["hase", "Die kleinste Zahl bekommt vorn, bei den Hundertern, das kleinste Kärtchen."],
+    "wald.kaertchen.hint.minzero": ["hase", "Eine Null ganz vorn zählt nicht. Nimm bei den Hundertern das kleinste Kärtchen, das keine Null ist. Die Null gehört zu den Zehnern."],
+    "wald.kaertchen.win.max": ["hase", "Du hast {me}, ich nur {hugo}. Du gewinnst!"],
+    "wald.kaertchen.win.min": ["hase", "Du hast {me}, ich {hugo}. Deine Zahl ist kleiner. Du gewinnst!"],
+    "wald.kaertchen.tie":     ["hase", "Wir haben beide {me}! Unentschieden!"],
+    "wald.kaertchen.reveal":  ["hase", "So geht es: {n}. Probier es gleich noch einmal!"],
+
+    "wald.check.intro":   ["eule", "Zeit für den Mini-Check! Sechs Aufgaben, ganz ohne Zeitdruck. Du schaffst das!"],
+    "wald.check.build":   ["eule", "Lege die Zahl {n} mit Steinen in die Tafel."],
+    "wald.check.done.3":  ["eule", "Hu-hu! Perfekt! Drei Sterne für dich!"],
+    "wald.check.done.2":  ["eule", "Sehr gut! Zwei Sterne. Das war schon richtig stark."],
+    "wald.check.done.1":  ["eule", "Ein Stern! Üb noch ein bisschen bei meinen Freunden, dann klappt es noch besser."]
   }
 }

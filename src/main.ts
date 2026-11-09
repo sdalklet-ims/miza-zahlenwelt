@@ -6,6 +6,7 @@ import { show } from './core/router';
 import { mapScreen } from './core/map';
 import { startScreen } from './ui/start';
 import { speak, unlockAudio } from './audio/speak';
+import './worlds/wald'; // registriert die Welt "wald"
 
 initStage();
 

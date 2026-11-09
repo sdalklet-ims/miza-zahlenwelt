@@ -1,0 +1,41 @@
+.wald { overflow: hidden; background: #a9dff2; }
+.wald-art { position: absolute; inset: 0; pointer-events: none; }
+.wald-art svg { display: block; }
+
+/* Mia im Wald */
+.wmia { position: absolute; left: 0; top: 0; width: 120px; height: 132px; transform-origin: 50% 100%; pointer-events: none; will-change: transform; transition: opacity .25s; }
+.wmia-inner { --flip: 1; width: 120px; transform: scaleX(var(--flip)); transform-origin: 50% 100%; filter: drop-shadow(0 8px 4px rgba(0,0,0,.28)); }
+.wmia-inner.walking { animation: wstep .3s ease-in-out infinite; }
+@keyframes wstep { 0%,100% { transform: scaleX(var(--flip)) translateY(0) rotate(-3deg); } 50% { transform: scaleX(var(--flip)) translateY(-10px) rotate(3deg); } }
+.wmia.hidden { opacity: 0; }
+
+/* Auftraggeber */
+.npc { position: absolute; padding: 0; border: 0; background: none; display: block; }
+.npc-art { animation: breathe 3.2s ease-in-out infinite; transform-origin: 50% 100%; filter: drop-shadow(0 8px 4px rgba(0,0,0,.25)); }
+.npc-tag { position: absolute; left: 50%; bottom: -34px; transform: translateX(-50%); white-space: nowrap; background: var(--cream); border-radius: 14px; border-bottom: 5px solid #d6bf93; padding: 2px 14px 4px; font: 900 22px var(--font); text-align: center; }
+.npc-stars { display: block; font-size: 20px; line-height: 1; color: #e9a516; letter-spacing: 2px; }
+.npc.talking .beak-low { animation: chomp .22s ease-in-out infinite alternate; transform-origin: 110px 132px; }
+.npc.talking .npc-art { animation: talkbob .5s ease-in-out infinite; }
+@keyframes chomp { to { transform: translateY(5px); } }
+@keyframes talkbob { 50% { transform: translateY(-5px) scaleY(1.02); } }
+
+/* Büsche */
+.bush { position: absolute; width: 160px; height: 100px; padding: 0; border: 0; background: none; }
+.peek-eyes { position: absolute; left: 50px; top: 18px; opacity: 0; transition: opacity .3s; }
+.bush.occupied .peek-eyes { opacity: 1; animation: blink 3.5s infinite; }
+.bush.occupied { animation: rustle .5s ease-in-out 2; }
+@keyframes rustle { 25% { transform: rotate(-2deg) translateX(-4px); } 75% { transform: rotate(2deg) translateX(4px); } }
+@keyframes blink { 94%,100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
+.peek-tail { position: absolute; right: -14px; top: 44px; width: 46px; height: 16px; border-radius: 10px; background: repeating-linear-gradient(90deg, #e9a24b 0 10px, #b8691f 10px 16px); opacity: 0; transform-origin: 0 50%; }
+.bush.tail .peek-tail { opacity: 1; animation: wag .6s ease-in-out infinite alternate; }
+@keyframes wag { from { transform: rotate(-14deg); } to { transform: rotate(18deg); } }
+
+/* Sprechblase */
+.bubble { position: absolute; z-index: 4000; background: #fff; border: 5px solid var(--ink); border-radius: 28px; padding: 18px 22px 20px; box-shadow: 0 10px 24px rgba(0,0,0,.3); animation: pop .3s cubic-bezier(.3,1.5,.5,1); }
+.bubble-name { font: 900 24px var(--font); color: var(--leaf-d); margin-bottom: 4px; }
+.bubble p { margin: 0 0 14px; font: 700 26px/1.3 var(--font); }
+.bubble-btns { display: flex; flex-direction: column; gap: 10px; }
+.bubble .btn { min-height: 62px; font-size: 25px; display: flex; align-items: center; justify-content: space-between; gap: 14px; text-align: left; }
+.bubble .btn.ghost { justify-content: center; min-height: 54px; font-size: 22px; }
+.btn-stars { color: #ffe27a; letter-spacing: 2px; font-size: 22px; }
+.btn.ghost .btn-stars, .btn.sun .btn-stars { color: #e9a516; }
