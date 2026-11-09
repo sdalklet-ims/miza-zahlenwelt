@@ -156,7 +156,7 @@ export function buildDecor(model: WorldModel): THREE.Group {
     }
     return mergeGeometries(parts)!;
   })();
-  const inPlot = (x: number, y: number) => !!PLOT && Math.abs(x - PLOT.x) < 380 && y > PLOT.y - 300 && y < PLOT.y + 420;
+  const inPlot = (x: number, y: number) => !!PLOT && Math.abs(x - PLOT.x) < 450 && y > PLOT.y - 300 && y < PLOT.y + 420;
   const grassItems: Decor[] = [], flowerItems: { d: Decor; c: THREE.Color }[] = [];
   const colors = ['#ff8fab', '#ffd166', '#ffffff', '#c3a6ff', '#ff9f5a'].map((c) => new THREE.Color(c));
   worlds.forEach((w, zi) => {

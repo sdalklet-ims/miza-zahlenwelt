@@ -35,7 +35,7 @@ export interface Progress {
   house: { owned: Record<string, boolean>; built: Record<string, boolean>; roof: string; wall: string; stage: number };
   posV: number;
   /** Haustier (null = noch keins) und Futtervorrat */
-  pet: { kind: string; name: string; fill: number; t: number; stock: Record<string, number>; fed: number } | null;
+  pet: { kind: string; name: string; fill: number; t: number; stock: Record<string, number>; fed: number; follow?: boolean } | null;
   petStock: Record<string, number>;
 }
 

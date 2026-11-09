@@ -140,6 +140,6 @@ export function heightAt(x: number, y: number): number {
   // an der Zonengrenze (Nebeltor) auch flach
   const edge = Math.abs(((x % ZW) + ZW) % ZW - 0);
   flat *= smooth(40, 260, Math.min(edge, ZW - edge));
-  if (PLOT) flat *= smooth(430, 640, Math.hypot(x - PLOT.x, y - PLOT.y)); // Bauplatz ist eben
+  if (PLOT) flat *= smooth(480, 700, Math.hypot(x - PLOT.x, y - PLOT.y)); // Bauplatz ist eben
   return n * hillAmp(x) * flat;
 }

@@ -287,7 +287,7 @@ export function createPond(): THREE.Group {
 /** Markierung des Bauplatzes, solange noch nichts gebaut ist: Eckpfähle mit Fähnchen, Umrandung, Schild */
 export function createPlotMarker(): THREE.Group {
   const g = new THREE.Group();
-  const hx = 3.9, hz = 3.2;
+  const hx = 5.0, hz = 3.2;
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
     g.add(at(cyl(0.06, 0.09, 1.3, '#a8693a', 6), sx * hx, 0.65, sz * hz));
     const f = cone(0.22, 0.5, '#e8504a', 3);

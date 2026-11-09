@@ -39,6 +39,7 @@ export interface EnterOpts { spawnWorld?: string }
 
 const R = 13; // Mias Kollisionsradius (an den Füßen)
 const DT = 1 / 60;
+const IN_X = 230, IN_Y = 135; // Innenraum des Hauses (Pixel, halbe Breite/Tiefe)
 const RUN = 235;
 const angDiff = (a: number, b: number) => Math.atan2(Math.sin(b - a), Math.cos(b - a));
 
@@ -119,8 +120,8 @@ export async function enterWorld(opts: EnterOpts = {}) {
     const hs = getProgress().house;
     house.sync(hs.built, { roof: hs.roof, wall: hs.wall }, animate);
     dyn = house.collisions(hs.built, plot.x, plot.y);
-    if (hs.built.radio && !model.interacts.some((i) => i.id === 'radio')) model.interacts.push({ id: 'radio', x: plot.x - 152, y: plot.y + 35, r: 140, label: 'Radio', icon: '📻', run: () => openRadio() });
-    if (hs.built.bett && !model.interacts.some((i) => i.id === 'bed')) model.interacts.push({ id: 'bed', x: plot.x - 110, y: plot.y + 72, r: 110, label: 'Schlafen', icon: '😴', run: () => startSleep() });
+    if (hs.built.radio && !model.interacts.some((i) => i.id === 'radio')) model.interacts.push({ id: 'radio', x: plot.x - 202, y: plot.y + 35, r: 140, label: 'Radio', icon: '📻', run: () => openRadio() });
+    if (hs.built.bett && !model.interacts.some((i) => i.id === 'bed')) model.interacts.push({ id: 'bed', x: plot.x - 155, y: plot.y + 72, r: 110, label: 'Schlafen', icon: '😴', run: () => startSleep() });
   }
   syncHouse(false);
   house.onLand = (_id, p) => {
@@ -129,6 +130,8 @@ export async function enterWorld(opts: EnterOpts = {}) {
   };
   /* ── Haustier ── */
   const PET_H: Record<string, number> = { meerschwein: 0.85, kaninchen: 1.45, hamster: 0.8, wellensittich: 1.2 };
+  const trail: { x: number; y: number }[] = [];
+  let lastTrail = { x: 0, y: 0 };
   const pt = { x: plot?.x ?? 0, y: plot?.y ?? 0, vx: 0, vy: 0, wait: 1, kind: '', fig: null as Billboard | null };
   const petMark = h('div', { class: 'pet-mark' }, '🍽️');
   labels.append(petMark);
@@ -158,7 +161,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
   function startSleep() {
     if (!plot || sleeping || hidden) return;
     sleeping = true;
-    st.x = plot.x - 110; st.y = plot.y + 72; st.vx = st.vy = 0; tap = null;
+    st.x = plot.x - 155; st.y = plot.y + 72; st.vx = st.vy = 0; tap = null;
     stationBefore = currentStation();
     setStation('nacht', false);
     el.append(night);
@@ -418,6 +421,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
       st.x += st.vx * DT;
       st.y += st.vy * DT;
       collide();
+      if (Math.hypot(st.x - lastTrail.x, st.y - lastTrail.y) > 12) { trail.push({ x: st.x, y: st.y }); lastTrail = { x: st.x, y: st.y }; if (trail.length > 60) trail.shift(); }
       const spd = Math.hypot(st.vx, st.vy);
       st.phase += spd * DT * 0.062;
       const gy = heightAt(st.x, st.y);
@@ -455,16 +459,26 @@ export async function enterWorld(opts: EnterOpts = {}) {
 
     // Haustier: läuft im Haus (oder im Garten, solange es keinen Boden gibt) umher
     if (pt.fig && plot) {
-      const indoor = isBuilt('boden') && isBuilt('waende');
-      const r = indoor ? { x0: plot.x - 120, x1: plot.x + 120, y0: plot.y - 60, y1: plot.y + 80 } : { x0: plot.x - 230, x1: plot.x + 230, y0: plot.y + 190, y1: plot.y + 300 };
-      if (pt.x < r.x0 - 4 || pt.x > r.x1 + 4 || pt.y < r.y0 - 4 || pt.y > r.y1 + 4) { pt.x = clamp(pt.x, r.x0, r.x1); pt.y = clamp(pt.y, r.y0, r.y1); }
-      pt.wait -= DT;
-      if (pt.wait <= 0) {
-        if (Math.hypot(pt.vx, pt.vy) > 1 || Math.random() < 0.4) { pt.vx = pt.vy = 0; pt.wait = 1.5 + Math.random() * 3; }
-        else { const a = Math.random() * 6.28; pt.vx = Math.cos(a) * 34; pt.vy = Math.sin(a) * 34; pt.wait = 0.8 + Math.random() * 1.6; }
+      if (getPet()?.follow) {
+        // Haustier folgt Mias Spur (so läuft es durch Türen statt durch Wände)
+        const tg = trail.length > 7 ? trail[trail.length - 7] : { x: st.x - 40, y: st.y + 20 };
+        const dx = tg.x - pt.x, dy = tg.y - pt.y, dd = Math.hypot(dx, dy), dm = Math.hypot(st.x - pt.x, st.y - pt.y);
+        if (dm > 800) { pt.x = tg.x; pt.y = tg.y; pt.vx = pt.vy = 0; }
+        else if (dd > 12 && dm > 75) { const sp = Math.min(300, 60 + dd * 3); pt.vx = (dx / dd) * sp; pt.vy = (dy / dd) * sp; }
+        else pt.vx = pt.vy = 0;
+        pt.x += pt.vx * DT; pt.y += pt.vy * DT;
+      } else {
+        const indoor = isBuilt('boden') && isBuilt('waende');
+        const r = indoor ? { x0: plot.x - 190, x1: plot.x + 190, y0: plot.y - 60, y1: plot.y + 80 } : { x0: plot.x - 230, x1: plot.x + 230, y0: plot.y + 190, y1: plot.y + 300 };
+        if (pt.x < r.x0 - 4 || pt.x > r.x1 + 4 || pt.y < r.y0 - 4 || pt.y > r.y1 + 4) { pt.x = clamp(pt.x, r.x0, r.x1); pt.y = clamp(pt.y, r.y0, r.y1); }
+        pt.wait -= DT;
+        if (pt.wait <= 0) {
+          if (Math.hypot(pt.vx, pt.vy) > 1 || Math.random() < 0.4) { pt.vx = pt.vy = 0; pt.wait = 1.5 + Math.random() * 3; }
+          else { const a = Math.random() * 6.28; pt.vx = Math.cos(a) * 34; pt.vy = Math.sin(a) * 34; pt.wait = 0.8 + Math.random() * 1.6; }
+        }
+        pt.x = clamp(pt.x + pt.vx * DT, r.x0, r.x1);
+        pt.y = clamp(pt.y + pt.vy * DT, r.y0, r.y1);
       }
-      pt.x = clamp(pt.x + pt.vx * DT, r.x0, r.x1);
-      pt.y = clamp(pt.y + pt.vy * DT, r.y0, r.y1);
       const pm = getPet();
       if (pm && petMood() === 'hungry' && st.t > petWarnAt && Math.hypot(st.x - pt.x, st.y - pt.y) < 320) {
         petWarnAt = st.t + 300;
@@ -599,19 +613,20 @@ export async function enterWorld(opts: EnterOpts = {}) {
     }
     if (pt.fig) {
       const moving = Math.hypot(pt.vx, pt.vy) > 5;
-      pt.fig.group.position.set(pt.x * S, heightAt(pt.x, pt.y) + (isBuilt('boden') ? 0.45 : 0) + (moving ? Math.abs(Math.sin(timeSec * 12)) * 0.1 : 0), pt.y * S);
+      const petIn = !!plot && isBuilt('boden') && Math.abs(pt.x - plot.x) < IN_X && pt.y > plot.y - IN_Y && pt.y < plot.y + IN_Y;
+      pt.fig.group.position.set(pt.x * S, heightAt(pt.x, pt.y) + (petIn ? 0.45 : 0) + (moving ? Math.abs(Math.sin(timeSec * 12)) * 0.1 : 0), pt.y * S);
       if (Math.abs(pt.vx) > 3) pt.fig.mesh.scale.x = pt.vx < 0 ? -1 : 1;
       v3.set(pt.x * S, pt.fig.group.position.y + (PET_H[pt.kind] ?? 1) + 0.3, pt.y * S);
       const pp = stage.project(v3);
       const hungry = petMood() === 'hungry';
-      petMark.style.display = hungry && !houseRoofCovers() ? '' : 'none';
+      petMark.style.display = hungry && !(petIn && houseRoofCovers()) ? '' : 'none';
       petMark.style.transform = `translate(${pp.x}px, ${pp.y + Math.sin(timeSec * 4) * 4}px) translate(-50%, -100%)`;
     }
     if (plot && isBuilt('radio') && currentStation() !== 'wald' && Math.random() < 0.07) {
-      fx.add((plot.x - 152) * S, 3.2, (plot.y + 35) * S, (Math.random() - 0.5) * 0.5, 0.9, 0.1, 1.6, 0.35, ['#ffd54a', '#ff8fab', '#8fd3ff'][Math.floor(Math.random() * 3)]);
+      fx.add((plot.x - 202) * S, 3.2, (plot.y + 35) * S, (Math.random() - 0.5) * 0.5, 0.9, 0.1, 1.6, 0.35, ['#ffd54a', '#ff8fab', '#8fd3ff'][Math.floor(Math.random() * 3)]);
     }
     if (plot) {
-      const inh = isBuilt('fundament') && Math.abs(st.x - plot.x) < 160 && st.y > plot.y - 125 && st.y < plot.y + 125 && isBuilt('waende');
+      const inh = isBuilt('fundament') && Math.abs(st.x - plot.x) < IN_X && st.y > plot.y - IN_Y && st.y < plot.y + IN_Y && isBuilt('waende');
       if (inh !== houseInside) { houseInside = inh; house.setInside(inh); }
       house.update(timeSec, DT);
       const ch = house.chimney();

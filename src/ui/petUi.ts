@@ -3,7 +3,7 @@ import { h } from '../core/dom';
 import { onProgress } from '../core/progress';
 import { petSvg, type PetKind } from './art';
 import { openModal } from './modal';
-import { feed, foods, fullness, kindById, mood, pet, stock } from '../core/pet';
+import { feed, foods, fullness, kindById, mood, pet, stock, setFollow } from '../core/pet';
 import { speak } from '../audio/speak';
 import { sfx } from '../audio/music';
 
@@ -31,6 +31,7 @@ export function openPetUi(onFed?: () => void) {
             } },
           h('span', { class: 'pf-icon' }, f.icon), h('span', { class: 'pf-name' }, f.name), h('small', {}, `Vorrat ${n}` + (fav ? ' ❤️' : '')));
         })),
+        h('button', { class: 'btn ' + (p.follow ? 'ghost' : 'sky') + ' pet-follow', onclick: () => { setFollow(!p.follow); sfx.pop(); speak(!p.follow ? 'pet.follow.on' : 'pet.follow.off', { name: p.name }); } }, p.follow ? '🏠 Zuhause lassen' : '🦮 Mitnehmen'),
         h('small', { class: 'pet-hint' }, 'Futter gibt es im Supermarkt. ❤️ = Lieblingsfutter (macht extra satt).'))
     );
   }

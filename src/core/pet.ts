@@ -12,8 +12,8 @@ export const foods: PetFoodDef[] = petCfg.foods;
 export const kindById = (id: string) => kinds.find((k) => k.id === id)!;
 export const foodById = (id: string) => foods.find((f) => f.id === id)!;
 
-/** Sättigung sinkt langsam mit der echten Zeit (100 → 0 in etwa zweieinhalb Stunden). */
-const DECAY_PER_MIN = 0.7;
+/** Sättigung sinkt langsam mit der echten Zeit (100 → 0 in etwa 45 Minuten). */
+const DECAY_PER_MIN = 2.2;
 
 export const pet = () => getProgress().pet;
 export const petUnlocked = () => stageNow() >= 2;
@@ -52,4 +52,9 @@ export function feed(food: string): { ok: boolean; favorite: boolean; gain: numb
     }
   });
   return { ok: true, favorite: fav, gain };
+}
+
+/** Haustier mitnehmen (folgt Mia) oder zuhause lassen */
+export function setFollow(on: boolean) {
+  mutate((p) => void (p.pet && (p.pet.follow = on)));
 }
