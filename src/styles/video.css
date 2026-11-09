@@ -1,0 +1,18 @@
+.video { background: linear-gradient(#bfe6c4, #f6f0d8 70%); overflow: hidden; }
+.vid-sun { position: absolute; right: 90px; top: 70px; width: 130px; height: 130px; border-radius: 50%; background: radial-gradient(#fff6b0, #ffe36a); box-shadow: 0 0 60px #fff3a0; opacity: .8; }
+.vid-bar { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 3; }
+.vid-bar i { width: 34px; height: 12px; border-radius: 8px; background: rgba(0,0,0,.18); transition: background .3s; }
+.vid-bar i.done { background: var(--leaf); } .vid-bar i.now { background: var(--sun); }
+.vid-owl { position: absolute; left: 24px; bottom: 90px; width: 300px; filter: drop-shadow(0 12px 6px rgba(0,0,0,.25)); animation: breathe 3.2s ease-in-out infinite; transform-origin: 50% 100%; }
+.vid-owl.talking { animation: talkbob .5s ease-in-out infinite; }
+.vid-owl.talking .beak-low { animation: chomp .22s ease-in-out infinite alternate; transform-origin: 110px 132px; }
+.vid-frame { position: absolute; left: 350px; top: 96px; width: 810px; padding: 14px 8px 10px; background: #8a5a2f; border-radius: 30px; border-bottom: 12px solid #5f3d1d; box-shadow: 0 14px 24px rgba(0,0,0,.3); transition: opacity .5s, transform .5s; }
+.vid-frame.hidden { opacity: 0; transform: translateY(30px) scale(.96); pointer-events: none; }
+.vid-title { text-align: center; color: #ffe9b0; font: 900 32px var(--font); margin-bottom: 8px; }
+.vid-frame .board { background: #fff6e3; border-radius: 22px; padding: 12px 0 8px; }
+.vid-frame .dot { --item: 42px; }
+.vid-frame .bbody { min-height: 150px; }
+.vid-ctl { position: absolute; right: 24px; bottom: 96px; display: flex; gap: 12px; z-index: 4; }
+.vid-end.hidden, .vid-replay.hidden, .vid-skip.hidden { display: none; }
+.vid-end { position: absolute; left: 350px; right: 24px; top: 470px; display: flex; gap: 16px; align-items: center; justify-content: center; flex-wrap: wrap; z-index: 5; animation: subIn .4s; }
+.vid-end-text { width: 100%; text-align: center; font: 900 44px var(--font); color: var(--leaf-d); text-shadow: 0 3px 0 #fff; }

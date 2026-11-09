@@ -4,7 +4,9 @@ import { mapScreen } from '../../core/map';
 import { areaScreen, type Npc, type Offer } from './area';
 import { checkScreen, discoverScreen, kaertchenScreen, punkteScreen, steineScreen } from './games';
 import '../../styles/wald.css';
+import { videoScreen } from './video';
 import '../../styles/games.css';
+import '../../styles/video.css';
 
 function toMap() {
   show(mapScreen(), { back: null });
@@ -29,8 +31,7 @@ function startOffer(offer: Offer, npc: Npc) {
     case 'check':
       return show(checkScreen(back, play('check')), { back });
     case 'video':
-      // Etappe d
-      return show(discoverScreen(), { back });
+      return show(videoScreen({ onDone: back, onSkip: back }), { back });
   }
 }
 

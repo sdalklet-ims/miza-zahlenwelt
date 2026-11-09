@@ -5,6 +5,7 @@ import { hud } from './ui/hud';
 import { show } from './core/router';
 import { mapScreen } from './core/map';
 import { startScreen } from './ui/start';
+import { openSettings } from './ui/settings';
 import { speak, unlockAudio } from './audio/speak';
 import './worlds/wald'; // registriert die Welt "wald"
 
@@ -14,7 +15,7 @@ function goMap() {
   show(mapScreen(), { back: null });
 }
 
-hud.init({ onMap: goMap });
+hud.init({ onMap: goMap, onSettings: openSettings });
 
 show(
   startScreen(() => {
