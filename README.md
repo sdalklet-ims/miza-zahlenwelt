@@ -38,13 +38,12 @@ Die Eule klingt etwas tiefer, Mia heller (Tonhöhe pro Figur aus `content/common
 
 - **Joystick** links unten: Mia läuft in Zeigerichtung, Tempo nach Auslenkung, sanftes Anfahren und Abbremsen.
 - **Pfoten-Knopf** rechts unten: erscheint nur, wenn etwas in Reichweite ist (💬 Ansprechen, 🗝️ Öffnen, 🌿 Verstecken, 🐿️ Streicheln, 🌫️ Nebeltor).
-- **Schleichen** (Knopf daneben, an/aus): Mia läuft geduckt und langsam. Tiere erschrecken dann erst viel später – so kann man ein Eichhörnchen streicheln.
 - **Verstecken:** Am Busch den Pfoten-Knopf drücken; Mia ist versteckt (nur die Augen gucken heraus). Joystick bewegen = wieder herauskommen.
 - **Tippen** auf die Welt = dorthin laufen (in den Einstellungen abschaltbar). Joystick und Knopf funktionieren gleichzeitig (Multi-Touch).
 - Oben rechts: ⭐ Sterne, 🗺️ Weltkarte (Schnellreise), 🎩 Album, ⚙️ Einstellungen.
-- Am Rechner: Pfeile/WASD, Leertaste/E = Pfote, Shift = Schleichen.
+- Am Rechner: Pfeile/WASD, Leertaste/E = Pfote.
 
-Sterne gibt es auch fürs Entdecken: 4 versteckte Sterne im Wald und das Eichhörnchen-Kraulen.
+Sterne gibt es auch fürs Entdecken: 4 versteckte Sterne im Wald und das Eichhörnchen-Kraulen (langsam herangehen).
 
 ## Aufbau
 

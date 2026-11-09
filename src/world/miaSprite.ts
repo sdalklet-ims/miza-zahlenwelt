@@ -1,6 +1,6 @@
-/** Mia, Top-down-Ansicht, per Canvas gezeichnet: Idle/Laufen/Schleichen in 4 Blickrichtungen. */
+/** Mia, Top-down-Ansicht, per Canvas gezeichnet: Idle/Laufen in 4 Blickrichtungen. */
 export type Dir = 'down' | 'up' | 'left' | 'right';
-export interface MiaPose { dir: Dir; t: number; moving: boolean; sneak: boolean; acc: string[]; alpha?: number }
+export interface MiaPose { dir: Dir; t: number; moving: boolean; acc: string[]; alpha?: number }
 
 const OR = '#e9a24b', ORD = '#b8691f', CR = '#fff0d4', PK = '#f2a2a2', INK = '#3b2a1e';
 
@@ -22,19 +22,19 @@ const poly = (c: CanvasRenderingContext2D, pts: number[][], fill: string, stroke
 
 /** Zeichnet Mia mit den Füßen bei (x, y). */
 export function drawMia(c: CanvasRenderingContext2D, x: number, y: number, p: MiaPose) {
-  const { dir, t, moving, sneak, acc } = p;
+  const { dir, t, moving, acc } = p;
   const side = dir === 'left' || dir === 'right';
   const back = dir === 'up';
-  const ph = moving ? t * (sneak ? 8 : 13) : 0;
-  const bob = moving ? Math.abs(Math.sin(ph)) * (sneak ? 1.5 : 4) : Math.sin(t * 2) * 0.8;
+  const ph = moving ? t * 13 : 0;
+  const bob = moving ? Math.abs(Math.sin(ph)) * 4 : Math.sin(t * 2) * 0.8;
   const wag = Math.sin(t * (moving ? 9 : 2.6)) * 0.5;
 
   c.save();
   c.globalAlpha = p.alpha ?? 1;
   c.translate(x, y);
   ell(c, 0, 2, side ? 26 : 21, 8, 'rgba(0,0,0,.22)');
-  c.translate(0, -bob + (sneak ? 6 : 0));
-  c.scale(dir === 'left' ? -1 : 1, sneak ? 0.84 : 1);
+  c.translate(0, -bob);
+  c.scale(dir === 'left' ? -1 : 1, 1);
 
   const tail = () => {
     c.save();
@@ -50,7 +50,7 @@ export function drawMia(c: CanvasRenderingContext2D, x: number, y: number, p: Mi
 
   // Beine
   const legs = side ? [[-12, 0], [-4, 1], [8, 0], [15, 1]] : [[-9, 0], [9, 1]];
-  legs.forEach(([lx, k]) => ell(c, lx, -3 + (moving ? Math.sin(ph + k * Math.PI) * -4 : 0), 6, 5.5, p.sneak ? OR : CR, ORD));
+  legs.forEach(([lx, k]) => ell(c, lx, -3 + (moving ? Math.sin(ph + k * Math.PI) * -4 : 0), 6, 5.5, CR, ORD));
 
   // Körper
   if (side) {

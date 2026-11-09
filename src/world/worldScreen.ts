@@ -1,6 +1,6 @@
 /**
  * Der Welt-Bildschirm: Canvas-Renderer, fester Zeitschritt (60 Hz), weiche Kamera, Kollisionen,
- * Tiefensortierung, Interaktionen (Pfote), Verstecken/Schleichen, Entdecker-Sterne, Dialoge.
+ * Tiefensortierung, Interaktionen (Pfote), Verstecken, Entdecker-Sterne, Dialoge.
  */
 import { h, clamp, pick } from '../core/dom';
 import { worlds, textOf } from '../core/texts';
@@ -23,7 +23,7 @@ export interface EnterOpts { spawnWorld?: string }
 
 const R = 13; // Mias Kollisionsradius (an den Füßen)
 const DT = 1 / 60;
-const RUN = 235, SNEAK = 105;
+const RUN = 235;
 
 interface Particle { x: number; y: number; vx: number; vy: number; life: number; max: number; kind: 'heart' | 'spark' | 'ring'; col?: string }
 
@@ -199,13 +199,12 @@ export async function enterWorld(opts: EnterOpts = {}) {
       }
     }
 
-    const sneaking = controls.sneaking();
     if (hidden) {
       if (Math.hypot(ix, iy) > 0.3) toggleHide(hidden);
       else { ix = iy = 0; }
     }
     if (!hidden) {
-      const sp = sneaking ? SNEAK : RUN;
+      const sp = RUN;
       const mag = Math.min(1, Math.hypot(ix, iy));
       const tvx = (ix / (Math.hypot(ix, iy) || 1)) * sp * mag, tvy = (iy / (Math.hypot(ix, iy) || 1)) * sp * mag;
       const a = 1 - Math.exp(-(mag > 0 ? 11 : 15) * DT); // sanftes Beschleunigen und Abbremsen
@@ -231,7 +230,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
     // Tiere
     for (const cr of model.critters) {
       const d = Math.hypot(cr.x - st.x, cr.y - st.y);
-      const scare = sneaking ? 75 : 185;
+      const scare = 80; // nur wer nah ran will, erschreckt sie
       if (d < scare && !hidden) {
         const ang = Math.atan2(cr.y - st.y, cr.x - st.x);
         cr.vx = Math.cos(ang) * 190; cr.vy = Math.sin(ang) * 190; cr.fleeing = true; cr.wait = 1;
@@ -326,7 +325,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
     get x() { return st.x; }, get y() { return st.y; }, ext: 90,
     draw: (c, sx, sy, t) => {
       if (hidden) return;
-      drawMia(c, sx, sy, { dir: st.dir, t, moving: Math.hypot(st.vx, st.vy) > 12, sneak: controls.sneaking(), acc: equippedFor('mia') });
+      drawMia(c, sx, sy, { dir: st.dir, t, moving: Math.hypot(st.vx, st.vy) > 12, acc: equippedFor('mia') });
     },
   } as Drawable;
 

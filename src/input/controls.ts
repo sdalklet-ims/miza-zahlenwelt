@@ -1,7 +1,7 @@
 /**
- * Touch-Steuerung (Querformat): fester Joystick links unten, Pfoten-Knopf rechts unten (kontextabhängig),
- * Schleichen-Knopf daneben. Jedes Bedienelement verfolgt seinen eigenen Pointer → Multi-Touch geht.
- * Zusätzlich Tastatur (Pfeile/WASD, Leertaste/E, Shift) zum Testen am Rechner.
+ * Touch-Steuerung (Querformat): fester Joystick links unten,  Pfoten-Knopf rechts unten (kontextabhängig).
+ * Jedes Bedienelement verfolgt seinen eigenen Pointer → Multi-Touch geht.
+ * Zusätzlich Tastatur (Pfeile/WASD, Leertaste/E) zum Testen am Rechner.
  */
 import { h } from '../core/dom';
 
@@ -9,7 +9,6 @@ export interface Controls {
   el: HTMLElement;
   /** Bewegungsvektor, Länge 0..1 */
   vec: () => { x: number; y: number };
-  sneaking: () => boolean;
   /** Zeigt den Aktionsknopf mit Symbol und Beschriftung; null = ausblenden */
   setAction: (label: string | null, icon?: string) => void;
   dispose: () => void;
@@ -17,7 +16,6 @@ export interface Controls {
 
 export function createControls(onAction: () => void): Controls {
   let jx = 0, jy = 0;
-  let sneak = false;
   const keys = new Set<string>();
 
   const knob = h('div', { class: 'joy-knob' });
@@ -70,17 +68,9 @@ export function createControls(onAction: () => void): Controls {
   act.addEventListener('pointercancel', up);
   act.addEventListener('pointerleave', up);
 
-  const sn = h('button', { class: 'sneak-btn', 'aria-label': 'Schleichen' }, h('span', {}, '🐱'), h('small', {}, 'Schleichen'));
-  sn.addEventListener('pointerdown', (e) => {
-    e.preventDefault();
-    sneak = !sneak;
-    sn.classList.toggle('on', sneak);
-  });
-
   const kd = (e: KeyboardEvent) => {
     const k = e.key.toLowerCase();
     if (k === ' ' || k === 'e') { if (!e.repeat) onAction(); e.preventDefault(); return; }
-    if (k === 'shift' && !e.repeat) { sneak = !sneak; sn.classList.toggle('on', sneak); return; }
     keys.add(k);
   };
   const ku = (e: KeyboardEvent) => keys.delete(e.key.toLowerCase());
@@ -88,7 +78,7 @@ export function createControls(onAction: () => void): Controls {
   window.addEventListener('keyup', ku);
 
   return {
-    el: h('div', { class: 'controls' }, base, sn, act),
+    el: h('div', { class: 'controls' }, base, act),
     vec() {
       let x = jx, y = jy;
       if (!x && !y) {
@@ -99,7 +89,6 @@ export function createControls(onAction: () => void): Controls {
       }
       return { x, y };
     },
-    sneaking: () => sneak,
     setAction(label, icon = '🐾') {
       act.classList.toggle('off', label == null);
       if (label != null) {
