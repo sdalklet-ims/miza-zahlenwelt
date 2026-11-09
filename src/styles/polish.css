@@ -1,0 +1,22 @@
+/* ───────── Feinschliff: weiche Übergänge und kleine Animationen ───────── */
+.btn, .key, .hud-btn, .pack-item, .pet-food, .pet-tab { transition: transform .12s, filter .15s, box-shadow .15s, background-color .2s; }
+@media (hover: hover) {
+  .btn:hover:not(:disabled), .hud-btn:hover, .pack-item:hover, .pet-food:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.05); }
+}
+.hud-stars.bump { animation: bump .5s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes bump { 0% { transform: scale(1); } 40% { transform: scale(1.22); } 100% { transform: scale(1); } }
+.answer-box.tick { animation: tick .16s ease-out; }
+@keyframes tick { 0% { transform: scale(.94); } 100% { transform: scale(1); } }
+.act-btn:not(.off):not(.down) { animation: actGlow 2.4s ease-in-out infinite; }
+@keyframes actGlow { 0%, 100% { filter: drop-shadow(0 0 0 rgba(255, 220, 120, 0)); } 50% { filter: drop-shadow(0 0 14px rgba(255, 220, 120, .9)); } }
+.pet-art.munch { animation: munch .8s ease-out; }
+@keyframes munch { 0% { transform: scale(1); } 20% { transform: scale(1.08, .92); } 45% { transform: translateY(-14px) scale(.96, 1.06); } 70% { transform: scale(1.04, .96); } 100% { transform: scale(1); } }
+.modal-card { transform-origin: 50% 60%; }
+.modal-x { transition: transform .15s; } .modal-x:active { transform: scale(.9) rotate(8deg); }
+.gs-fb { animation-duration: .35s; }
+.coin-pop { will-change: transform, opacity; }
+@media (hover: hover) { .station.open:hover .st-ring { transform: scale(1.08); } }
+.st-ring { transition: transform .2s; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}

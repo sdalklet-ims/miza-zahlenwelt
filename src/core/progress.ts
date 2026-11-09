@@ -39,6 +39,8 @@ export interface Progress {
   petStock: Record<string, number>;
   /** Rucksack: Gegenstände (z. B. Regenschirm) */
   pack: Record<string, boolean>;
+  /** Freigeschaltete Welten (die erste ist immer offen) */
+  unlocked: Record<string, boolean>;
 }
 
 const KEY = 'mia.progress.v1';
@@ -61,6 +63,7 @@ const defaults = (): Progress => ({
   pets: [],
   petStock: {},
   pack: { umbrella: true },
+  unlocked: {},
 });
 
 let state: Progress = load();

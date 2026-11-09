@@ -1,0 +1,47 @@
+/* ───────── Wiese: Rechenstrich, Aufgaben, Schmetterlinge, Zahlenstrahl ───────── */
+.task.calc { display: flex; gap: 26px; align-items: center; justify-content: center; height: 100%; }
+.calc-left { flex: 1 1 560px; display: flex; flex-direction: column; align-items: center; gap: 14px; min-width: 0; }
+.calc-eq { display: flex; align-items: center; gap: 16px; padding: 6px 30px; font: 900 76px/96px var(--font); background: #fff; border: 5px solid var(--ink); border-radius: 30px; box-shadow: 0 6px 0 rgba(0,0,0,.15); }
+.calc-eq .op { color: #e9803a; } .calc-eq .q { color: #cdbd9f; min-width: 60px; text-align: center; } .calc-eq .q:not(:empty) { animation: popIn .35s; }
+.task.calc .keypad { flex-direction: column; margin: 0; gap: 12px; }
+.task.calc .answer-box { width: 150px; height: 96px; font-size: 56px; line-height: 86px; }
+.task.calc .keys { grid-template-columns: repeat(5, 62px); gap: 8px; }
+.task.calc .key { height: 56px; font-size: 30px; }
+
+.strich-box { width: 100%; max-width: 700px; background: #fffaf0; border: 4px solid #e2cfa4; border-radius: 22px; padding: 4px 6px; transition: opacity .35s, transform .35s, max-height .35s; max-height: 220px; overflow: hidden; }
+.strich-box.off { opacity: 0; transform: translateY(10px) scale(.97); max-height: 0; padding: 0; border-width: 0; pointer-events: none; }
+.strich-svg { width: 100%; height: auto; display: block; }
+.st-line { stroke: #3b2a1e; stroke-width: 5; stroke-linecap: round; }
+.st-tick { stroke: #3b2a1e; stroke-width: 4; stroke-linecap: round; }
+.st-num { font: 800 29px var(--font); fill: #3b2a1e; }
+.st-lab { font: 900 34px var(--font); }
+.st-dot { fill: #e9a24b; stroke: #fff; stroke-width: 3; animation: popIn .3s; transform-box: fill-box; transform-origin: center; }
+.st-hop { fill: none; stroke-width: 6; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset .5s ease-out; }
+.st-hop.draw { stroke-dashoffset: 0; }
+.st-arrow { fill: none; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; animation: popIn .25s; }
+.video-strich { max-width: 760px; margin: 40px auto 0; background: #fffaf0; border: 5px solid #e2cfa4; border-radius: 28px; padding: 18px; box-shadow: 0 8px 0 rgba(0,0,0,.1); }
+.video-strich .strich { }
+
+/* Schmetterlings-Paare */
+.task.partner { position: relative; height: 100%; }
+.bf-target { width: fit-content; margin: 0 auto; padding: 4px 28px; font: 800 32px/52px var(--font); background: #fff; border: 5px solid var(--ink); border-radius: 26px; } .bf-target b { color: #c0509a; font-size: 44px; }
+.bf-sel { height: 40px; text-align: center; font: 900 30px/40px var(--font); color: #7a4d9a; }
+.bf-field { position: absolute; left: 0; right: 0; top: 108px; bottom: 0; background: radial-gradient(ellipse at 50% 30%, #e9ffd0, #b9e88a 75%); border: 5px solid #7cbf4a; border-radius: 30px; overflow: hidden; }
+.bf-field:before { content: '🌼  🌸  🌼  🌷  🌼  🌸  🌼'; position: absolute; bottom: 4px; left: 0; right: 0; text-align: center; font-size: 34px; letter-spacing: 14px; opacity: .6; }
+.bf { position: absolute; width: 170px; height: 150px; padding: 0; border: 0; background: none; animation: flutter 3.4s ease-in-out infinite; transition: transform .6s, opacity .6s, filter .2s; cursor: pointer; }
+.bf-body { position: relative; display: block; width: 100%; height: 100%; } .bf-body svg { width: 100%; height: 100%; filter: drop-shadow(0 5px 0 rgba(0,0,0,.15)); }
+.bf-body b { position: absolute; left: 50%; top: 38%; transform: translateX(-50%); background: #fff; border: 3px solid #4a3566; border-radius: 14px; padding: 0 10px; font: 900 34px/44px var(--font); color: #3a2412; }
+.bf.sel { filter: drop-shadow(0 0 14px #fff06a) drop-shadow(0 0 4px #ffb300); transform: scale(1.14); z-index: 2; }
+.bf.gone { transform: translateY(-260px) scale(.3) rotate(18deg); opacity: 0; pointer-events: none; }
+@keyframes flutter { 0%, 100% { translate: 0 0; rotate: -2deg; } 50% { translate: 8px -14px; rotate: 3deg; } }
+
+/* Zahlenstrahl */
+.task.strahl { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.strahl-readout { width: fit-content; padding: 0 40px; font: 900 64px/84px var(--font); background: #fff; border: 5px solid var(--ink); border-radius: 26px; }
+.strahl-box { width: 100%; background: radial-gradient(ellipse at 50% 100%, #d9f7b8, #fffaf0 70%); border: 4px solid #cfe3a8; border-radius: 26px; touch-action: none; user-select: none; }
+.strahl-svg { width: 100%; height: auto; display: block; touch-action: none; cursor: pointer; }
+.strahl-choices { display: flex; gap: 18px; justify-content: center; margin-top: 4px; }
+.big-choice { min-width: 130px; font-size: 40px !important; }
+.hop-guy { animation: hopIn .55s ease-out; }
+@keyframes hopIn { 0% { transform: translateY(-60px); opacity: 0; } 70% { transform: translateY(6px); } 100% { opacity: 1; } }
+@keyframes popIn { 0% { transform: scale(.4); opacity: 0; } 70% { transform: scale(1.15); } 100% { transform: scale(1); opacity: 1; } }

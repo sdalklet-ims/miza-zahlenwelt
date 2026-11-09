@@ -10,6 +10,7 @@ import { sfx } from '../audio/music';
 export function openPetUi(startIdx = 0, onFed?: () => void) {
   const body = h('div', { class: 'pet-ui' });
   let sel = startIdx;
+  let fedNow = false;
   function render() {
     const list = pets();
     if (!list.length) return;
@@ -20,7 +21,7 @@ export function openPetUi(startIdx = 0, onFed?: () => void) {
       h('div', { class: 'pet-tabs', style: { display: list.length > 1 ? '' : 'none' } }, ...list.map((q, i) => h('button', { class: 'pet-tab ' + mood(q) + (i === sel ? ' on' : ''), onclick: () => { sel = i; render(); } },
         kindById(q.kind).icon, ' ' + q.name, mood(q) === 'hungry' ? ' 🍽️' : ''))),
       h('div', { class: 'pet-main' },
-      h('div', { class: 'pet-art', html: petSvg(p.kind as PetKind) }),
+      h('div', { class: 'pet-art' + (fedNow ? ' munch' : ''), html: petSvg(p.kind as PetKind) }),
       h('div', { class: 'pet-info' },
         h('h3', {}, `${p.name} (${k.name})`),
         h('div', { class: 'pet-bar ' + m }, h('i', { style: { width: full + '%' } })),
@@ -33,6 +34,8 @@ export function openPetUi(startIdx = 0, onFed?: () => void) {
               if (!r.ok) return;
               sfx.munch();
               speak(r.favorite ? 'pet.fed.fav' : 'pet.fed', { name: p.name });
+              fedNow = true;
+              setTimeout(() => { fedNow = false; }, 900);
               onFed?.();
             } },
           h('span', { class: 'pf-icon' }, f.icon), h('span', { class: 'pf-name' }, f.name), h('small', {}, `Vorrat ${n}` + (fav ? ' ❤️' : '')));

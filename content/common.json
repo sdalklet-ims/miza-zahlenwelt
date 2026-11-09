@@ -35,6 +35,30 @@
       "pitch": 1.3,
       "rate": 1.05,
       "color": "#f08a4b"
+    },
+    "bella": {
+      "name": "Biene Bella",
+      "pitch": 1.55,
+      "rate": 1.08,
+      "color": "#e8b422"
+    },
+    "schorsch": {
+      "name": "Schnecke Schorsch",
+      "pitch": 0.7,
+      "rate": 0.85,
+      "color": "#b9a05a"
+    },
+    "fritzi": {
+      "name": "Schmetterling Fritzi",
+      "pitch": 1.7,
+      "rate": 1.1,
+      "color": "#b57bd6"
+    },
+    "hannes": {
+      "name": "Grashüpfer Hannes",
+      "pitch": 1.1,
+      "rate": 1.15,
+      "color": "#6bb33f"
     }
   },
   "texts": {

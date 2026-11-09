@@ -180,7 +180,7 @@ export function createBush(): { root: THREE.Group; eyes: THREE.Group; body: THRE
       const col = new THREE.Color(c), pos = g.attributes.position, arr: number[] = [];
       for (let i = 0; i < pos.count; i++) { const k = 0.75 + Math.max(0, Math.min(1, (pos.getY(i) - y + r) / (2 * r))) * 0.5; arr.push(col.r * k, col.g * k, col.b * k); }
       g.setAttribute('color', new THREE.Float32BufferAttribute(arr, 3));
-      parts.push(g.toNonIndexed());
+      parts.push(g.index ? g.toNonIndexed() : g);
     };
     blob(0, 0.75, 0, 0.95, '#3a9d55'); blob(0.85, 0.55, 0.2, 0.7, '#2f8a4a'); blob(-0.85, 0.55, -0.1, 0.72, '#2f8a4a'); blob(0.1, 0.5, 0.8, 0.62, '#3fa65a');
     for (const [x, y, z] of [[0.5, 1.15, 0.55], [-0.6, 0.95, 0.65], [0.9, 0.75, 0.65], [-0.2, 1.4, 0.2], [1.2, 0.5, 0.3]]) {

@@ -31,7 +31,7 @@ export function createStage3D(canvas: HTMLCanvasElement, pixelRatio: number): St
   renderer.setPixelRatio(pixelRatio);
   renderer.setSize(VW, VH, false);
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.toneMapping = THREE.NoToneMapping;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 

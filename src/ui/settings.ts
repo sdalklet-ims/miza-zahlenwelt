@@ -4,6 +4,7 @@ import { getProgress, mutate, resetProgress } from '../core/progress';
 import { openModal } from './modal';
 import { applyMusicSettings, sfx } from '../audio/music';
 import { exportSave, importSave } from '../core/save';
+import { setWorldUnlocked, worldUnlocked } from '../core/unlock';
 
 export function openSettings() {
   const p = getProgress().settings;
@@ -71,6 +72,7 @@ export function openSettings() {
       h('div', { class: 'set-row' },
         toggle('Musik an', () => getProgress().settings.musicOn, (v) => mutate((s) => void (s.settings.musicOn = v))),
         toggle('Tippen = dorthin laufen', () => getProgress().settings.tapWalk, (v) => mutate((s) => void (s.settings.tapWalk = v)))),
+      h('div', { class: 'set-row' }, toggle('🔧 Test: Wiese freischalten (lädt neu)', () => worldUnlocked('wiese'), (v) => { setWorldUnlocked('wiese', v); setTimeout(() => location.reload(), 300); })),
       h('div', { class: 'set-hint' }, 'Alle Texte werden gelesen – es gibt keine Stimmen. Der Spielstand wird automatisch auf diesem Gerät gespeichert.'),
       h('h3', { class: 'set-h' }, '💾 Spielstand sichern'), box, saveRow, msg,
       h('div', { class: 'set-row' }, resetBtn)),

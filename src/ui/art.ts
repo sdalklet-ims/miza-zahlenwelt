@@ -165,8 +165,14 @@ export function foxSvg(): string {
 </svg>`;
 }
 
+import { beeSvg, snailSvg, butterflySvg, grasshopperSvg } from './artWiese';
+
 export function npcSvg(kind: string, acc: string[] = []): string {
   switch (kind) {
+    case 'bee': return beeSvg();
+    case 'snail': return snailSvg();
+    case 'butterfly': return butterflySvg();
+    case 'grasshopper': return grasshopperSvg();
     case 'owl': return owlSvg(acc);
     case 'hedgehog': return hedgehogSvg();
     case 'badger': return badgerSvg();

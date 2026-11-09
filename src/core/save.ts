@@ -19,7 +19,9 @@ export function importSave(code: string): { ok: boolean; msg: string } {
     return { ok: false, msg: 'Das ist kein gültiger Spielstand-Code.' };
   }
   if (obj.mia !== 1 || !obj.data) return { ok: false, msg: 'Das ist kein Spielstand von Mia.' };
-  const d = obj.data;
+  const d = obj.data as Partial<Progress> & { pet?: Progress['pets'][number] | null };
+  if (d.pet && !d.pets) d.pets = [d.pet]; // alter Spielstand mit einem Haustier
+  delete d.pet;
   mutate((p) => {
     if (obj.partial) {
       // Ergänzen: Haus-Teile vereinen, Meilenstein nie zurücksetzen

@@ -6,13 +6,14 @@ import { equippedFor } from './rewards';
 import { miaSvg } from '../ui/art';
 import { mapBackground } from './mapArt';
 import { modules } from '../worlds';
+import { worldUnlocked } from './unlock';
 import { speak } from '../audio/speak';
 import type { Screen } from './router';
 
 interface Pt { x: number; y: number }
 
 const MAX_STARS_PER_WORLD = 30;
-const isOpen = (w: WorldContent) => w.meta.status === 'open' && !!modules[w.id];
+const isOpen = (w: WorldContent) => w.meta.status === 'open' && !!modules[w.id] && worldUnlocked(w.id);
 
 /** Pfad durch alle Stationen (leicht geschwungen), als Punktliste + Index je Station */
 function buildPath(stations: Pt[]) {

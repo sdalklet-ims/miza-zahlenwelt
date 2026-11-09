@@ -55,8 +55,14 @@ export const hud = {
     backBtn.onclick = fn;
   },
   refresh() {
-    if (starsEl) starsEl.textContent = `⭐ ${totalStars()}`;
-    if (coinEl) coinEl.textContent = `🪙 ${coins()}`;
+    const set = (e: HTMLElement | undefined, t: string) => {
+      if (!e || e.textContent === t) return;
+      const had = !!e.textContent;
+      e.textContent = t;
+      if (had) { e.classList.remove('bump'); void e.offsetWidth; e.classList.add('bump'); }
+    };
+    set(starsEl, `⭐ ${totalStars()}`);
+    set(coinEl, `🪙 ${coins()}`);
     if (houseEl) houseEl.textContent = `🏠 ${builtCount()}/${parts.length}`;
   },
 };

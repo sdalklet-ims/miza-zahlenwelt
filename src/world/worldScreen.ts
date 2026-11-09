@@ -33,6 +33,7 @@ import * as M from '../world3d/models';
 import { createMiaSprite, svgFigure, SPR_Y, type Billboard } from '../world3d/sprites';
 import type { Dir } from '../world3d/comic';
 import { npcSvg, squirrelSvg, petSvg, type PetKind } from '../ui/art';
+import { mouseSvg } from '../ui/artWiese';
 import '../styles/world.css';
 import '../styles/wald.css';
 
@@ -259,7 +260,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
   interface NpcView { ent: (typeof model.npcs)[number]; root: THREE.Object3D; fig?: Billboard; label: HTMLElement; mark: HTMLElement; top: number }
   const npcViews: NpcView[] = [];
   const eulerAcc = equippedFor('eule');
-  const FIG_H: Record<string, number> = { owl: 2.5, hedgehog: 1.3, badger: 1.7, hare: 2.1, fox: 2.0 };
+  const FIG_H: Record<string, number> = { owl: 2.5, hedgehog: 1.3, badger: 1.7, hare: 2.1, fox: 2.0, bee: 2.0, snail: 1.4, butterfly: 2.1, grasshopper: 2.0 };
   for (const e of model.npcs) {
     let root: THREE.Object3D, fig: Billboard | undefined, top = 3.4;
     if (e.kind === 'chest') { root = M.createChest(); top = 1.9; }
@@ -286,7 +287,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
 
   const critters: { c: (typeof model.critters)[number]; fig: Billboard }[] = [];
   for (const c of model.critters) {
-    const fig = await svgFigure(squirrelSvg(), 1.0);
+    const fig = await svgFigure(c.kind === 'mouse' ? mouseSvg() : squirrelSvg(), c.kind === 'mouse' ? 0.8 : 1.0);
     scene.add(fig.group);
     critters.push({ c, fig });
   }
@@ -374,12 +375,14 @@ export async function enterWorld(opts: EnterOpts = {}) {
   function pet(c: Critter) {
     for (let i = 0; i < 6; i++) setTimeout(() => heart(c.x * S, heightAt(c.x, c.y) + 1.3, c.y * S), i * 90);
     c.fleeing = false; c.wait = 3;
-    const id = 'wald.squirrel';
+    const wid = worlds[zoneIndex(c.x)].id;
+    const kind = c.kind === 'mouse' ? 'critter' : 'squirrel';
+    const id = `${wid}.${kind}`;
     if (!getProgress().discovered[id]) {
       mutate((p) => void (p.discovered[id] = true));
-      speak('wald.squirrel.pet');
-      award('wald.entdecker.squirrel', 1);
-    } else speak('wald.squirrel.again');
+      speak(`${wid}.${kind}.pet`);
+      award(`${wid}.entdecker.${kind}`, 1);
+    } else speak(`${wid}.${kind}.again`);
   }
 
   function openDialog(npc: Npc, worldId: string) {
@@ -388,10 +391,11 @@ export async function enterWorld(opts: EnterOpts = {}) {
     const start = stationStarters[worldId];
     const labelsTxt: Record<string, string> = {
       video: '▶ Erklärvideo', discover: '🔍 Ausprobieren', check: '⭐ Mini-Check',
+      plus: '🍯 Honig-Plus', minus: '🐌 Minus-Wanderung', partner: '🦋 Schmetterlings-Paare', strahl: '🦗 Zahlenstrahl-Hüpfer',
       punkte: '🎯 Punkte zählen', steine: '🪨 Steine-Meister', kaertchen: '🃏 Kärtchen-Duell',
       angeln: '🎣 Zahlen-Angeln', pilze: '🍄 Pilze pflücken', shop: '🛒 Zum Laden',
     };
-    const starKey: Record<string, string> = { check: `${worldId}.check`, punkte: `${worldId}.punkte`, steine: `${worldId}.steine`, kaertchen: `${worldId}.kaertchen`, angeln: `${worldId}.angeln`, pilze: `${worldId}.pilze` };
+    const starKey: Record<string, string> = { check: `${worldId}.check`, punkte: `${worldId}.punkte`, steine: `${worldId}.steine`, kaertchen: `${worldId}.kaertchen`, angeln: `${worldId}.angeln`, pilze: `${worldId}.pilze`, plus: `${worldId}.plus`, minus: `${worldId}.minus`, partner: `${worldId}.partner`, strahl: `${worldId}.strahl` };
     const btns = npc.offers.map((o) => {
       const s = starKey[o] ? getProgress().stars[starKey[o]] ?? 0 : null;
       return h('button', { class: 'btn ' + (o === 'video' || o === 'shop' ? 'sun' : o === 'check' ? 'coral' : ''), onclick: () => { savePos(); closeDialog(); if (o === 'shop') openSupermarket(); else start?.(o as Offer, npc, () => void enterWorld()); } },
@@ -549,9 +553,10 @@ export async function enterWorld(opts: EnterOpts = {}) {
       sv.m.visible = false;
       mutate((p) => void (p.discovered[s.id] = true));
       for (let i = 0; i < 26; i++) { const a = (i / 26) * 6.28; fx.add(s.x * S, heightAt(s.x, s.y) + 1.1, s.y * S, Math.cos(a) * 2.6, 1 + Math.random() * 2, Math.sin(a) * 2.6, 0.9, 0.3, '#ffd54a', -3); }
-      speak('wald.star.found');
+      const swid = s.id.split('.')[0];
+      speak(`${swid}.star.found`);
       sfx.star();
-      award(`wald.entdecker.${s.id}`, 1);
+      award(`${swid}.entdecker.${s.id}`, 1);
     }
 
     if (shakeFog > 0) shakeFog = Math.max(0, shakeFog - DT);
@@ -665,6 +670,10 @@ export async function enterWorld(opts: EnterOpts = {}) {
       if (nv.fig) {
         nv.fig.mesh.scale.y = SPR_Y * (1 + Math.sin(timeSec * 2.2 + nv.ent.x) * 0.018); // atmet
         if (nv.ent.kind === 'hedgehog') nv.fig.mesh.scale.x = st.x > nv.ent.x ? -1 : 1; // schaut zu Mia
+        const k = nv.ent.kind, ph = timeSec + nv.ent.x * 0.01;
+        const lift = k === 'bee' || k === 'butterfly' ? 0.45 + Math.sin(ph * 3) * 0.14 : k === 'grasshopper' ? Math.pow(Math.abs(Math.sin(ph * 1.1)), 10) * 0.55 : 0;
+        if (lift) nv.root.position.y = heightAt(nv.ent.x, nv.ent.y) + lift;
+        if (k === 'bee' || k === 'butterfly' || k === 'grasshopper' || k === 'snail') nv.fig.mesh.scale.x = st.x < nv.ent.x ? -1 : 1; // schaut zu Mia
       }
       v3.set(nv.ent.x * S, heightAt(nv.ent.x, nv.ent.y) + nv.top, nv.ent.y * S);
       const p = stage.project(v3);

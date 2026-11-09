@@ -5,13 +5,14 @@
  */
 import { worlds, type WorldContent } from '../core/texts';
 import { getProgress } from '../core/progress';
+import { worldUnlocked } from '../core/unlock';
 import { stationStarters, type Npc } from '../stations';
 import { ZW, WW, WH, PLOT, pathY, riverOf } from './terrain';
 
 export interface Circle { x: number; y: number; r: number }
 export interface Rect { x: number; y: number; w: number; h: number }
 export interface Interact { id: string; x: number; y: number; r: number; label: string; icon: string; run: () => void; follow?: { x: number; y: number } }
-export interface Critter { x: number; y: number; vx: number; vy: number; hx: number; hy: number; tx: number; ty: number; wait: number; face: number; fleeing: boolean }
+export interface Critter { kind: string; x: number; y: number; vx: number; vy: number; hx: number; hy: number; tx: number; ty: number; wait: number; face: number; fleeing: boolean }
 export interface Bush { x: number; y: number; occupied: boolean }
 export interface Star { id: string; x: number; y: number; got: boolean }
 export interface NpcEnt { npc: Npc; id: string; kind: string; name: string; x: number; y: number; worldId: string }
@@ -37,7 +38,7 @@ export interface Hooks {
 
 const AREA = (ZW * WH) / (1400 * 1800); // Dichte der Dekoration wächst mit der Zonengröße
 
-export const isOpen = (w: WorldContent) => w.meta.status === 'open' && !!stationStarters[w.id];
+export const isOpen = (w: WorldContent) => w.meta.status === 'open' && !!stationStarters[w.id] && worldUnlocked(w.id);
 export const PROC_KINDS = ['chest', 'pond', 'shroom'];
 
 function rng(seed: number) {
@@ -94,9 +95,9 @@ export function buildWorld(hooks: Hooks): WorldModel {
     }
 
     for (const cr of d.critters ?? []) {
-      const c0: Critter = { x: x0 + cr.x, y: cr.y, vx: 0, vy: 0, hx: x0 + cr.x, hy: cr.y, tx: x0 + cr.x, ty: cr.y, wait: Math.random() * 2, face: 1, fleeing: false };
+      const c0: Critter = { kind: cr.kind ?? 'squirrel', x: x0 + cr.x, y: cr.y, vx: 0, vy: 0, hx: x0 + cr.x, hy: cr.y, tx: x0 + cr.x, ty: cr.y, wait: Math.random() * 2, face: 1, fleeing: false };
       m.critters.push(c0);
-      m.interacts.push({ id: `critter.${m.critters.length}`, x: c0.x, y: c0.y, r: 70, label: 'Streicheln', icon: '🐿️', follow: c0, run: () => hooks.onSquirrel(c0) });
+      m.interacts.push({ id: `critter.${m.critters.length}`, x: c0.x, y: c0.y, r: 70, label: 'Streicheln', icon: cr.kind === 'mouse' ? '🐭' : '🐿️', follow: c0, run: () => hooks.onSquirrel(c0) });
     }
   }
 

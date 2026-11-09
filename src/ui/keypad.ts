@@ -16,6 +16,9 @@ export function createKeypad(maxLen: number, onSubmit: (v: number) => void): Key
   const refresh = () => {
     show.textContent = v === '' ? '?' : v;
     show.classList.toggle('empty', v === '');
+    show.classList.remove('tick');
+    void show.offsetWidth;
+    if (v !== '') show.classList.add('tick');
   };
   const key = (label: string, fn: () => void, cls = '') =>
     h('button', { class: 'key ' + cls, onclick: () => !locked && fn() }, label);

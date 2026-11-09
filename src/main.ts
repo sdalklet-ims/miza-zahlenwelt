@@ -1,6 +1,7 @@
 import { openBackpack } from './ui/backpack';
 import './styles/base.css';
 import './styles/map.css';
+import './styles/polish.css';
 import { initStage } from './ui/stage';
 import { hud } from './ui/hud';
 import { show } from './core/router';
@@ -12,6 +13,7 @@ import { openAlbum } from './ui/album';
 import { openHouseUi } from './ui/houseUi';
 import { speak, unlockAudio } from './audio/speak';
 import './worlds/wald'; // registriert die Welt "wald"
+import './worlds/wiese'; // registriert die Welt "wiese" (gesperrt, bis freigeschaltet)
 
 initStage();
 

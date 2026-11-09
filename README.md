@@ -79,3 +79,21 @@ src/
 - **Mehrere Haustiere** (bis 6): im Supermarkt, Gang „Tiere“, immer wieder neue kaufen. Jedes hat eigenen Hunger, eigenen Namen und kann einzeln mitgenommen werden. Im Füttern-Fenster wählt man oben das Tier aus.
 - **Regen**: ab und zu regnet es draußen (Wetter-Zyklus in `src/core/weather.ts`). Der **Regenschirm liegt im Rucksack** (🎒 in der oberen Leiste, blinkt bei Regen). Ohne Schirm wird Mia nass und etwas langsamer – kein Game Over. Im überdachten Haus regnet es nicht.
 - Spielstand: altes einzelnes `pet` wird automatisch zu `pets[]` migriert.
+
+## Neue Welt: Wiese (Plus & Minus bis 1000)
+Eine Zone mit bunten Blumen, 12 Entdeckersternen, Feldmäusen zum Streicheln, Büschen und fünf Stationen. Alle Texte stehen in `content/worlds/wiese.json`.
+
+| Figur | Angebot | Inhalt |
+|---|---|---|
+| Biene Bella | ▶ Erklärvideo, 🍯 Honig-Plus | Rechenstrich erklärt (Hunderter, Zehner, Einer, Minus rückwärts, Zehner voll machen); Plus-Aufgaben, 5 Stufen |
+| Schnecke Schorsch | 🐌 Minus-Wanderung | Minus-Aufgaben, 5 Stufen (von vollen Zehnern bis dreistellig mit Übergang) |
+| Schmetterling Fritzi | 🦋 Schmetterlings-Paare | Zahlenpaare zu 100 und zu 1000 (Ergänzen), 4 Stufen |
+| Grashüpfer Hannes | 🦗 Zahlenstrahl-Hüpfer | Zahl am Zahlenstrahl finden (Marker setzen) und ablesen, 4 Stufen |
+| Blumentruhe | ⭐ Wiesen-Check | 6 gemischte Aufgaben |
+
+- **Rechenstrich** (`src/ui/strich.ts`): zeigt Sprünge als Bögen. Bei Fehlern rechnet er die Aufgabe Schritt für Schritt vor (Hunderter → Zehner → Einer; bei Einern mit Übergang erst zum vollen Zehner).
+- Stufen passen sich an (3 richtig in Folge = hoch, 2 Fehler = runter), kein Zeitdruck, Münzen wie im Wald.
+- **Zugang**: Wie Mia in die Wiese kommt, ist noch offen. Bis dahin gibt es in den Einstellungen den Schalter „🔧 Test: Wiese freischalten“. Im Code: `src/core/unlock.ts` (`worldUnlocked`, `setWorldUnlocked`) – dort später die echte Bedingung eintragen.
+
+## Feinschliff in dieser Version
+Weichere Knöpfe und Hover, Münz-/Sterne-Anzeige „hüpft“ bei Änderung, Ziffernfeld-Feedback, leuchtender Aktionsknopf, Haustier „mampft“ beim Füttern, Bienen/Schmetterlinge schweben, Grashüpfer hüpft, NPCs schauen zu Mia, Spielstand-Import übernimmt alte Einzel-Haustiere, Konsolenwarnungen von three.js beseitigt, `prefers-reduced-motion` wird beachtet.

@@ -1,8 +1,394 @@
 {
   "id": "wiese",
   "meta": {
-    "title": "Wiese", "topic": "Hunderterfeld", "order": 2, "icon": "🌼", "theme": "meadow",
-    "color": "#e9b949", "map": { "x": 420, "y": 330 }, "status": "locked"
+    "title": "Wiese",
+    "topic": "Plus & Minus bis 1000",
+    "order": 2,
+    "icon": "🌼",
+    "theme": "meadow",
+    "color": "#e9b949",
+    "map": {
+      "x": 420,
+      "y": 330
+    },
+    "status": "open"
   },
-  "texts": {}
+  "world": {
+    "spawn": {
+      "x": 330,
+      "y": 1784
+    },
+    "npcs": [
+      {
+        "id": "bella",
+        "kind": "bee",
+        "name": "Biene Bella",
+        "x": 700,
+        "y": 1380,
+        "hello": "wiese.bella.hello",
+        "offers": [
+          "video",
+          "plus"
+        ]
+      },
+      {
+        "id": "schorsch",
+        "kind": "snail",
+        "name": "Schnecke Schorsch",
+        "x": 1350,
+        "y": 1492,
+        "hello": "wiese.schorsch.hello",
+        "offers": [
+          "minus"
+        ]
+      },
+      {
+        "id": "fritzi",
+        "kind": "butterfly",
+        "name": "Schmetterling Fritzi",
+        "x": 1980,
+        "y": 1141,
+        "hello": "wiese.fritzi.hello",
+        "offers": [
+          "partner"
+        ]
+      },
+      {
+        "id": "hannes",
+        "kind": "grasshopper",
+        "name": "Grashüpfer Hannes",
+        "x": 2480,
+        "y": 1876,
+        "hello": "wiese.hannes.hello",
+        "offers": [
+          "strahl"
+        ]
+      },
+      {
+        "id": "truhe",
+        "kind": "chest",
+        "name": "Blumentruhe",
+        "x": 2950,
+        "y": 1796,
+        "hello": "wiese.truhe.hello",
+        "offers": [
+          "check"
+        ]
+      }
+    ],
+    "bushes": [
+      {
+        "x": 1466,
+        "y": 777
+      },
+      {
+        "x": 1757,
+        "y": 2826
+      },
+      {
+        "x": 337,
+        "y": 456
+      },
+      {
+        "x": 2334,
+        "y": 545
+      },
+      {
+        "x": 1637,
+        "y": 2547
+      },
+      {
+        "x": 377,
+        "y": 2238
+      },
+      {
+        "x": 1019,
+        "y": 313
+      },
+      {
+        "x": 492,
+        "y": 1936
+      },
+      {
+        "x": 1852,
+        "y": 446
+      },
+      {
+        "x": 1125,
+        "y": 531
+      },
+      {
+        "x": 382,
+        "y": 2476
+      },
+      {
+        "x": 647,
+        "y": 1074
+      }
+    ],
+    "stars": [
+      {
+        "id": "s1",
+        "x": 2723,
+        "y": 2729
+      },
+      {
+        "id": "s2",
+        "x": 2503,
+        "y": 2558
+      },
+      {
+        "id": "s3",
+        "x": 1326,
+        "y": 1876
+      },
+      {
+        "id": "s4",
+        "x": 730,
+        "y": 2374
+      },
+      {
+        "id": "s5",
+        "x": 2933,
+        "y": 900
+      },
+      {
+        "id": "s6",
+        "x": 909,
+        "y": 1685
+      },
+      {
+        "id": "s7",
+        "x": 983,
+        "y": 2193
+      },
+      {
+        "id": "s8",
+        "x": 2926,
+        "y": 2337
+      },
+      {
+        "id": "s9",
+        "x": 2047,
+        "y": 2558
+      },
+      {
+        "id": "s10",
+        "x": 1996,
+        "y": 1641
+      },
+      {
+        "id": "s11",
+        "x": 1369,
+        "y": 2311
+      },
+      {
+        "id": "s12",
+        "x": 2634,
+        "y": 459
+      }
+    ],
+    "critters": [
+      {
+        "kind": "mouse",
+        "x": 1852,
+        "y": 835
+      },
+      {
+        "kind": "mouse",
+        "x": 2142,
+        "y": 1887
+      },
+      {
+        "kind": "mouse",
+        "x": 2574,
+        "y": 2194
+      },
+      {
+        "kind": "mouse",
+        "x": 2995,
+        "y": 426
+      },
+      {
+        "kind": "mouse",
+        "x": 388,
+        "y": 1428
+      },
+      {
+        "kind": "mouse",
+        "x": 1769,
+        "y": 1761
+      }
+    ]
+  },
+  "texts": {
+    "wiese.arrive": [
+      "mia",
+      "Eine bunte Wiese! Hier summt und brummt es überall."
+    ],
+    "wiese.bella.hello": [
+      "bella",
+      "Summ, summ! Ich bin Biene Bella. Beim Honigsammeln rechne ich mit dem Rechenstrich. Soll ich ihn dir zeigen?"
+    ],
+    "wiese.schorsch.hello": [
+      "schorsch",
+      "Hallo… ich… bin… Schorsch. Ich gehe langsam, aber ich rechne gern rückwärts. Kommst du mit?"
+    ],
+    "wiese.fritzi.hello": [
+      "fritzi",
+      "Hui! Ich bin Fritzi. Auf meinen Flügeln stehen Zahlen, und die passen immer zu zweit zusammen!"
+    ],
+    "wiese.hannes.hello": [
+      "hannes",
+      "Hopp, hopp! Ich bin Hannes. Ich kenne jede Stelle auf dem Zahlenstrahl. Weißt du, wo die Zahlen wohnen?"
+    ],
+    "wiese.truhe.hello": [
+      "mia",
+      "Eine Blumentruhe! Darin liegt der Wiesen-Check: sechs Aufgaben mit allem, was ich hier gelernt habe."
+    ],
+    "wiese.critter.pet": [
+      "mia",
+      "Eine kleine Feldmaus! Piep, piep. Sie freut sich über das Streicheln."
+    ],
+    "wiese.critter.again": [
+      "mia",
+      "Die Maus kuschelt sich an meine Hand."
+    ],
+    "wiese.star.found": [
+      "mia",
+      "Ein Entdeckerstern zwischen den Blumen! Glitzer, glitzer!"
+    ],
+    "wiese.video.01": [
+      "bella",
+      "Willkommen auf meiner Wiese! Heute zeige ich dir meinen Honig-Trick: den Rechenstrich."
+    ],
+    "wiese.video.02": [
+      "bella",
+      "Das ist ein Strich mit Zahlen. Wir starten bei der 340."
+    ],
+    "wiese.video.03": [
+      "bella",
+      "Ich will 340 plus 253 rechnen. Das ist ganz einfach, wenn ich die 253 zerlege: 200, 50 und 3."
+    ],
+    "wiese.video.04": [
+      "bella",
+      "Zuerst die Hunderter: 340 plus 200 ergibt 540. Ein großer Sprung!"
+    ],
+    "wiese.video.05": [
+      "bella",
+      "Dann die Zehner: 540 plus 50 ergibt 590. Ein mittlerer Sprung."
+    ],
+    "wiese.video.06": [
+      "bella",
+      "Zum Schluss die Einer: 590 plus 3 ergibt 593. Das ist das Ergebnis!"
+    ],
+    "wiese.video.07": [
+      "bella",
+      "Und Minus? Da hüpfen wir einfach rückwärts. Wir starten bei 470 und rechnen 470 minus 130."
+    ],
+    "wiese.video.08": [
+      "bella",
+      "Erst 100 zurück: 370. Dann 30 zurück: 340. Geschafft!"
+    ],
+    "wiese.video.09": [
+      "bella",
+      "Manchmal gibt es einen Zehner-Übergang. Bei 358 plus 7 geht das nicht in einem Hüpfer."
+    ],
+    "wiese.video.10": [
+      "bella",
+      "Erst 2 bis zum vollen Zehner, das ist 360. Dann die restlichen 5: 365. Zehner voll machen, das ist mein Lieblingstrick!"
+    ],
+    "wiese.video.11": [
+      "bella",
+      "Jetzt kennst du den Rechenstrich. Probier ihn gleich bei mir, bei Schorsch und bei Hannes aus!"
+    ],
+    "wiese.video.done": [
+      "bella",
+      "Prima! Der Rechenstrich ist jetzt dein Werkzeug. Summ, summ!"
+    ],
+    "wiese.calc.prompt.plus": [
+      "mia",
+      "Rechne die Plus-Aufgabe. Tipp: Zerlege die zweite Zahl in Hunderter, Zehner und Einer."
+    ],
+    "wiese.calc.prompt.minus": [
+      "mia",
+      "Rechne die Minus-Aufgabe. Tipp: Ziehe Hunderter, Zehner und Einer nacheinander ab."
+    ],
+    "wiese.calc.hop.plus": [
+      "mia",
+      "{part}: {from} plus {n} ergibt {to}."
+    ],
+    "wiese.calc.hop.minus": [
+      "mia",
+      "{part}: {from} minus {n} ergibt {to}."
+    ],
+    "wiese.calc.hint.opminus": [
+      "mia",
+      "Achtung, das ist eine Minus-Aufgabe! Auf dem Rechenstrich gehen wir nach links."
+    ],
+    "wiese.calc.hint.stelle": [
+      "mia",
+      "Fast! Schau genau auf die Stelle: Hunderter, Zehner und Einer rutschen nicht durcheinander."
+    ],
+    "wiese.calc.reveal": [
+      "mia",
+      "{a} {op} {b} ergibt {r}. Das merken wir uns."
+    ],
+    "wiese.erg.prompt": [
+      "mia",
+      "Wie viel fehlt von {a} bis {t}?"
+    ],
+    "wiese.erg.reveal": [
+      "mia",
+      "Von {a} bis {t} fehlen {r}."
+    ],
+    "wiese.partner.prompt": [
+      "fritzi",
+      "Finde zwei Schmetterlinge, die zusammen {t} ergeben. Tippe erst den einen an, dann den anderen."
+    ],
+    "wiese.partner.hint": [
+      "fritzi",
+      "Zu {a} fehlen noch {r}, damit es {t} wird. Suche den Schmetterling mit der {r}."
+    ],
+    "wiese.strahl.prompt.find": [
+      "hannes",
+      "Wo liegt die {n}? Tippe auf den Zahlenstrahl, schiebe den Marker an die Stelle und tippe auf Hierhin."
+    ],
+    "wiese.strahl.prompt.read": [
+      "hannes",
+      "Welche Zahl zeigt der rote Marker?"
+    ],
+    "wiese.strahl.hint.left": [
+      "hannes",
+      "Die Mitte ist {mid}. Die {n} ist kleiner, also liegt sie links von der Mitte."
+    ],
+    "wiese.strahl.hint.right": [
+      "hannes",
+      "Die Mitte ist {mid}. Die {n} ist größer, also liegt sie rechts von der Mitte."
+    ],
+    "wiese.strahl.hint.mid": [
+      "hannes",
+      "Die {n} liegt genau in der Mitte."
+    ],
+    "wiese.strahl.reveal": [
+      "hannes",
+      "So liegt die {n}. Siehst du den grünen Marker?"
+    ],
+    "wiese.check.intro": [
+      "bella",
+      "Der Wiesen-Check! Sechs Aufgaben, ganz ohne Zeitdruck. Du schaffst das."
+    ],
+    "wiese.check.done.3": [
+      "bella",
+      "Fantastisch! Alles fast auf Anhieb richtig. Du bist ein echter Rechenstrich-Profi!"
+    ],
+    "wiese.check.done.2": [
+      "bella",
+      "Prima! Das war schon richtig gut. Mit etwas Übung wirst du noch sicherer."
+    ],
+    "wiese.check.done.1": [
+      "bella",
+      "Geschafft! Übe ruhig noch ein bisschen bei meinen Freunden, dann klappt es immer besser."
+    ]
+  }
 }
