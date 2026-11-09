@@ -1,0 +1,13 @@
+{
+  "height": 1800,
+  "zoneWidth": 1400,
+  "pathY": 900,
+  "pathAmp": 150,
+  "themes": {
+    "forest":   { "ground": "#79c067", "ground2": "#5fa856", "flower": 10, "corridor": 120 },
+    "meadow":   { "ground": "#a9da6c", "ground2": "#92c455", "flower": 70, "corridor": 150 },
+    "river":    { "ground": "#80c880", "ground2": "#68b36d", "flower": 12, "corridor": 150 },
+    "mountain": { "ground": "#a9ad92", "ground2": "#8f937b", "flower": 2,  "corridor": 140 },
+    "village":  { "ground": "#cdbf8a", "ground2": "#b9aa72", "flower": 3,  "corridor": 170 }
+  }
+}

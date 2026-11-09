@@ -1,39 +1,162 @@
 {
   "speakers": {
-    "mia":   { "name": "Mia",          "pitch": 1.25, "rate": 1.0,  "color": "#f0a64c" },
-    "eule":  { "name": "Eule Olga",    "pitch": 0.8,  "rate": 0.93, "color": "#c98a52" },
-    "igel":  { "name": "Igel Ingo",    "pitch": 1.5,  "rate": 1.05, "color": "#d6a77a" },
-    "dachs": { "name": "Dachs Bruno",  "pitch": 0.6,  "rate": 0.9,  "color": "#b9bcc6" },
-    "hase":  { "name": "Hase Hugo",    "pitch": 1.6,  "rate": 1.1,  "color": "#f3b6c4" }
+    "mia": {
+      "name": "Mia",
+      "pitch": 1.25,
+      "rate": 1,
+      "color": "#f0a64c"
+    },
+    "eule": {
+      "name": "Eule Olga",
+      "pitch": 0.8,
+      "rate": 0.93,
+      "color": "#c98a52"
+    },
+    "igel": {
+      "name": "Igel Ingo",
+      "pitch": 1.5,
+      "rate": 1.05,
+      "color": "#d6a77a"
+    },
+    "dachs": {
+      "name": "Dachs Bruno",
+      "pitch": 0.6,
+      "rate": 0.9,
+      "color": "#b9bcc6"
+    },
+    "hase": {
+      "name": "Hase Hugo",
+      "pitch": 1.6,
+      "rate": 1.1,
+      "color": "#f3b6c4"
+    }
   },
   "texts": {
-    "common.start":        ["mia", "Miau! Ich bin Mia. Komm, wir erkunden die Zahlenwelt!"],
-    "common.locked":       ["mia", "Hier ist alles voller Nebel. Das schauen wir uns später an!"],
-    "common.map.hint":     ["mia", "Tippe auf eine Station, dann laufe ich dorthin."],
-    "common.cheer.1":      ["mia", "Super gemacht!"],
-    "common.cheer.2":      ["mia", "Schnurr! Das war richtig!"],
-    "common.cheer.3":      ["mia", "Pfiffig, pfiffig!"],
-    "common.cheer.4":      ["mia", "Volltreffer!"],
-    "common.cheer.5":      ["mia", "Wow, du bist ein Zahlenprofi!"],
-    "common.retry.1":      ["mia", "Nicht schlimm! Schau noch einmal genau hin."],
-    "common.retry.2":      ["mia", "Hmm, fast. Versuch es gleich noch einmal."],
-    "common.retry.3":      ["mia", "Kein Problem. Aus Fehlern wird man klug!"],
-    "common.reveal":       ["mia", "Das war knifflig. Schau, so geht es. Beim nächsten Mal klappt es bestimmt!"],
-    "common.level.up":     ["mia", "Das läuft richtig gut! Jetzt wird es ein kleines bisschen kniffliger."],
-    "common.level.down":   ["mia", "Das war ganz schön knifflig. Ich mache es etwas leichter. Möchtest du einen Tipp?"],
-    "common.round.done":   ["mia", "Geschafft! Das hast du toll gemacht."],
-    "common.album.new":    ["mia", "Hurra! Ein neues Teil für das Album: {name}!"],
-    "common.settings.test": ["eule", "Hallo! So klinge ich. Gefällt dir meine Stimme?"],
-    "common.settings.test.mia": ["mia", "Und ich klinge so. Miau!"]
+    "common.start": [
+      "mia",
+      "Miau! Ich bin Mia. Komm, wir erkunden die Zahlenwelt!"
+    ],
+    "common.locked": [
+      "mia",
+      "Hier ist alles voller Nebel. Das schauen wir uns später an!"
+    ],
+    "common.map.hint": [
+      "mia",
+      "Tippe auf eine Station, dann laufe ich dorthin."
+    ],
+    "common.cheer.1": [
+      "mia",
+      "Super gemacht!"
+    ],
+    "common.cheer.2": [
+      "mia",
+      "Schnurr! Das war richtig!"
+    ],
+    "common.cheer.3": [
+      "mia",
+      "Pfiffig, pfiffig!"
+    ],
+    "common.cheer.4": [
+      "mia",
+      "Volltreffer!"
+    ],
+    "common.cheer.5": [
+      "mia",
+      "Wow, du bist ein Zahlenprofi!"
+    ],
+    "common.retry.1": [
+      "mia",
+      "Nicht schlimm! Schau noch einmal genau hin."
+    ],
+    "common.retry.2": [
+      "mia",
+      "Hmm, fast. Versuch es gleich noch einmal."
+    ],
+    "common.retry.3": [
+      "mia",
+      "Kein Problem. Aus Fehlern wird man klug!"
+    ],
+    "common.reveal": [
+      "mia",
+      "Das war knifflig. Schau, so geht es. Beim nächsten Mal klappt es bestimmt!"
+    ],
+    "common.level.up": [
+      "mia",
+      "Das läuft richtig gut! Jetzt wird es ein kleines bisschen kniffliger."
+    ],
+    "common.level.down": [
+      "mia",
+      "Das war ganz schön knifflig. Ich mache es etwas leichter. Möchtest du einen Tipp?"
+    ],
+    "common.round.done": [
+      "mia",
+      "Geschafft! Das hast du toll gemacht."
+    ],
+    "common.album.new": [
+      "mia",
+      "Hurra! Ein neues Teil für das Album: {name}!"
+    ],
+    "common.settings.test": [
+      "eule",
+      "Hallo! So klinge ich. Gefällt dir meine Stimme?"
+    ],
+    "common.settings.test.mia": [
+      "mia",
+      "Und ich klinge so. Miau!"
+    ],
+    "common.gate.soon": [
+      "mia",
+      "Hier ist alles voller Nebel. Bald dabei! Hier wächst noch alles heran."
+    ],
+    "common.hide.out": [
+      "mia",
+      "Und weiter geht es!"
+    ]
   },
   "rewards": {
     "items": [
-      { "id": "mia-zipfel",    "target": "mia",  "slot": "kopf",    "name": "Zipfelmütze", "stars": 1 },
-      { "id": "mia-brille",    "target": "mia",  "slot": "gesicht", "name": "Sonnenbrille", "stars": 2 },
-      { "id": "mia-halstuch",  "target": "mia",  "slot": "hals",    "name": "Halstuch", "stars": 4 },
-      { "id": "mia-krone",     "target": "mia",  "slot": "kopf",    "name": "Krone", "stars": 6 },
-      { "id": "eule-hut",      "target": "eule", "slot": "kopf",    "name": "Doktorhut", "stars": 9 },
-      { "id": "eule-schleife", "target": "eule", "slot": "hals",    "name": "Fliege", "stars": 12 }
+      {
+        "id": "mia-zipfel",
+        "target": "mia",
+        "slot": "kopf",
+        "name": "Zipfelmütze",
+        "stars": 1
+      },
+      {
+        "id": "mia-brille",
+        "target": "mia",
+        "slot": "gesicht",
+        "name": "Sonnenbrille",
+        "stars": 2
+      },
+      {
+        "id": "mia-halstuch",
+        "target": "mia",
+        "slot": "hals",
+        "name": "Halstuch",
+        "stars": 4
+      },
+      {
+        "id": "mia-krone",
+        "target": "mia",
+        "slot": "kopf",
+        "name": "Krone",
+        "stars": 6
+      },
+      {
+        "id": "eule-hut",
+        "target": "eule",
+        "slot": "kopf",
+        "name": "Doktorhut",
+        "stars": 9
+      },
+      {
+        "id": "eule-schleife",
+        "target": "eule",
+        "slot": "hals",
+        "name": "Fliege",
+        "stars": 12
+      }
     ]
   }
 }

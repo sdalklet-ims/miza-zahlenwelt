@@ -47,3 +47,9 @@ export function speakerOf(id: string): SpeakerDef {
 }
 
 export const getWorld = (id: string) => worlds.find((w) => w.id === id);
+
+export interface WorldCfg {
+  height: number; zoneWidth: number; pathY: number; pathAmp: number;
+  themes: Record<string, { ground: string; ground2: string; flower: number; corridor: number }>;
+}
+export const worldCfg = files['/content/world.json'] as WorldCfg;

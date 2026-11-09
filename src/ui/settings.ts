@@ -73,7 +73,8 @@ export function openSettings() {
         h('button', { class: 'btn ghost', onclick: () => { fillVoices(); } }, '↻ Stimmen neu laden')),
       h('div', { class: 'set-row' },
         toggle('Untertitel anzeigen', () => getProgress().settings.subtitles, (v) => mutate((s) => void (s.settings.subtitles = v))),
-        toggle('Ton an', () => !getProgress().settings.muted, (v) => mutate((s) => void (s.settings.muted = !v)))),
+        toggle('Ton an', () => !getProgress().settings.muted, (v) => mutate((s) => void (s.settings.muted = !v))),
+        toggle('Tippen = dorthin laufen', () => getProgress().settings.tapWalk, (v) => mutate((s) => void (s.settings.tapWalk = v)))),
       h('div', { class: 'set-row' }, resetBtn)),
   });
 }

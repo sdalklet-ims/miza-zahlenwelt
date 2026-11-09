@@ -4,7 +4,7 @@
   --font: ui-rounded, "SF Pro Rounded", "Avenir Next Rounded", "Nunito", "Trebuchet MS", system-ui, sans-serif;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
-html, body { margin: 0; height: 100%; overflow: hidden; background: #2f6f3c; font-family: var(--font); color: var(--ink); overscroll-behavior: none; touch-action: manipulation; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #2f6f3c; font-family: var(--font); color: var(--ink); overscroll-behavior: none; touch-action: none; }
 button { font-family: inherit; color: inherit; cursor: pointer; }
 #viewport { position: fixed; inset: 0; overflow: hidden; background: radial-gradient(circle at 50% 40%, #4f9d5d, #2a5f37); }
 #stage { position: absolute; left: 50%; top: 50%; width: 1180px; height: 820px; transform-origin: center center; overflow: hidden; background: var(--cream); }

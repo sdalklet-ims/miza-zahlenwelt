@@ -12,7 +12,7 @@ import { runBuild, runCards, runCount, type TaskHooks, type TaskResult } from '.
 import { genCards, NumberGen, numOf, type CardRule, type PunkteRule } from './generators';
 
 const world = getWorld('wald')!;
-const npcInfo = (id: string) => world.npcs.find((n: { id: string }) => n.id === id);
+const npcInfo = (id: string) => world.world.npcs.find((n: { id: string }) => n.id === id);
 
 const starsFor = (hits: number, total: number) => (hits / total >= 0.8 ? 3 : hits / total >= 0.4 ? 2 : 1);
 

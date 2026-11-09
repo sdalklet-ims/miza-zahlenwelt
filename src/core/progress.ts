@@ -4,6 +4,8 @@ export interface Settings {
   rate: number;
   muted: boolean;
   subtitles: boolean;
+  /** Tippen auf die Welt = dorthin laufen */
+  tapWalk: boolean;
 }
 
 export interface Progress {
@@ -21,6 +23,10 @@ export interface Progress {
   weak: Record<string, number>;
   seen: Record<string, boolean>;
   mapAt: string;
+  /** Letzte Position in der Welt */
+  pos?: { x: number; y: number };
+  /** Gefundene Entdecker-Belohnungen */
+  discovered: Record<string, boolean>;
 }
 
 const KEY = 'mia.progress.v1';
@@ -31,10 +37,11 @@ const defaults = (): Progress => ({
   levels: {},
   found: [],
   equipped: {},
-  settings: { voiceURI: null, rate: 0.88, muted: false, subtitles: true },
+  settings: { voiceURI: null, rate: 0.88, muted: false, subtitles: true, tapWalk: true },
   weak: {},
   seen: {},
-  mapAt: 'wald',
+  mapAt: "wald",
+  discovered: {},
 });
 
 let state: Progress = load();
