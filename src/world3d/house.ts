@@ -13,7 +13,7 @@ const HW = 5.5, HD = 2.8, WH = 2.9; // halbe Breite, halbe Tiefe, Wandhöhe
 const ROOF_H = 2.2;
 const WOOD = '#a8693a', WOOD_D = '#7a4d26', STONE = '#9a968c';
 
-export interface Colliders { rects: { x: number; y: number; w: number; h: number }[]; solids: { x: number; y: number; r: number }[] }
+export interface Colliders { rects: { x: number; y: number; w: number; h: number }[]; solids: { x: number; y: number; r: number }[]; petRects: { x: number; y: number; w: number; h: number }[] }
 
 export interface HouseView {
   group: THREE.Group;
@@ -421,8 +421,8 @@ export function createHouse3D(): HouseView {
     pflanze: () => {
       const g = new THREE.Group();
       g.add(at(cyl(0.28, 0.2, 0.4, '#c0704a', 8), 0, 0.2, 0));
-      for (let i = 0; i < 6; i++) { const l = cone(0.12, 0.7, '#4f9d5d', 4); l.position.set(5.0, Y0 + 0.1, 1.0); l.rotation.set(Math.sin(i) * 0.5, 0, -Math.cos(i) * 0.5); g.add(l); }
-      g.position.set(4.0, Y0 + 0.1, 1.8);
+      for (let i = 0; i < 6; i++) { const l = cone(0.12, 0.7, '#4f9d5d', 4); l.position.set(Math.cos(i) * 0.15, 0.7, Math.sin(i) * 0.15); l.rotation.set(Math.sin(i) * 0.5, 0, -Math.cos(i) * 0.5); g.add(l); }
+      g.position.set(5.0, Y0 + 0.1, 1.0);
       return g;
     },
     napf: () => {
@@ -435,10 +435,10 @@ export function createHouse3D(): HouseView {
       const g = new THREE.Group();
       g.add(at(box(0.7, 1.9, 2.0, '#8a867c'), 0, 0.95, 0), at(box(0.72, 0.9, 1.1, '#2a2020'), 0.03, 0.55, 0), at(box(0.9, 0.12, 2.2, '#6f6b63'), 0, 1.95, 0));
       const fire = new THREE.Group();
-      for (let i = 0; i < 4; i++) { const f = cone(0.14, 0.45, i % 2 ? '#ffb300' : '#ff6a00', 5); f.material = emissive(i % 2 ? '#ffb300' : '#ff6a00', 1.4); f.position.set(2.6, Y0 + 0.1, -2.45); fire.add(f); }
+      for (let i = 0; i < 4; i++) { const f = cone(0.14, 0.45, i % 2 ? '#ffb300' : '#ff6a00', 5); f.material = emissive(i % 2 ? '#ffb300' : '#ff6a00', 1.4); f.position.set(0.1, 0.4, -0.3 + i * 0.2); fire.add(f); }
       g.add(fire);
       anim.push((t) => fire.children.forEach((f, i) => { f.scale.y = 0.8 + Math.sin(t * 9 + i * 2) * 0.35; f.scale.x = 0.9 + Math.sin(t * 7 + i) * 0.15; }));
-      g.position.set(4.0, Y0 + 0.1, 0.4);
+      g.position.set(2.9, Y0 + 0.1, -2.3);
       g.rotation.y = -Math.PI / 2;
       return g;
     },
@@ -533,6 +533,13 @@ export function createHouse3D(): HouseView {
       const U = 50;
       const rect = (x: number, z: number, w: number, d: number) => rects.push({ x: cx + x * U, y: cy + z * U, w: w * U, h: d * U });
       const has = (id: string) => !!built[id];
+      // Möbel, durch die Haustiere nicht laufen (Mia selbst läuft hindurch)
+      const petRects: Colliders['petRects'] = [];
+      const furn = (id: string, x0: number, z0: number, x1: number, z1: number) => { if (has(id)) petRects.push({ x: cx + x0 * U, y: cy + z0 * U, w: (x1 - x0) * U, h: (z1 - z0) * U }); };
+      furn('bett', -4.7, 0.1, -2.7, 2.5); furn('sofa', -1.4, -2.6, 1.8, -1.5); furn('tisch', 1.9, -1.4, 4.1, 0.0);
+      furn('regal', -3.5, -2.8, -1.5, -1.9); furn('kamin', 1.9, -2.7, 3.9, -1.9); furn('aquarium', -5.3, -2.7, -3.7, -1.8);
+      furn('schreibtisch', 3.8, -2.7, 5.4, -1.7); furn('spielzeugkiste', 3.4, 1.5, 4.6, 2.3);
+      furn('lampe', 4.7, -1.2, 5.3, -0.6); furn('pflanze', 4.65, 0.65, 5.35, 1.35); furn('korb', -4.95, -1.35, -3.85, -0.25);
       if (has('waende')) { rect(-5.5, -2.8, 11, 0.2); rect(-5.5, -2.8, 0.2, 5.6); rect(5.3, -2.8, 0.2, 5.6); rect(-5.5, 2.6, 4.75, 0.2); rect(0.75, 2.6, 4.75, 0.2); }
       if (has('veranda')) for (const sx of [-1, 1]) solids.push({ x: cx + sx * 3.5 * U, y: cy + 4.7 * U, r: 8 });
       if (has('zaun')) {
@@ -557,7 +564,7 @@ export function createHouse3D(): HouseView {
       if (has('schmetterling')) solids.push({ x: cx + 7.8 * U, y: cy + 5.9 * U, r: 26 });
       if (has('gartenzwerg')) solids.push({ x: cx - 0.95 * U, y: cy + 5.0 * U, r: 7 });
       if (has('blumenbeet')) for (const sx of [-1, 1]) rect(sx * 2.7 - 1.1, 5.25, 2.2, 0.7);
-      return { rects, solids };
+      return { rects, solids, petRects };
     },
   };
   // Welche Teile gerade gebaut sind (für setInside)

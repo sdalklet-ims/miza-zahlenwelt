@@ -106,7 +106,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
   /* ── Mias Haus ── */
   const plot = model.plot;
   const house = createHouse3D();
-  let dyn = { rects: [] as { x: number; y: number; w: number; h: number }[], solids: [] as { x: number; y: number; r: number }[] };
+  let dyn = { rects: [] as { x: number; y: number; w: number; h: number }[], solids: [] as { x: number; y: number; r: number }[], petRects: [] as { x: number; y: number; w: number; h: number }[] };
   if (plot) {
     house.group.position.set(plot.x * S, heightAt(plot.x, plot.y), plot.y * S);
     scene.add(house.group);
@@ -504,6 +504,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
     const plist = getPets();
     petViews.forEach((pt, pi) => {
       if (!pt.fig || !plot) return;
+      const px0 = pt.x, py0 = pt.y;
       if (plist[pi]?.follow) {
         // folgt Mias Spur (so läuft es durch Türen statt durch Wände), jedes Tier etwas weiter hinten
         const tg = trail.length > 7 + pi * 5 ? trail[trail.length - 7 - pi * 5] : { x: st.x - 40 - pi * 25, y: st.y + 20 };
@@ -523,6 +524,15 @@ export async function enterWorld(opts: EnterOpts = {}) {
         }
         pt.x = clamp(pt.x + pt.vx * DT, r.x0, r.x1);
         pt.y = clamp(pt.y + pt.vy * DT, r.y0, r.y1);
+      }
+      // Möbel sind für Haustiere fest: erst x, dann y zurücknehmen; steckt es schon drin, wird es herausgeschoben
+      const inBlock = (x: number, y: number) => dyn.petRects.find((r) => x > r.x - 8 && x < r.x + r.w + 8 && y > r.y - 6 && y < r.y + r.h + 6);
+      if (dyn.petRects.length && inBlock(pt.x, pt.y)) {
+        if (!inBlock(pt.x, py0)) pt.y = py0;
+        else if (!inBlock(px0, pt.y)) pt.x = px0;
+        else if (!inBlock(px0, py0)) { pt.x = px0; pt.y = py0; }
+        else { const r = inBlock(pt.x, pt.y)!; pt.y = r.y + r.h + 10; }
+        pt.vx = pt.vy = 0; pt.wait = 0.3;
       }
       const pm = plist[pi];
       if (pm && petMood(pm) === 'hungry' && st.t > pt.warnAt && Math.hypot(st.x - pt.x, st.y - pt.y) < 320) {

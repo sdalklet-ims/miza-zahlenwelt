@@ -150,9 +150,9 @@ export function extraBuilders(anim: ((t: number) => void)[]): Record<string, () 
       const blanket = canvasTex(64, 64, (c) => { c.fillStyle = '#f08aa8'; c.fillRect(0, 0, 64, 64); c.fillStyle = '#fff'; for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) if ((i + j) % 2) c.fillRect(i * 16, j * 16, 16, 16); });
       g.add(at(box(1.7, 0.3, 2.3, WOOD), 0, 0.2, 0), at(box(1.6, 0.25, 2.2, '#fff6e3'), 0, 0.46, 0), at(box(1.8, 1.0, 0.12, WOOD_D), 0, 0.7, -1.18), at(box(1.1, 0.14, 0.45, '#fff'), 0, 0.66, -0.8));
       const bl = new THREE.Mesh(new THREE.BoxGeometry(1.62, 0.12, 1.3), toon({ map: blanket }));
-      bl.position.set(-4.0, Y0 + 0.1, 1.2);
+      bl.position.set(0, 0.62, 0.35);
       g.add(bl);
-      g.position.set(-3.1, Y0 + 0.1, 1.45);
+      g.position.set(-3.7, Y0 + 0.1, 1.3);
       return g;
     },
     uhr: () => {
@@ -178,8 +178,8 @@ export function extraBuilders(anim: ((t: number) => void)[]): Record<string, () 
       g.add(tank, at(box(1.36, 0.1, 0.56, '#e7c27a'), 0, 0.75, 0));
       for (let i = 0; i < 3; i++) g.add(at(cone(0.06, 0.4, '#3fa65a', 4), -0.4 + i * 0.35, 1.0, -0.15));
       const fish = [0, 1, 2].map((i) => { const f = new THREE.Group(); f.add(sph(0.09, ['#ff8c2a', '#ff5a8a', '#ffd23f'][i], 1.4, 1, 0.7, 8), at(cone(0.07, 0.12, ['#ff8c2a', '#ff5a8a', '#ffd23f'][i], 3), -0.14, 0, 0)); g.add(f); return f; });
-      anim.push((t) => fish.forEach((f, i) => { f.position.set(-4.5, Y0 + 0.1, -2.3); f.rotation.y = Math.cos(t * 0.6 + i * 2) > 0 ? 0 : Math.PI; }));
-      g.position.set(-3.6, Y0 + 0.1, -2.3);
+      anim.push((t) => fish.forEach((f, i) => { f.position.set(Math.sin(t * 0.6 + i * 2) * 0.5, 1.05 + i * 0.15, 0.05 * i); f.rotation.y = Math.cos(t * 0.6 + i * 2) > 0 ? 0 : Math.PI; }));
+      g.position.set(-4.5, Y0 + 0.1, -2.3);
       return g;
     },
     schreibtisch: () => {
@@ -189,10 +189,10 @@ export function extraBuilders(anim: ((t: number) => void)[]): Record<string, () 
       g.add(at(box(0.6, 0.35, 0.7, WOOD_D), -0.45, 0.6, 0), at(cyl(0.22, 0.2, 0.08, '#4a90d9', 10), 0.1, 0.5, 0.75), at(cyl(0.04, 0.05, 0.5, WOOD_D, 6), 0.1, 0.25, 0.75));
       const globe = new THREE.Group();
       globe.add(sph(0.26, '#4a90d9', 1, 1, 1, 12), at(sph(0.1, '#4f9d5d', 1.4, 0.8, 0.5, 6), 0.1, 0.1, 0.2), at(sph(0.08, '#4f9d5d', 1, 1.2, 0.5, 6), -0.12, -0.05, 0.22));
-      globe.position.set(4.5, Y0 + 0.1, -2.25);
+      globe.position.set(0.55, 1.28, 0);
       g.add(globe, at(cyl(0.03, 0.03, 0.25, '#d9b45a', 6), 0.55, 1.0, 0), at(box(0.45, 0.04, 0.3, '#fff'), -0.2, 0.9, 0.1));
       anim.push((t) => (globe.rotation.y = t * 0.4));
-      g.position.set(3.0, Y0 + 0.1, -2.25);
+      g.position.set(4.6, Y0 + 0.1, -2.25);
       return g;
     },
     spielzeugkiste: () => {
@@ -208,7 +208,7 @@ export function extraBuilders(anim: ((t: number) => void)[]): Record<string, () 
       const g = new THREE.Group();
       for (const y of [0, 0.6]) g.add(at(box(0.4, 0.07, 1.6, WOOD), 0, y, 0));
       g.add(at(box(0.2, 0.3, 0.14, '#d9534f'), 0, 0.2, -0.5), at(box(0.2, 0.34, 0.14, '#4a90d9'), 0, 0.22, -0.34), at(cyl(0.1, 0.08, 0.2, '#c0704a', 8), 0, 0.8, 0.3), at(cone(0.1, 0.3, '#4f9d5d', 5), 0, 1.0, 0.3), at(sph(0.14, '#f4c430', 1, 1, 1, 8), 0, 0.2, 0.4));
-      g.position.set(4.5, Y0 + 1.95, -2.5);
+      g.position.set(4.6, Y0 + 1.95, -2.5);
       g.rotation.y = -Math.PI / 2;
       return g;
     },
@@ -220,12 +220,12 @@ export function extraBuilders(anim: ((t: number) => void)[]): Record<string, () 
         g.add(at(cyl(0.05, 0.05, h, '#fff6e3', 8), 0, h / 2, z));
         const f = cone(0.04, 0.12, '#ffb300', 5);
         f.material = glow('#ffb300', 1.6);
-        f.position.set(2.95, Y0 + 2.06, -2.4);
+        f.position.set(0, h + 0.08, z);
         g.add(f);
         flames.push(f);
       }
       anim.push((t) => flames.forEach((f, i) => (f.scale.y = 0.8 + Math.sin(t * 11 + i) * 0.3)));
-      g.position.set(4.0, Y0 + 2.06, 0.2);
+      g.position.set(2.9, Y0 + 2.06, -2.3);
       g.rotation.y = -Math.PI / 2;
       return g;
     },
