@@ -1007,6 +1007,18 @@
     "wald.angeln.hint.between": [
       "mia",
       "Die Zahl muss größer als {a} und kleiner als {b} sein. Probiere die Fische einzeln aus."
+    ],
+    "wald.haus.sleep": [
+      "mia",
+      "Gute Nacht … zzz …"
+    ],
+    "wald.haus.wake": [
+      "mia",
+      "Guten Morgen! Ich habe so gut geschlafen."
+    ],
+    "wald.haus.radio": [
+      "mia",
+      "Musik an! Das gefällt mir."
     ]
   }
 }

@@ -39,3 +39,11 @@
 
 .flash { position: absolute; inset: 0; background: #fff; pointer-events: none; z-index: 60; animation: flashFade .9s ease forwards; }
 @keyframes flashFade { 0% { opacity: 0; } 35% { opacity: 1; } 100% { opacity: 0; } }
+
+/* ───────── Nacht (Mia schläft) ───────── */
+.night { position: absolute; inset: 0; z-index: 50; background: radial-gradient(ellipse at 50% 45%, rgba(25,35,95,.35), rgba(8,12,42,.82)); opacity: 0; transition: opacity 1s; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 14px; padding-bottom: 90px; }
+.night.on { opacity: 1; }
+.nstar { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #fff6c8; animation: twinkle 2.8s ease-in-out infinite; }
+@keyframes twinkle { 50% { opacity: .2; transform: scale(.6); } }
+.night-text { font: 900 46px var(--font); color: #fff; text-shadow: 0 4px 12px rgba(0,0,0,.6); }
+.night-btn { min-width: 280px; }

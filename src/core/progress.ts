@@ -3,6 +3,8 @@ export interface Settings {
   /** Musik: Lautstärke 0–1 und an/aus */
   music: number;
   musicOn: boolean;
+  /** Radio-Sender (wald = Standardmusik) */
+  station: string;
   /** Tippen auf die Welt = dorthin laufen */
   tapWalk: boolean;
 }
@@ -45,7 +47,7 @@ const defaults = (): Progress => ({
   levels: {},
   found: [],
   equipped: {},
-  settings: { music: 0.6, musicOn: true, tapWalk: true },
+  settings: { music: 0.6, musicOn: true, station: 'wald', tapWalk: true },
   weak: {},
   seen: {},
   mapAt: "wald",

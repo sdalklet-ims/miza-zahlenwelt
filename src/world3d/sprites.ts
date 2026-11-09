@@ -4,7 +4,7 @@
  * damit sie auf dem Bildschirm unverzerrt aussehen (wie in klassischen 2,5D-Spielen).
  */
 import * as THREE from 'three';
-import { drawMia, MIA_CANVAS, type Dir } from './comic';
+import { drawMia, drawSleepingMia, MIA_CANVAS, type Dir } from './comic';
 
 export const PITCH = (40 * Math.PI) / 180;
 export const SPR_Y = 1 / Math.cos(PITCH);
@@ -76,7 +76,7 @@ export async function svgFigure(svg: string, height: number): Promise<Billboard>
 export interface MiaSprite {
   group: THREE.Group;
   setAccessories(acc: string[]): void;
-  update(t: number, phase: number, speed: number, dir: Dir, happy: boolean): void;
+  update(t: number, phase: number, speed: number, dir: Dir, happy: boolean, sleep?: boolean): void;
   setHidden(h: boolean): void;
 }
 
@@ -100,9 +100,10 @@ export function createMiaSprite(acc: string[]): MiaSprite {
     group: bb.group,
     setAccessories: (a) => void (accList = a),
     setHidden: (h) => void (bb.group.visible = !h),
-    update(t, phase, speed, dir, happy) {
+    update(t, phase, speed, dir, happy, sleep) {
       c.clearRect(0, 0, MIA_CANVAS, MIA_CANVAS);
-      drawMia(c, MIA_CANVAS / 2, MIA_CANVAS - 24, { dir, t, phase, speed, acc: accList, happy });
+      if (sleep) drawSleepingMia(c, MIA_CANVAS / 2 + 14, MIA_CANVAS - 24, t, accList);
+      else drawMia(c, MIA_CANVAS / 2, MIA_CANVAS - 24, { dir, t, phase, speed, acc: accList, happy });
       tex.needsUpdate = true;
     },
   };

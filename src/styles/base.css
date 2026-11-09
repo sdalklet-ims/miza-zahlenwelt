@@ -92,3 +92,9 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 .alb-name { font: 900 22px var(--font); margin-top: 4px; } .alb-sub { font: 700 18px var(--font); color: #6b5a44; }
 .hud-stars.coin { background: #fff0b8; border-bottom-color: #d9b84c; }
 .hud-stars.house { background: #e7f4d9; border-bottom-color: #a9cf86; border-left: 0; border-right: 0; border-top: 0; cursor: pointer; font-family: var(--font); color: var(--ink); }
+
+/* Radio */
+.radio { text-align: center; min-width: 560px; } .radio-dial { font-size: 90px; line-height: 1.1; animation: pulse 2s ease-in-out infinite; }
+.radio-list { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+.radio-btn { height: 74px; border-radius: 20px; border: 0; border-bottom: 7px solid #d6bf93; background: #fff; display: flex; align-items: center; gap: 16px; padding: 0 22px; font: 800 28px var(--font); }
+.radio-btn.on { background: var(--sun); border-bottom-color: var(--sun-d); } .radio-icon { font-size: 40px; } .radio-name { flex: 1; text-align: left; } .radio-btn small { font: 800 20px var(--font); }

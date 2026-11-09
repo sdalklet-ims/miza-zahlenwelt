@@ -17,7 +17,8 @@ import { openHouseUi, setBuilder, setHomeNav } from '../ui/houseUi';
 import { openSupermarket } from '../ui/supermarket';
 import { openPetUi } from '../ui/petUi';
 import { pet as getPet, mood as petMood } from '../core/pet';
-import { sfx } from '../audio/music';
+import { sfx, setStation, currentStation } from '../audio/music';
+import { openRadio } from '../ui/radio';
 import { openModal } from '../ui/modal';
 import { createHouse3D } from '../world3d/house';
 import { getScale, layers, W as VW } from '../ui/stage';
@@ -118,6 +119,8 @@ export async function enterWorld(opts: EnterOpts = {}) {
     const hs = getProgress().house;
     house.sync(hs.built, { roof: hs.roof, wall: hs.wall }, animate);
     dyn = house.collisions(hs.built, plot.x, plot.y);
+    if (hs.built.radio && !model.interacts.some((i) => i.id === 'radio')) model.interacts.push({ id: 'radio', x: plot.x - 152, y: plot.y + 35, r: 140, label: 'Radio', icon: '📻', run: () => openRadio() });
+    if (hs.built.bett && !model.interacts.some((i) => i.id === 'bed')) model.interacts.push({ id: 'bed', x: plot.x - 110, y: plot.y + 72, r: 110, label: 'Schlafen', icon: '😴', run: () => startSleep() });
   }
   syncHouse(false);
   house.onLand = (_id, p) => {
@@ -145,6 +148,32 @@ export async function enterWorld(opts: EnterOpts = {}) {
   }
   const offHouse = onProgress(() => { syncHouse(true); void ensurePet(); });
   void ensurePet();
+
+  /* ── Schlafen ── */
+  const night = h('div', { class: 'night' },
+    ...Array.from({ length: 40 }, (_, i) => h('i', { class: 'nstar', style: { left: (i * 97) % 100 + '%', top: (i * 53) % 70 + '%', animationDelay: -(i % 7) * 0.4 + 's' } })),
+    h('div', { class: 'night-text' }, '😴 Mia schläft …'),
+    h('button', { class: 'btn sun night-btn', onclick: () => wakeUp() }, '☀️ Aufwachen'));
+  let stationBefore = 'wald';
+  function startSleep() {
+    if (!plot || sleeping || hidden) return;
+    sleeping = true;
+    st.x = plot.x - 110; st.y = plot.y + 72; st.vx = st.vy = 0; tap = null;
+    stationBefore = currentStation();
+    setStation('nacht', false);
+    el.append(night);
+    requestAnimationFrame(() => night.classList.add('on'));
+    speak('wald.haus.sleep');
+  }
+  function wakeUp() {
+    if (!sleeping) return;
+    night.classList.remove('on');
+    setTimeout(() => night.remove(), 900);
+    sleeping = false;
+    st.y = (plot?.y ?? st.y) + 150; st.x = (plot?.x ?? st.x) - 100;
+    setStation(stationBefore, false);
+    speak('wald.haus.wake');
+  }
 
   function confetti() {
     for (let i = 0; i < 40; i++) {
@@ -273,7 +302,8 @@ export async function enterWorld(opts: EnterOpts = {}) {
   /* ── Interaktionen ── */
   let near: Interact | null = null;
   const pos = (i: Interact) => i.follow ?? i;
-  const frozen = () => frozenByDialog || layers.overlay.childElementCount > 0;
+  let sleeping = false;
+  const frozen = () => frozenByDialog || sleeping || layers.overlay.childElementCount > 0;
 
   function act() {
     if (dead || frozen()) return;
@@ -524,8 +554,8 @@ export async function enterWorld(opts: EnterOpts = {}) {
     const spd = Math.hypot(st.vx, st.vy);
     if (spd > 12) miaDir = Math.abs(st.vx) > Math.abs(st.vy) ? (st.vx < 0 ? 'left' : 'right') : st.vy < 0 ? 'up' : 'down';
     miaSpr.setHidden(!!hidden);
-    miaSpr.group.position.set(st.x * S, gy, st.y * S);
-    miaSpr.update(t, st.phase, Math.min(1, spd / RUN), miaDir, false);
+    miaSpr.group.position.set(st.x * S, gy + (sleeping ? 1.0 : 0), st.y * S);
+    miaSpr.update(t, st.phase, Math.min(1, spd / RUN), miaDir, false, sleeping);
 
     stage.follow(st.x, st.y, st.vx, st.vy, DT);
     stage.streamChunks(st.x, st.y, 2);
@@ -576,6 +606,9 @@ export async function enterWorld(opts: EnterOpts = {}) {
       const hungry = petMood() === 'hungry';
       petMark.style.display = hungry && !houseRoofCovers() ? '' : 'none';
       petMark.style.transform = `translate(${pp.x}px, ${pp.y + Math.sin(timeSec * 4) * 4}px) translate(-50%, -100%)`;
+    }
+    if (plot && isBuilt('radio') && currentStation() !== 'wald' && Math.random() < 0.07) {
+      fx.add((plot.x - 152) * S, 3.2, (plot.y + 35) * S, (Math.random() - 0.5) * 0.5, 0.9, 0.1, 1.6, 0.35, ['#ffd54a', '#ff8fab', '#8fd3ff'][Math.floor(Math.random() * 3)]);
     }
     if (plot) {
       const inh = isBuilt('fundament') && Math.abs(st.x - plot.x) < 160 && st.y > plot.y - 125 && st.y < plot.y + 125 && isBuilt('waende');

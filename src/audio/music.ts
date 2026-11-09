@@ -1,9 +1,23 @@
 /**
- * Leichte Ambient-Musik, live erzeugt (WebAudio, keine Audiodateien): weiche Akkord-Flächen mit Hall,
- * dazu einzelne sanfte Glockentöne aus einer Pentatonik. Plus kleine Effekte (Münze, Stern, Bauen).
+ * Leichte Musik, live erzeugt (WebAudio, keine Audiodateien). Mehrere „Sender“ (Radio im Haus):
+ * Wald-Ambiente (Standard), Sonnenschein, Lagerfeuer, Gute Nacht. Plus kleine Effekte (Münze, Stern, Bauen).
  * Startet erst nach der ersten Berührung (iPad). Pausiert, wenn die Seite im Hintergrund ist.
  */
-import { getProgress } from '../core/progress';
+import { getProgress, mutate } from '../core/progress';
+
+export interface Station {
+  id: string; name: string; icon: string;
+  chords: number[][]; chordLen: number; melody: number[]; gap: [number, number];
+  voice: 'bell' | 'pluck' | 'marimba'; padVol: number; noteVol: number; bass?: boolean;
+}
+
+export const STATIONS: Station[] = [
+  { id: 'wald', name: 'Wald-Ambiente', icon: '🌲', chords: [[48, 55, 59, 62, 64], [45, 52, 55, 59, 60], [41, 48, 52, 57, 60], [43, 50, 55, 57, 59]], chordLen: 8, melody: [72, 74, 76, 79, 81, 84, 79, 76], gap: [1.6, 4.8], voice: 'bell', padVol: 0.05, noteVol: 0.06 },
+  { id: 'sonne', name: 'Sonnenschein', icon: '☀️', chords: [[48, 55, 64], [43, 50, 59], [45, 52, 60], [41, 48, 57]], chordLen: 4, melody: [72, 74, 76, 79, 81, 84, 76, 79], gap: [0.32, 0.8], voice: 'marimba', padVol: 0.03, noteVol: 0.085, bass: true },
+  { id: 'feuer', name: 'Lagerfeuer', icon: '🔥', chords: [[45, 52, 57, 60], [41, 48, 53, 57], [43, 50, 55, 59], [40, 47, 52, 56]], chordLen: 8, melody: [69, 72, 74, 76, 79, 76, 72], gap: [0.7, 1.5], voice: 'pluck', padVol: 0.04, noteVol: 0.075 },
+  { id: 'nacht', name: 'Gute Nacht', icon: '🌙', chords: [[48, 52, 55], [45, 48, 52], [41, 45, 48], [43, 47, 50]], chordLen: 8, melody: [76, 72, 67, 72, 74, 69, 67], gap: [2.4, 4], voice: 'bell', padVol: 0.035, noteVol: 0.05 },
+];
+export const stationById = (id: string) => STATIONS.find((s) => s.id === id) ?? STATIONS[0];
 
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
@@ -12,12 +26,10 @@ let timer = 0;
 let nextChord = 0;
 let chordIdx = 0;
 let nextNote = 0;
+let noteIdx = 0;
+let station: Station = STATIONS[0];
 
 const hz = (m: number) => 440 * Math.pow(2, (m - 69) / 12);
-// C-Dur-Pentatonik-Akkorde: Cmaj9 – Am9 – Fmaj7 – G6/9
-const CHORDS = [[48, 55, 59, 62, 64], [45, 52, 55, 59, 60], [41, 48, 52, 57, 60], [43, 50, 55, 57, 59]];
-const PENTA = [72, 74, 76, 79, 81, 84, 79, 76];
-
 const level = () => {
   const s = getProgress().settings;
   return s.musicOn ? s.music : 0;
@@ -25,6 +37,18 @@ const level = () => {
 
 export function applyMusicSettings() {
   if (master && ctx) master.gain.setTargetAtTime(level() * 0.55, ctx.currentTime, 0.3);
+}
+
+export const currentStation = () => station.id;
+
+/** Sender wechseln (Radio); der Sender wird gemerkt. persist=false: nur vorübergehend (z. B. beim Schlafen) */
+export function setStation(id: string, persist = true) {
+  station = stationById(id);
+  if (persist) mutate((p) => void (p.settings.station = station.id));
+  if (ctx) {
+    nextChord = nextNote = ctx.currentTime + 0.25;
+    chordIdx = noteIdx = 0;
+  }
 }
 
 function impulse(c: AudioContext) {
@@ -36,14 +60,14 @@ function impulse(c: AudioContext) {
   return buf;
 }
 
-function pad(t: number, note: number, dur: number) {
+function pad(t: number, note: number, dur: number, vol: number) {
   if (!ctx || !bus) return;
   const f = ctx.createBiquadFilter();
   f.type = 'lowpass'; f.frequency.value = 1100;
   const g = ctx.createGain();
   g.gain.setValueAtTime(0.0001, t);
-  g.gain.linearRampToValueAtTime(0.05, t + 2.6);
-  g.gain.setValueAtTime(0.05, t + dur - 0.4);
+  g.gain.linearRampToValueAtTime(vol, t + Math.min(2.6, dur * 0.35));
+  g.gain.setValueAtTime(vol, t + dur - 0.4);
   g.gain.linearRampToValueAtTime(0.0001, t + dur + 3.2);
   f.connect(g); g.connect(bus);
   for (const det of [-5, 4]) {
@@ -53,37 +77,40 @@ function pad(t: number, note: number, dur: number) {
   }
 }
 
-function bell(t: number, note: number, vel: number) {
+function note(t: number, n: number, vel: number, voice: Station['voice'], vol: number) {
   if (!ctx || !bus) return;
+  const decay = voice === 'bell' ? 3.2 : voice === 'pluck' ? 1.5 : 0.7;
   const g = ctx.createGain();
   g.gain.setValueAtTime(0.0001, t);
-  g.gain.linearRampToValueAtTime(0.06 * vel, t + 0.02);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + 3.2);
+  g.gain.linearRampToValueAtTime(vol * vel, t + (voice === 'bell' ? 0.02 : 0.008));
+  g.gain.exponentialRampToValueAtTime(0.0001, t + decay);
   g.connect(bus);
   const o = ctx.createOscillator();
-  o.type = 'sine'; o.frequency.value = hz(note);
-  const o2 = ctx.createOscillator();
-  o2.type = 'sine'; o2.frequency.value = hz(note) * 2.01;
-  const g2 = ctx.createGain();
-  g2.gain.value = 0.25;
-  o2.connect(g2); g2.connect(g);
+  o.type = voice === 'pluck' ? 'triangle' : 'sine';
+  o.frequency.value = hz(n);
   o.connect(g);
-  o.start(t); o2.start(t); o.stop(t + 3.3); o2.stop(t + 3.3);
+  o.start(t); o.stop(t + decay + 0.1);
+  const o2 = ctx.createOscillator(), g2 = ctx.createGain();
+  o2.type = 'sine'; o2.frequency.value = hz(n) * (voice === 'marimba' ? 4 : 2.01);
+  g2.gain.value = voice === 'marimba' ? 0.35 : 0.22;
+  o2.connect(g2); g2.connect(g);
+  o2.start(t); o2.stop(t + decay + 0.1);
 }
 
 function schedule() {
   if (!ctx) return;
-  const now = ctx.currentTime;
+  const now = ctx.currentTime, st = station;
   while (nextChord < now + 6) {
-    const ch = CHORDS[chordIdx % CHORDS.length];
-    ch.forEach((n, i) => pad(nextChord + i * 0.18, n, 8.2));
+    const ch = st.chords[chordIdx % st.chords.length];
+    ch.forEach((n, i) => pad(nextChord + i * 0.15, n, st.chordLen + 0.2, st.padVol));
+    if (st.bass) for (let b = 0; b < st.chordLen; b += 1) note(nextChord + b, ch[0] - 12, b % 2 ? 0.6 : 1, 'pluck', 0.09);
     chordIdx++;
-    nextChord += 8;
+    nextChord += st.chordLen;
   }
   while (nextNote < now + 4) {
-    const n = PENTA[Math.floor(Math.random() * PENTA.length)] - (Math.random() < 0.25 ? 12 : 0);
-    bell(nextNote, n, 0.6 + Math.random() * 0.5);
-    nextNote += 1.6 + Math.random() * 3.2;
+    const n = st.melody[(st.id === 'wald' ? Math.floor(Math.random() * st.melody.length) : noteIdx++ % st.melody.length)] - (Math.random() < 0.2 ? 12 : 0);
+    note(nextNote, n, 0.6 + Math.random() * 0.5, st.voice, st.noteVol);
+    nextNote += st.gap[0] + Math.random() * (st.gap[1] - st.gap[0]);
   }
 }
 
@@ -95,6 +122,7 @@ export function startMusic() {
     }
     const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!AC) return;
+    station = stationById(getProgress().settings.station);
     ctx = new AC();
     master = ctx.createGain();
     master.gain.value = 0;
@@ -110,7 +138,7 @@ export function startMusic() {
     conv.connect(wet); dry.connect(master); wet.connect(master);
     nextChord = nextNote = ctx.currentTime + 0.3;
     schedule();
-    timer = window.setInterval(schedule, 700);
+    timer = window.setInterval(schedule, 600);
     master.gain.setTargetAtTime(level() * 0.55, ctx.currentTime, 2.5);
     document.addEventListener('visibilitychange', () => {
       if (!ctx) return;
@@ -142,6 +170,7 @@ export const sfx = {
   buy: () => { tone(660, 0.1, 'triangle', 0.14); tone(880, 0.18, 'triangle', 0.14, 0.08); },
   pop: () => tone(520, 0.12, 'sine', 0.14, 0, 900),
   munch: () => { tone(220, 0.07, 'square', 0.05); tone(260, 0.07, 'square', 0.05, 0.1); tone(220, 0.07, 'square', 0.05, 0.2); },
+  click: () => tone(1200, 0.05, 'square', 0.04),
 };
 
 export function stopMusic() {

@@ -110,7 +110,7 @@ export function createHouse3D(): HouseView {
       for (const s of [-1, 1]) {
         const p = new THREE.Mesh(new THREE.BoxGeometry(L + 0.2, 0.14, 6.5), roofMat);
         p.position.set(s * (HW + 0.4) / 2, top + ROOF_H / 2 + 0.1, 0);
-        p.rotation.z = s * a;
+        p.rotation.z = -s * a;
         p.castShadow = p.receiveShadow = true;
         g.add(p);
       }

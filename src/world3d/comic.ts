@@ -139,3 +139,42 @@ export function drawMia(c: C, cx: number, cy: number, p: MiaPose) {
   }
   c.restore();
 }
+
+
+/** Mia schläft eingerollt im Bett (Seitenansicht), mit atmendem Körper und Zzz */
+export function drawSleepingMia(c: C, cx: number, cy: number, t: number, acc: string[]) {
+  const br = Math.sin(t * 1.5) * 3;
+  c.save();
+  c.translate(cx, cy);
+  // Schwanz eingerollt vorn
+  c.save(); c.lineCap = 'round';
+  const tail = (w: number, col: string) => { c.beginPath(); c.moveTo(48, -26); c.bezierCurveTo(80, -20, 70, 6, 24, 2); c.strokeStyle = col; c.lineWidth = w; c.stroke(); };
+  tail(24, INK); tail(14, OR); c.setLineDash([8, 14]); tail(14, ORD); c.setLineDash([]);
+  c.restore();
+  ell(c, 0, -34 - br * 0.3, 66, 32 + br, OR);
+  path(c, () => c.ellipse(6, -22, 44, 14, 0, 0, Math.PI * 2), CR, false);
+  c.strokeStyle = ORD; c.lineWidth = 7; c.lineCap = 'round';
+  c.beginPath(); c.moveTo(-6, -62); c.lineTo(-2, -48); c.moveTo(18, -62); c.lineTo(20, -48); c.moveTo(40, -56); c.lineTo(40, -44); c.stroke();
+  // Kopf links, auf den Pfoten
+  ell(c, -64, -40, 38, 32, OR);
+  tri(c, [-94, -58], [-100, -92], [-78, -66], OR); tri(c, [-60, -66], [-54, -98], [-42, -64], OR);
+  tri(c, [-92, -62], [-95, -84], [-80, -66], PK, false); tri(c, [-58, -68], [-55, -90], [-46, -66], PK, false);
+  ell(c, -78, -28, 22, 14, CR, false);
+  c.strokeStyle = INK; c.lineWidth = 5; c.lineCap = 'round';
+  c.beginPath(); c.arc(-76, -44, 8, 0.15 * Math.PI, 0.85 * Math.PI); c.stroke();
+  c.beginPath(); c.arc(-52, -44, 8, 0.15 * Math.PI, 0.85 * Math.PI); c.stroke();
+  tri(c, [-70, -34], [-60, -34], [-65, -27], PK);
+  ell(c, -92, -34, 7, 4, 'rgba(255,120,130,.5)', false);
+  ell(c, -88, -4, 18, 9, CR);
+  if (acc.includes('mia-zipfel')) { path(c, () => { c.moveTo(-96, -66); c.quadraticCurveTo(-110, -112, -50, -110); c.quadraticCurveTo(-60, -84, -40, -66); c.closePath(); }, '#e0483f'); ell(c, -50, -110, 9, 9, '#ffffff'); }
+  else if (acc.includes('mia-krone')) path(c, () => { c.moveTo(-92, -68); c.lineTo(-96, -96); c.lineTo(-80, -80); c.lineTo(-68, -102); c.lineTo(-56, -80); c.lineTo(-42, -96); c.lineTo(-46, -68); c.closePath(); }, '#ffd23f');
+  // Zzz
+  c.fillStyle = '#ffffff'; c.strokeStyle = INK; c.lineWidth = 4; c.font = '900 34px sans-serif'; c.lineJoin = 'round';
+  for (let i = 0; i < 3; i++) {
+    const k = ((t * 0.5 + i / 3) % 1), x = -40 + k * 40 + i * 10, y = -110 - k * 70, sc = 0.5 + k * 0.7;
+    c.globalAlpha = 1 - k * 0.8;
+    c.save(); c.translate(x, y); c.scale(sc, sc); c.strokeText('Z', 0, 0); c.fillText('Z', 0, 0); c.restore();
+  }
+  c.globalAlpha = 1;
+  c.restore();
+}
