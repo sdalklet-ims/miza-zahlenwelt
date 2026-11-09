@@ -1,3 +1,4 @@
+import { openBackpack } from './ui/backpack';
 import './styles/base.css';
 import './styles/map.css';
 import { initStage } from './ui/stage';
@@ -18,7 +19,7 @@ function goMap() {
   show(mapScreen(), { back: null });
 }
 
-hud.init({ onMap: goMap, onAlbum: openAlbum, onSettings: openSettings, onHouse: () => openHouseUi({ mode: 'plan' }) });
+hud.init({ onMap: goMap, onAlbum: openAlbum, onSettings: openSettings, onHouse: () => openHouseUi({ mode: 'plan' }), onPack: openBackpack });
 
 show(
   startScreen(() => {

@@ -35,8 +35,10 @@ export interface Progress {
   house: { owned: Record<string, boolean>; built: Record<string, boolean>; roof: string; wall: string; stage: number };
   posV: number;
   /** Haustier (null = noch keins) und Futtervorrat */
-  pet: { kind: string; name: string; fill: number; t: number; stock: Record<string, number>; fed: number; follow?: boolean } | null;
+  pets: { kind: string; name: string; fill: number; t: number; fed: number; follow?: boolean }[];
   petStock: Record<string, number>;
+  /** Rucksack: Gegenstände (z. B. Regenschirm) */
+  pack: Record<string, boolean>;
 }
 
 const KEY = 'mia.progress.v1';
@@ -56,8 +58,9 @@ const defaults = (): Progress => ({
   coinsGot: {},
   house: { owned: {}, built: {}, roof: '#d9534f', wall: '#fff0d4', stage: 0 },
   posV: 0,
-  pet: null,
+  pets: [],
   petStock: {},
+  pack: { umbrella: true },
 });
 
 let state: Progress = load();
@@ -69,6 +72,8 @@ function load(): Progress {
     const raw = localStorage.getItem(KEY);
     if (raw) {
       const p = JSON.parse(raw);
+      if (p.pet && !p.pets) p.pets = [p.pet];
+      delete p.pet;
       return { ...d, ...p, settings: { ...d.settings, ...(p.settings ?? {}) } };
     }
   } catch {

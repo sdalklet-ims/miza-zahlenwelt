@@ -101,7 +101,7 @@ export function buildWorld(hooks: Hooks): WorldModel {
   }
 
   if (PLOT) {
-    keep.push({ x: PLOT.x, y: PLOT.y, r: 480 });
+    keep.push({ x: PLOT.x, y: PLOT.y, r: 560 });
     m.interacts.push({ id: 'plot', x: PLOT.x, y: PLOT.y + 330, r: 170, label: 'Bauplatz', icon: '🏠', run: hooks.onPlot });
   }
 

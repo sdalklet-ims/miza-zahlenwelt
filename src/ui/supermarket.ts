@@ -7,7 +7,7 @@ import { houseCfg } from '../core/texts';
 import { getProgress, mutate, onProgress } from '../core/progress';
 import { coins } from '../core/rewards';
 import { isOwned, isBuilt, parts, partById } from '../core/house';
-import { kinds, foods, kindById, foodById, adopt, addFood, pet, petUnlocked } from '../core/pet';
+import { kinds, foods, kindById, foodById, adopt, addFood, pets, petUnlocked, MAX_PETS } from '../core/pet';
 import { openModal } from './modal';
 import { priceDots } from './houseUi';
 import { speak } from '../audio/speak';
@@ -57,10 +57,10 @@ export function openSupermarket() {
         items.push(product(p.icon, p.name, p.price, 'part:' + p.id, owned ? 'owned' : 'free', !owned && p.requires.length ? 'baut auf: ' + p.requires.map((r) => partById(r).name).join(', ') : ''));
       }
     } else {
-      const has = !!pet();
+      const full = pets().length >= MAX_PETS;
       for (const k of kinds) {
         const locked = !petUnlocked();
-        items.push(product(k.icon, k.name, k.price, 'pet:' + k.id, has ? 'owned' : locked ? 'locked' : 'free', has ? 'du hast schon ein Haustier' : locked ? 'erst wenn das Haus bewohnbar ist' : 'zieht bei Mia ein'));
+        items.push(product(k.icon, k.name, k.price, 'pet:' + k.id, full ? 'owned' : locked ? 'locked' : 'free', full ? 'Dein Haus ist voll mit Tieren' : locked ? 'erst wenn das Haus bewohnbar ist' : pets().length ? `${pets().length} Tier(e) zuhause – noch eins?` : 'zieht bei Mia ein'));
       }
       for (const f of foods) items.push(product(f.icon, f.name, f.price, 'food:' + f.id, 'free', `Vorrat: ${getProgress().petStock[f.id] ?? 0}`, true));
     }
@@ -104,7 +104,7 @@ export function openSupermarket() {
   function checkout() {
     const sum = total();
     if (!sum || coins() < sum) return;
-    const petLine = [...cart.values()].find((l) => l.key.startsWith('pet:'));
+    const petLines = [...cart.values()].filter((l) => l.key.startsWith('pet:'));
     mutate((p) => {
       p.coins -= sum;
       for (const l of cart.values()) if (l.key.startsWith('part:')) p.house.owned[l.key.slice(5)] = true;
@@ -114,16 +114,22 @@ export function openSupermarket() {
     speak('wald.fuchs.buy');
     cart.clear();
     render();
-    if (petLine) chooseName(petLine.key.slice(4));
+    if (petLines.length) chooseNames(petLines.map((l) => l.key.slice(4)));
   }
 
-  function chooseName(kindId: string) {
+  function chooseNames(ids: string[]) {
+    const [first, ...rest] = ids;
+    chooseName(first, () => rest.length && chooseNames(rest));
+  }
+
+  function chooseName(kindId: string, then?: () => void) {
     const k = kindById(kindId);
+    const used = new Set(pets().map((q) => q.name));
     const close = openModal({
       title: `Wie soll dein ${k.name} heißen?`,
       closable: false,
       content: h('div', { class: 'sm-names' }, h('div', { class: 'sm-bigicon' }, k.icon),
-        h('div', { class: 'sm-name-btns' }, ...k.names.map((n) => h('button', { class: 'btn sun', onclick: () => { adopt(kindId, n); sfx.star(); close(); speak('pet.adopt', { name: n }); } }, n)))),
+        h('div', { class: 'sm-name-btns' }, ...(k.names.filter((n) => !used.has(n)).length ? k.names.filter((n) => !used.has(n)) : [k.names[0] + ' 2', k.names[1] + ' 2']).map((n) => h('button', { class: 'btn sun', onclick: () => { adopt(kindId, n); sfx.star(); close(); speak('pet.adopt', { name: n }); then?.(); } }, n)))),
     });
   }
 

@@ -9,7 +9,7 @@ import { parts } from '../core/house';
 import { extraBuilders } from './houseExtra';
 
 const Y0 = 0.35; // Fußbodenhöhe auf dem Fundament
-const HW = 4.5, HD = 2.8, WH = 2.9; // halbe Breite, halbe Tiefe, Wandhöhe
+const HW = 5.5, HD = 2.8, WH = 2.9; // halbe Breite, halbe Tiefe, Wandhöhe
 const ROOF_H = 2.2;
 const WOOD = '#a8693a', WOOD_D = '#7a4d26', STONE = '#9a968c';
 
@@ -82,26 +82,35 @@ export function createHouse3D(): HouseView {
   const B: Record<string, () => THREE.Object3D> = {
     fundament: () => {
       const g = new THREE.Group();
-      g.add(at(box(9.7, 0.35, 6.3, STONE), 0, 0.175, 0));
-      for (let i = 0; i < 15; i++) g.add(at(box(0.5, 0.1, 0.34, i % 2 ? '#b4b0a6' : '#8a867c'), -4.5 + i * 0.64, 0.4, 3.1));
+      g.add(at(box(11.7, 0.35, 6.3, STONE), 0, 0.175, 0));
+      for (let i = 0; i < 18; i++) g.add(at(box(0.5, 0.1, 0.34, i % 2 ? '#b4b0a6' : '#8a867c'), -5.5 + i * 0.64, 0.4, 3.1));
       return g;
     },
     boden: () => {
-      const m = new THREE.Mesh(new THREE.BoxGeometry(8.9, 0.1, 5.5), toon({ map: floorTex }));
+      const m = new THREE.Mesh(new THREE.BoxGeometry(10.9, 0.1, 5.5), toon({ map: floorTex }));
       m.position.set(0, Y0 + 0.05, 0);
       m.receiveShadow = true;
       return m;
     },
     waende: () => {
       const g = new THREE.Group();
-      for (const sx of [-1, 1]) for (const sz of [-1, 1]) g.add(at(box(0.28, WH + 0.1, 0.28, WOOD), sx * HW, Y0 + WH / 2 + 0.05, sz * HD));
-      g.add(wall(9, WH, 0.2, 0, Y0 + WH / 2 + 0.05, -2.7), wall(0.2, WH, 5.6, -4.4, Y0 + WH / 2 + 0.05, 0), wall(0.2, WH, 5.6, 4.4, Y0 + WH / 2 + 0.05, 0));
+      // Seitenwände und vordere Pfosten werden beim Hineingehen niedrig (userData.lowerInside), damit man die Möbel sieht
+      const low = <T extends THREE.Object3D>(o: T, h: number) => { o.userData.lowerInside = true; o.userData.baseY = o.position.y; o.userData.h = h; return o; };
+      for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+        const post = at(box(0.28, WH + 0.1, 0.28, WOOD), sx * HW, Y0 + WH / 2 + 0.05, sz * HD);
+        g.add(sz === 1 || true ? low(post, WH + 0.1) : post);
+      }
+      g.add(wall(11, WH, 0.2, 0, Y0 + WH / 2 + 0.05, -2.7));
+      g.add(low(wall(0.2, WH, 5.6, -5.4, Y0 + WH / 2 + 0.05, 0), WH), low(wall(0.2, WH, 5.6, 5.4, Y0 + WH / 2 + 0.05, 0), WH));
       const front = new THREE.Group();
       front.userData.hideInside = true;
-      front.add(wall(3.75, WH, 0.2, -2.625, Y0 + WH / 2 + 0.05, 2.7), wall(3.75, WH, 0.2, 2.625, Y0 + WH / 2 + 0.05, 2.7), wall(1.5, 0.75, 0.2, 0, Y0 + WH - 0.325 + 0.05, 2.7));
+      front.add(wall(4.75, WH, 0.2, -3.125, Y0 + WH / 2 + 0.05, 2.7), wall(4.75, WH, 0.2, 3.125, Y0 + WH / 2 + 0.05, 2.7), wall(1.5, 0.75, 0.2, 0, Y0 + WH - 0.325 + 0.05, 2.7));
       g.add(front);
-      for (const sz of [-1, 1]) g.add(at(box(9.2, 0.18, 0.2, WOOD_D), 0, Y0 + WH + 0.0, sz * HD));
-      for (const sx of [-1, 1]) g.add(at(box(0.2, 0.18, 5.6, WOOD_D), sx * HW, Y0 + WH + 0.0, 0));
+      g.add(at(box(11.2, 0.18, 0.2, WOOD_D), 0, Y0 + WH, -HD));
+      const fb = at(box(11.2, 0.18, 0.2, WOOD_D), 0, Y0 + WH, HD);
+      fb.userData.hideInside = true;
+      g.add(fb);
+      for (const sx of [-1, 1]) { const sb = at(box(0.2, 0.18, 5.6, WOOD_D), sx * HW, Y0 + WH, 0); sb.userData.hideInside = true; g.add(sb); }
       return g;
     },
     dach: () => {
@@ -138,15 +147,15 @@ export function createHouse3D(): HouseView {
       const g = new THREE.Group();
       const front = new THREE.Group();
       front.userData.hideInside = true;
-      for (const sx of [-1, 1]) front.add(windowAt(sx * 2.7, Y0 + 1.8, 2.76, 0));
+      for (const sx of [-1, 1]) front.add(windowAt(sx * 3.2, Y0 + 1.8, 2.76, 0));
       g.add(front);
-      for (const sx of [-1, 1]) g.add(windowAt(sx * 4.46, Y0 + 1.8, 0, Math.PI / 2));
+      for (const sx of [-1, 1]) { const sw = windowAt(sx * 5.46, Y0 + 1.8, 0, Math.PI / 2); sw.userData.hideInside = true; g.add(sw); }
       return g;
     },
     schornstein: () => {
       const g = new THREE.Group();
-      g.add(at(box(0.95, 2.8, 0.95, '#b5543c'), 3.0, Y0 + 4.5, -0.6), at(box(1.15, 0.2, 1.15, '#7a3a2a'), 3.0, Y0 + 5.95, -0.6));
-      for (let i = 0; i < 4; i++) g.add(at(box(0.95, 0.04, 0.96, '#8a3a2a'), 3.0, Y0 + 3.4 + i * 0.6, -0.6));
+      g.add(at(box(0.95, 2.8, 0.95, '#b5543c'), 4.0, Y0 + 4.5, -0.6), at(box(1.15, 0.2, 1.15, '#7a3a2a'), 4.0, Y0 + 5.95, -0.6));
+      for (let i = 0; i < 4; i++) g.add(at(box(0.95, 0.04, 0.96, '#8a3a2a'), 4.0, Y0 + 3.4 + i * 0.6, -0.6));
       return g;
     },
     treppe: () => {
@@ -156,9 +165,9 @@ export function createHouse3D(): HouseView {
     },
     veranda: () => {
       const g = new THREE.Group();
-      g.add(at(box(6.4, 0.16, 2.0, WOOD), 0, Y0 - 0.03, 3.8), at(box(2.4, 0.12, 0.5, '#b4b0a6'), 0, 0.12, 5.1), at(box(2.4, 0.2, 0.5, '#b4b0a6'), 0, 0.1, 4.95));
-      for (const sx of [-1, 1]) g.add(at(box(0.18, 2.9, 0.18, WOOD_D), sx * 3.0, Y0 + 1.45, 4.7), at(box(0.1, 0.5, 0.1, WOOD_D), sx * 3.0, Y0 + 0.3, 4.7));
-      const r = new THREE.Mesh(new THREE.BoxGeometry(6.8, 0.14, 2.3), roofMat);
+      g.add(at(box(7.4, 0.16, 2.0, WOOD), 0, Y0 - 0.03, 3.8), at(box(2.4, 0.12, 0.5, '#b4b0a6'), 0, 0.12, 5.1), at(box(2.4, 0.2, 0.5, '#b4b0a6'), 0, 0.1, 4.95));
+      for (const sx of [-1, 1]) g.add(at(box(0.18, 2.9, 0.18, WOOD_D), sx * 3.5, Y0 + 1.45, 4.7), at(box(0.1, 0.5, 0.1, WOOD_D), sx * 3.5, Y0 + 0.3, 4.7));
+      const r = new THREE.Mesh(new THREE.BoxGeometry(7.8, 0.14, 2.3), roofMat);
       r.position.set(0, Y0 + 3.0, 3.85);
       r.rotation.x = 0.13;
       r.castShadow = true;
@@ -173,7 +182,7 @@ export function createHouse3D(): HouseView {
     },
     blumenkasten: () => {
       const g = new THREE.Group();
-      for (const sx of [-1, 1]) { g.add(at(box(1.3, 0.28, 0.32, WOOD), sx * 2.7, Y0 + 1.0, 2.95)); g.add(at(flowers(1.1, 0.2, 9, Y0 + 1.14, sx + 3), sx * 2.7, 0, 2.95)); }
+      for (const sx of [-1, 1]) { g.add(at(box(1.3, 0.28, 0.32, WOOD), sx * 3.2, Y0 + 1.0, 2.95)); g.add(at(flowers(1.1, 0.2, 9, Y0 + 1.14, sx + 3), sx * 3.2, 0, 2.95)); }
       return g;
     },
     namensschild: () => {
@@ -229,7 +238,7 @@ export function createHouse3D(): HouseView {
     },
     zaun: () => {
       const g = new THREE.Group();
-      const XL = 7.6, Z0 = -5.0, Z1 = 6.8, GAP = 1.1;
+      const XL = 8.8, Z0 = -5.0, Z1 = 6.8, GAP = 1.1;
       const board = (x: number, z: number, ry: number) => {
         const b = at(box(0.2, 1.0, 0.07, '#e8d3a8'), x, 0.5, z);
         b.rotation.y = ry;
@@ -289,7 +298,7 @@ export function createHouse3D(): HouseView {
       const g = new THREE.Group();
       g.add(at(box(1.6, 0.1, 0.5, WOOD), 0, 0.5, 0), at(box(1.6, 0.4, 0.08, WOOD), 0, 0.85, -0.22));
       for (const sx of [-1, 1]) g.add(at(box(0.1, 0.5, 0.5, WOOD_D), sx * 0.7, 0.25, 0));
-      g.position.set(6.4, 0, 0.8);
+      g.position.set(7.6, 0, 0.8);
       g.rotation.y = -Math.PI / 2;
       return g;
     },
@@ -298,7 +307,7 @@ export function createHouse3D(): HouseView {
       g.add(at(cyl(0.16, 0.24, 1.3, '#7a4d26', 7), 0, 0.65, 0));
       for (const [x, y, z, r] of [[0, 2.0, 0, 1.1], [0.7, 1.6, 0.2, 0.75], [-0.7, 1.6, -0.1, 0.8]]) g.add(at(sph(r, '#4f9d5d', 1, 0.9, 1, 10, true), x, y, z));
       for (let i = 0; i < 9; i++) { const a = i * 2.3; g.add(at(sph(0.1, '#e8504a', 1, 1, 1, 6), Math.cos(a) * 0.95, 1.5 + (i % 3) * 0.3, Math.sin(a) * 0.95)); }
-      g.position.set(-6.3, 0, -3.6);
+      g.position.set(-7.5, 0, -3.6);
       return g;
     },
     vogelhaus: () => {
@@ -309,7 +318,7 @@ export function createHouse3D(): HouseView {
       bird.position.set(0.12, 1.98, 0.3);
       g.add(bird);
       anim.push((t) => { bird.position.y = 1.98 + Math.max(0, Math.sin(t * 2)) * 0.03; bird.rotation.y = Math.sin(t * 0.7) * 0.6; });
-      g.position.set(6.4, 0, -3.8);
+      g.position.set(7.6, 0, -3.8);
       return g;
     },
     brunnen: () => {
@@ -319,7 +328,7 @@ export function createHouse3D(): HouseView {
       w.material = toon({ color: '#5db7e8', emissive: '#1d5f94', emissiveIntensity: 0.3 });
       for (const sx of [-1, 1]) g.add(at(cyl(0.07, 0.07, 1.6, WOOD_D, 6), sx * 0.8, 1.2, 0));
       g.add(at(rot(cone(1.1, 0.5, '#9a6a3a', 4), 0, Math.PI / 4), 0, 2.2, 0), at(cyl(0.18, 0.15, 0.22, '#8a5a2b', 8), 0.35, 1.35, 0));
-      g.position.set(-5.8, 0, 4.2);
+      g.position.set(-7.0, 0, 4.2);
       return g;
     },
     schaukel: () => {
@@ -331,13 +340,13 @@ export function createHouse3D(): HouseView {
       seat.add(at(cyl(0.012, 0.012, 1.6, '#c9b07a', 4), 0, -0.8, 0.45), at(cyl(0.012, 0.012, 1.6, '#c9b07a', 4), 0, -0.8, -0.45), at(box(0.3, 0.07, 1.0, '#d9534f'), 0, -1.6, 0));
       g.add(seat);
       anim.push((t) => (seat.rotation.x = Math.sin(t * 1.6) * 0.35));
-      g.position.set(6.4, 0, -1.8);
+      g.position.set(7.6, 0, -1.8);
       return g;
     },
     kratzbaum: () => {
       const g = new THREE.Group();
       g.add(at(box(1.1, 0.12, 1.1, '#8a6a4a'), 0, 0.06, 0), at(cyl(0.16, 0.16, 2.6, '#d9c08a', 8), 0, 1.3, 0), at(cyl(0.5, 0.5, 0.1, '#7fb5d6', 10), 0, 1.2, 0), at(cyl(0.5, 0.5, 0.1, '#7fb5d6', 10), 0.1, 2.3, 0.0), at(sph(0.35, '#f1d9a6', 1.2, 0.6, 1.2, 10), 0.1, 2.55, 0), at(cyl(0.1, 0.1, 1.0, '#d9c08a', 6), 0.5, 0.55, 0.3));
-      g.position.set(-6.4, 0, -1.6);
+      g.position.set(-7.6, 0, -1.6);
       return g;
     },
     teich: () => {
@@ -347,14 +356,14 @@ export function createHouse3D(): HouseView {
       water.material = toon({ color: '#5db7e8', emissive: '#1d5f94', emissiveIntensity: 0.3 });
       g.add(water);
       for (let i = 0; i < 4; i++) { const a = i * 1.6, p = at(cyl(0.22, 0.22, 0.02, '#4f9d5d', 10), Math.cos(a) * 0.6, 0.18, Math.sin(a) * 0.5); g.add(p); if (i % 2) g.add(at(sph(0.1, '#ffb3d1', 1, 0.7, 1, 6), Math.cos(a) * 0.6, 0.24, Math.sin(a) * 0.5)); }
-      g.position.set(5.9, 0, 3.6);
+      g.position.set(7.0, 0, 3.6);
       return g;
     },
     /* ───── Innenraum ───── */
     korb: () => {
       const g = new THREE.Group();
       g.add(at(cyl(0.55, 0.45, 0.28, '#c9975a', 12), 0, 0.14, 0), at(cyl(0.42, 0.42, 0.1, '#f2a2c0', 12), 0, 0.24, 0), at(sph(0.12, '#fff', 1, 0.6, 1, 6), 0.1, 0.32, 0.05));
-      g.position.set(-3.3, Y0 + 0.1, -1.5);
+      g.position.set(-4.4, Y0 + 0.1, -0.8);
       return g;
     },
     teppich: () => {
@@ -370,7 +379,7 @@ export function createHouse3D(): HouseView {
       g.add(at(cyl(0.6, 0.6, 0.07, '#b07a44', 14), 0, 0.85, 0), at(cyl(0.07, 0.1, 0.85, WOOD_D, 8), 0, 0.42, 0));
       for (const s of [-1, 1]) g.add(at(cyl(0.22, 0.2, 0.08, '#c0504d', 10), s * 0.95, 0.5, 0.1), at(cyl(0.05, 0.06, 0.5, WOOD_D, 6), s * 0.95, 0.25, 0.1));
       g.add(at(cyl(0.12, 0.1, 0.12, '#fff', 8), 0, 0.95, 0), at(sph(0.1, '#e8504a', 1, 1, 1, 6), 0.2, 0.95, 0.1));
-      g.position.set(2.6, Y0 + 0.1, -1.3);
+      g.position.set(3.0, Y0 + 0.1, -0.7);
       return g;
     },
     sofa: () => {
@@ -378,7 +387,7 @@ export function createHouse3D(): HouseView {
       g.add(at(box(2.6, 0.5, 1.0, '#3f8f9a'), 0, 0.25, 0), at(box(2.6, 0.8, 0.28, '#357a84'), 0, 0.75, -0.42), at(box(0.28, 0.65, 1.0, '#357a84'), -1.3, 0.4, 0), at(box(0.28, 0.65, 1.0, '#357a84'), 1.3, 0.4, 0));
       for (const s of [-1, 1]) g.add(at(box(1.0, 0.18, 0.8, '#5bb0bc'), s * 0.55, 0.55, 0.05));
       g.add(at(box(0.4, 0.4, 0.14, '#f4b942'), -0.9, 0.85, -0.1));
-      g.position.set(-0.6, Y0 + 0.1, -2.05);
+      g.position.set(0.2, Y0 + 0.1, -2.05);
       return g;
     },
     regal: () => {
@@ -386,7 +395,8 @@ export function createHouse3D(): HouseView {
       g.add(at(box(0.5, 2.4, 2.2, '#8a5a2b'), 0, 1.2, 0));
       const cols = ['#d9534f', '#4a90d9', '#f4c430', '#4f9d5d', '#c3a6ff'];
       for (let s = 0; s < 4; s++) { g.add(at(box(0.52, 0.05, 2.2, '#6f4624'), 0.01, 0.3 + s * 0.62, 0)); for (let b = 0; b < 8; b++) g.add(at(box(0.3, 0.42 + (b % 3) * 0.06, 0.18, cols[(b + s) % 5]), 0.12, 0.54 + s * 0.62 + (b % 3) * 0.03, -0.9 + b * 0.25)); }
-      g.position.set(-4.05, Y0 + 0.1, 0.5);
+      g.position.set(-2.5, Y0 + 0.1, -2.45);
+      g.rotation.y = -Math.PI / 2;
       return g;
     },
     lampe: () => {
@@ -395,14 +405,14 @@ export function createHouse3D(): HouseView {
       const shade = at(cyl(0.22, 0.36, 0.42, '#ffe9a8', 10), 0, 1.7, 0);
       shade.material = emissive('#ffe0a0', 0.9);
       g.add(shade);
-      g.position.set(4.1, Y0 + 0.1, -2.3);
+      g.position.set(5.0, Y0 + 0.1, -0.9);
       return g;
     },
     bild: () => {
       const g = new THREE.Group();
       const pic = (x: number, w: number, h: number, draw: (c: CanvasRenderingContext2D) => void) => {
         const t = canvasTex(128, 96, draw);
-        g.add(at(box(w + 0.1, h + 0.1, 0.06, '#7a4d26'), x, Y0 + 2.0, -2.57), at(new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshStandardMaterial({ map: t })), x, Y0 + 2.0, -2.53));
+        g.add(at(box(w + 0.1, h + 0.1, 0.06, '#7a4d26'), x, Y0 + 1.75, -2.57), at(new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshStandardMaterial({ map: t })), x, Y0 + 1.75, -2.53));
       };
       pic(-1.9, 1.0, 0.75, (c) => { c.fillStyle = '#9ad6f0'; c.fillRect(0, 0, 128, 96); c.fillStyle = '#4f9d5d'; c.beginPath(); c.moveTo(0, 96); c.lineTo(50, 30); c.lineTo(100, 96); c.fill(); c.fillStyle = '#ffd54a'; c.beginPath(); c.arc(100, 22, 12, 0, 7); c.fill(); });
       pic(1.6, 0.8, 0.8, (c) => { c.fillStyle = '#fff0d4'; c.fillRect(0, 0, 128, 96); c.fillStyle = '#e9a24b'; c.beginPath(); c.arc(64, 54, 30, 0, 7); c.fill(); c.fillStyle = '#3b2a1e'; c.beginPath(); c.arc(54, 48, 4, 0, 7); c.arc(74, 48, 4, 0, 7); c.fill(); });
@@ -411,30 +421,31 @@ export function createHouse3D(): HouseView {
     pflanze: () => {
       const g = new THREE.Group();
       g.add(at(cyl(0.28, 0.2, 0.4, '#c0704a', 8), 0, 0.2, 0));
-      for (let i = 0; i < 6; i++) { const l = cone(0.12, 0.7, '#4f9d5d', 4); l.position.set(Math.cos(i) * 0.15, 0.7, Math.sin(i) * 0.15); l.rotation.set(Math.sin(i) * 0.5, 0, -Math.cos(i) * 0.5); g.add(l); }
+      for (let i = 0; i < 6; i++) { const l = cone(0.12, 0.7, '#4f9d5d', 4); l.position.set(5.0, Y0 + 0.1, 1.0); l.rotation.set(Math.sin(i) * 0.5, 0, -Math.cos(i) * 0.5); g.add(l); }
       g.position.set(4.0, Y0 + 0.1, 1.8);
       return g;
     },
     napf: () => {
       const g = new THREE.Group();
       g.add(at(cyl(0.2, 0.16, 0.1, '#4a90d9', 10), 0, 0.05, 0), at(cyl(0.16, 0.16, 0.04, '#9a6a3a', 10), 0, 0.1, 0), at(cyl(0.2, 0.16, 0.1, '#f4b942', 10), 0.5, 0.05, 0.1), at(cyl(0.16, 0.16, 0.03, '#5db7e8', 10), 0.5, 0.1, 0.1));
-      g.position.set(-3.4, Y0 + 0.1, -0.4);
+      g.position.set(-3.3, Y0 + 0.1, -0.2);
       return g;
     },
     kamin: () => {
       const g = new THREE.Group();
       g.add(at(box(0.7, 1.9, 2.0, '#8a867c'), 0, 0.95, 0), at(box(0.72, 0.9, 1.1, '#2a2020'), 0.03, 0.55, 0), at(box(0.9, 0.12, 2.2, '#6f6b63'), 0, 1.95, 0));
       const fire = new THREE.Group();
-      for (let i = 0; i < 4; i++) { const f = cone(0.14, 0.45, i % 2 ? '#ffb300' : '#ff6a00', 5); f.material = emissive(i % 2 ? '#ffb300' : '#ff6a00', 1.4); f.position.set(0.1, 0.4, -0.3 + i * 0.2); fire.add(f); }
+      for (let i = 0; i < 4; i++) { const f = cone(0.14, 0.45, i % 2 ? '#ffb300' : '#ff6a00', 5); f.material = emissive(i % 2 ? '#ffb300' : '#ff6a00', 1.4); f.position.set(2.6, Y0 + 0.1, -2.45); fire.add(f); }
       g.add(fire);
       anim.push((t) => fire.children.forEach((f, i) => { f.scale.y = 0.8 + Math.sin(t * 9 + i * 2) * 0.35; f.scale.x = 0.9 + Math.sin(t * 7 + i) * 0.15; }));
       g.position.set(4.0, Y0 + 0.1, 0.4);
+      g.rotation.y = -Math.PI / 2;
       return g;
     },
     vorhang: () => {
       const g = new THREE.Group();
-      for (const sx of [-1, 1]) for (const dx of [-0.75, 0.75]) g.add(at(box(0.3, 1.5, 0.08, '#f2a2c0'), sx * 2.7 + dx, Y0 + 1.75, 2.55));
-      g.add(at(box(7.4, 0.05, 0.05, '#7a4d26'), 0, Y0 + 2.55, 2.55));
+      for (const sx of [-1, 1]) for (const dx of [-0.75, 0.75]) g.add(at(box(0.3, 1.5, 0.08, '#f2a2c0'), sx * 3.2 + dx, Y0 + 1.75, 2.55));
+      g.add(at(box(8.4, 0.05, 0.05, '#7a4d26'), 0, Y0 + 2.55, 2.55));
       return g;
     },
   };
@@ -487,7 +498,15 @@ export function createHouse3D(): HouseView {
       for (const [id, o] of Object.entries(objs)) {
         const f = flags[id];
         o.visible = !!(group.userData.built?.[id] ?? true) && !(v && (f?.roof || f?.front));
-        o.traverse((ch) => { if (ch !== o && ch.userData.hideInside) ch.visible = !v; });
+        o.traverse((ch) => {
+          if (ch === o) return;
+          if (ch.userData.hideInside) ch.visible = !v;
+          if (ch.userData.lowerInside) {
+            const k = v ? 0.28 : 1, hh = ch.userData.h as number;
+            ch.scale.y = k;
+            ch.position.y = (ch.userData.baseY as number) - hh / 2 + (hh * k) / 2;
+          }
+        });
       }
     },
     update(t, dt) {
@@ -507,35 +526,35 @@ export function createHouse3D(): HouseView {
       anim.forEach((f) => f(t));
     },
     chimney() {
-      return objs.schornstein?.visible ? new THREE.Vector3(3.0, Y0 + 6.1, -0.6).add(group.position) : null;
+      return objs.schornstein?.visible ? new THREE.Vector3(4.0, Y0 + 6.1, -0.6).add(group.position) : null;
     },
     collisions(built, cx, cy) {
       const rects: Colliders['rects'] = [], solids: Colliders['solids'] = [];
       const U = 50;
       const rect = (x: number, z: number, w: number, d: number) => rects.push({ x: cx + x * U, y: cy + z * U, w: w * U, h: d * U });
       const has = (id: string) => !!built[id];
-      if (has('waende')) { rect(-4.5, -2.8, 9, 0.2); rect(-4.5, -2.8, 0.2, 5.6); rect(4.3, -2.8, 0.2, 5.6); rect(-4.5, 2.6, 3.75, 0.2); rect(0.75, 2.6, 3.75, 0.2); }
-      if (has('veranda')) for (const sx of [-1, 1]) solids.push({ x: cx + sx * 3.0 * U, y: cy + 4.7 * U, r: 8 });
+      if (has('waende')) { rect(-5.5, -2.8, 11, 0.2); rect(-5.5, -2.8, 0.2, 5.6); rect(5.3, -2.8, 0.2, 5.6); rect(-5.5, 2.6, 4.75, 0.2); rect(0.75, 2.6, 4.75, 0.2); }
+      if (has('veranda')) for (const sx of [-1, 1]) solids.push({ x: cx + sx * 3.5 * U, y: cy + 4.7 * U, r: 8 });
       if (has('zaun')) {
-        rect(-7.7, -5.05, 15.4, 0.2); rect(-7.7, -5.05, 0.2, 11.9); rect(7.5, -5.05, 0.2, 11.9);
-        rect(-7.7, 6.7, 6.6, 0.2); rect(1.1, 6.7, 6.6, 0.2);
+        rect(-8.9, -5.05, 17.8, 0.2); rect(-8.9, -5.05, 0.2, 11.9); rect(8.7, -5.05, 0.2, 11.9);
+        rect(-8.9, 6.7, 7.8, 0.2); rect(1.1, 6.7, 7.8, 0.2);
       }
-      if (has('apfelbaum')) solids.push({ x: cx - 6.3 * U, y: cy - 3.6 * U, r: 20 });
-      if (has('vogelhaus')) solids.push({ x: cx + 6.4 * U, y: cy - 3.8 * U, r: 7 });
-      if (has('schaukel')) for (const z of [-2.8, -0.8]) solids.push({ x: cx + 6.4 * U, y: cy + z * U, r: 9 });
-      if (has('bank')) solids.push({ x: cx + 6.4 * U, y: cy + 0.8 * U, r: 22 });
-      if (has('teich')) solids.push({ x: cx + 5.9 * U, y: cy + 3.6 * U, r: 50 });
-      if (has('brunnen')) solids.push({ x: cx - 5.8 * U, y: cy + 4.2 * U, r: 32 });
-      if (has('kratzbaum')) solids.push({ x: cx - 6.4 * U, y: cy - 1.6 * U, r: 20 });
+      if (has('apfelbaum')) solids.push({ x: cx - 7.5 * U, y: cy - 3.6 * U, r: 20 });
+      if (has('vogelhaus')) solids.push({ x: cx + 7.6 * U, y: cy - 3.8 * U, r: 7 });
+      if (has('schaukel')) for (const z of [-2.8, -0.8]) solids.push({ x: cx + 7.6 * U, y: cy + z * U, r: 9 });
+      if (has('bank')) solids.push({ x: cx + 7.6 * U, y: cy + 0.8 * U, r: 22 });
+      if (has('teich')) solids.push({ x: cx + 7.0 * U, y: cy + 3.6 * U, r: 50 });
+      if (has('brunnen')) solids.push({ x: cx - 7.0 * U, y: cy + 4.2 * U, r: 32 });
+      if (has('kratzbaum')) solids.push({ x: cx - 7.6 * U, y: cy - 1.6 * U, r: 20 });
       if (has('briefkasten')) solids.push({ x: cx + 2.1 * U, y: cy + 7.4 * U, r: 7 });
       if (has('laterne')) for (const sx of [-1, 1]) solids.push({ x: cx + sx * 1.7 * U, y: cy + 6.1 * U, r: 6 });
-      if (has('sonnenschirm')) solids.push({ x: cx + 4.6 * U, y: cy - 4.1 * U, r: 34 });
+      if (has('sonnenschirm')) solids.push({ x: cx + 5.6 * U, y: cy - 4.1 * U, r: 34 });
       if (has('hochbeet')) rect(1.0 - 1.15, -4.2 - 0.5, 2.3, 1.0);
       if (has('windrad')) solids.push({ x: cx - 1.2 * U, y: cy - 4.3 * U, r: 6 });
-      if (has('sandkasten')) rect(-4.2 - 1.0, -4.0 - 1.0, 2.0, 2.0);
-      if (has('gewaechshaus')) rect(-5.9 - 1.1, 5.9 - 0.85, 2.2, 1.7);
-      if (has('feuerstelle')) solids.push({ x: cx - 6.0 * U, y: cy + 1.2 * U, r: 34 });
-      if (has('schmetterling')) solids.push({ x: cx + 6.6 * U, y: cy + 5.9 * U, r: 26 });
+      if (has('sandkasten')) rect(-5.2 - 1.0, -4.0 - 1.0, 2.0, 2.0);
+      if (has('gewaechshaus')) rect(-7.0 - 1.1, 5.9 - 0.85, 2.2, 1.7);
+      if (has('feuerstelle')) solids.push({ x: cx - 7.2 * U, y: cy + 1.2 * U, r: 34 });
+      if (has('schmetterling')) solids.push({ x: cx + 7.8 * U, y: cy + 5.9 * U, r: 26 });
       if (has('gartenzwerg')) solids.push({ x: cx - 0.95 * U, y: cy + 5.0 * U, r: 7 });
       if (has('blumenbeet')) for (const sx of [-1, 1]) rect(sx * 2.7 - 1.1, 5.25, 2.2, 0.7);
       return { rects, solids };

@@ -3,12 +3,14 @@ import { totalStars, coins } from '../core/rewards';
 import { builtCount, parts } from '../core/house';
 import { onProgress } from '../core/progress';
 import { layers } from './stage';
+import { onWeather, weather } from '../core/weather';
 
 export interface HudHandlers {
   onMap?: () => void;
   onAlbum?: () => void;
   onSettings?: () => void;
   onHouse?: () => void;
+  onPack?: () => void;
 }
 
 let root: HTMLElement;
@@ -16,6 +18,7 @@ let backBtn: HTMLButtonElement;
 let starsEl: HTMLElement;
 let coinEl: HTMLElement;
 let houseEl: HTMLElement;
+let packEl: HTMLElement | null = null;
 
 export const hud = {
   init(handlers: HudHandlers) {
@@ -33,12 +36,14 @@ export const hud = {
       houseEl,
       coinEl,
       starsEl,
+      (packEl = btn('🎒', 'Rucksack', handlers.onPack)),
       btn('🗺️', 'Karte', handlers.onMap),
       btn('🎩', 'Album', handlers.onAlbum),
       btn('⚙️', 'Einstellungen', handlers.onSettings)
     );
     layers.hud.append(root);
     onProgress(hud.refresh);
+    onWeather(() => packEl?.classList.toggle('pulse', weather.raining && !weather.umbrella));
     hud.refresh();
     hud.show(false);
   },

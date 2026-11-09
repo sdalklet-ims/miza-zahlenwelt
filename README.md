@@ -73,3 +73,9 @@ src/
 - Die Zonen Wiese, Fluss, Berg und Dorf sind nur Kulisse hinter dem Nebeltor.
 - Nicht auf einem echten iPad gemessen (Bildrate, Touch-Gefühl).
 - Die Musik ist generativ und bewusst schlicht; für feinere Musik könnten später Audiodateien ergänzt werden.
+
+## Update: noch breiteres Haus, mehrere Haustiere, Regen & Rucksack
+- **Haus** noch breiter (halbe Breite 5,5). Regal, Kamin, Sofa, Uhr, Spiegel usw. hängen an der **Rückwand** und sind von vorn gut zu sehen. Geht Mia hinein, werden die **Seitenwände niedrig** und die Kamera **zoomt sanft heran**.
+- **Mehrere Haustiere** (bis 6): im Supermarkt, Gang „Tiere“, immer wieder neue kaufen. Jedes hat eigenen Hunger, eigenen Namen und kann einzeln mitgenommen werden. Im Füttern-Fenster wählt man oben das Tier aus.
+- **Regen**: ab und zu regnet es draußen (Wetter-Zyklus in `src/core/weather.ts`). Der **Regenschirm liegt im Rucksack** (🎒 in der oberen Leiste, blinkt bei Regen). Ohne Schirm wird Mia nass und etwas langsamer – kein Game Over. Im überdachten Haus regnet es nicht.
+- Spielstand: altes einzelnes `pet` wird automatisch zu `pets[]` migriert.

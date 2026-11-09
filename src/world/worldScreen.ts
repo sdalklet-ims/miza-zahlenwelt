@@ -12,11 +12,12 @@ import { onProgress } from '../core/progress';
 import { show } from '../core/router';
 import { createControls } from '../input/controls';
 import { speak } from '../audio/speak';
+import { tickWeather, weather, forceRain } from '../core/weather';
 import { award } from '../ui/results';
 import { openHouseUi, setBuilder, setHomeNav } from '../ui/houseUi';
 import { openSupermarket } from '../ui/supermarket';
 import { openPetUi } from '../ui/petUi';
-import { pet as getPet, mood as petMood } from '../core/pet';
+import { pets as getPets, mood as petMood } from '../core/pet';
 import { sfx, setStation, currentStation } from '../audio/music';
 import { openRadio } from '../ui/radio';
 import { openModal } from '../ui/modal';
@@ -39,7 +40,7 @@ export interface EnterOpts { spawnWorld?: string }
 
 const R = 13; // Mias Kollisionsradius (an den Füßen)
 const DT = 1 / 60;
-const IN_X = 230, IN_Y = 135; // Innenraum des Hauses (Pixel, halbe Breite/Tiefe)
+const IN_X = 285, IN_Y = 135; // Innenraum des Hauses (Pixel, halbe Breite/Tiefe)
 const RUN = 235;
 const angDiff = (a: number, b: number) => Math.atan2(Math.sin(b - a), Math.cos(b - a));
 
@@ -88,7 +89,9 @@ export async function enterWorld(opts: EnterOpts = {}) {
   const radar = h('div', { class: 'radar' }, h('i', {}), h('b', {}));
   const controls = createControls(() => act());
   const banner = h('div', { class: 'zone-banner' });
-  const el = h('div', { class: 'worldscreen' }, cv, labels, radar, banner, controls.el);
+  const rainTint = h('div', { class: 'rain-tint' });
+  const rainCv = h('canvas', { class: 'rain-cv', width: 1180, height: 820 });
+  const el = h('div', { class: 'worldscreen' }, cv, rainTint, rainCv, labels, radar, banner, controls.el);
   const pixelRatio = () => clamp(getScale() * (window.devicePixelRatio || 1), 1, 2);
   const stage = createStage3D(cv, pixelRatio());
   const fit = () => stage.setPixelRatio(pixelRatio());
@@ -120,8 +123,8 @@ export async function enterWorld(opts: EnterOpts = {}) {
     const hs = getProgress().house;
     house.sync(hs.built, { roof: hs.roof, wall: hs.wall }, animate);
     dyn = house.collisions(hs.built, plot.x, plot.y);
-    if (hs.built.radio && !model.interacts.some((i) => i.id === 'radio')) model.interacts.push({ id: 'radio', x: plot.x - 202, y: plot.y + 35, r: 140, label: 'Radio', icon: '📻', run: () => openRadio() });
-    if (hs.built.bett && !model.interacts.some((i) => i.id === 'bed')) model.interacts.push({ id: 'bed', x: plot.x - 155, y: plot.y + 72, r: 110, label: 'Schlafen', icon: '😴', run: () => startSleep() });
+    if (hs.built.radio && !model.interacts.some((i) => i.id === 'radio')) model.interacts.push({ id: 'radio', x: plot.x - 125, y: plot.y - 120, r: 150, label: 'Radio', icon: '📻', run: () => openRadio() });
+    if (hs.built.bett && !model.interacts.some((i) => i.id === 'bed')) model.interacts.push({ id: 'bed', x: plot.x - 200, y: plot.y + 60, r: 110, label: 'Schlafen', icon: '😴', run: () => startSleep() });
   }
   syncHouse(false);
   house.onLand = (_id, p) => {
@@ -132,22 +135,40 @@ export async function enterWorld(opts: EnterOpts = {}) {
   const PET_H: Record<string, number> = { meerschwein: 0.85, kaninchen: 1.45, hamster: 0.8, wellensittich: 1.2 };
   const trail: { x: number; y: number }[] = [];
   let lastTrail = { x: 0, y: 0 };
-  const pt = { x: plot?.x ?? 0, y: plot?.y ?? 0, vx: 0, vy: 0, wait: 1, kind: '', fig: null as Billboard | null };
-  const petMark = h('div', { class: 'pet-mark' }, '🍽️');
-  labels.append(petMark);
-  let petInteract: Interact | null = null;
-  let petWarnAt = 0;
+  interface PetView { x: number; y: number; vx: number; vy: number; wait: number; kind: string; fig: Billboard | null; mark: HTMLElement; ia: Interact | null; warnAt: number }
+  const petViews: PetView[] = [];
+  let petSync = false;
   async function ensurePet() {
-    const p = getPet();
-    if (!p || !plot || pt.kind === p.kind) return;
-    pt.kind = p.kind;
-    if (pt.fig) scene.remove(pt.fig.group);
-    pt.fig = await svgFigure(petSvg(p.kind as PetKind), PET_H[p.kind] ?? 1);
-    scene.add(pt.fig.group);
-    if (!petInteract) {
-      petInteract = { id: 'pet', x: 0, y: 0, r: 110, label: 'Füttern', icon: '🥕', follow: pt, run: () => openPetUi() };
-      model.interacts.push(petInteract);
+    if (!plot || petSync) return;
+    petSync = true;
+    const list = getPets();
+    while (petViews.length > list.length) {
+      const v = petViews.pop()!;
+      if (v.fig) scene.remove(v.fig.group);
+      v.mark.remove();
+      if (v.ia) model.interacts.splice(model.interacts.indexOf(v.ia), 1);
     }
+    for (let i = 0; i < list.length; i++) {
+      let v = petViews[i];
+      if (!v) {
+        const mark = h('div', { class: 'pet-mark' }, '🍽️');
+        labels.append(mark);
+        v = { x: plot.x - 60 + i * 40, y: plot.y + 20 + (i % 2) * 20, vx: 0, vy: 0, wait: 1, kind: '', fig: null, mark, ia: null, warnAt: 0 };
+        petViews[i] = v;
+      }
+      if (v.kind !== list[i].kind) {
+        v.kind = list[i].kind;
+        if (v.fig) scene.remove(v.fig.group);
+        v.fig = await svgFigure(petSvg(v.kind as PetKind), PET_H[v.kind] ?? 1);
+        scene.add(v.fig.group);
+      }
+      if (!v.ia) {
+        const idx = i;
+        v.ia = { id: 'pet' + i, x: 0, y: 0, r: 110, label: 'Füttern', icon: '🥕', follow: v, run: () => openPetUi(idx) };
+        model.interacts.push(v.ia);
+      }
+    }
+    petSync = false;
   }
   const offHouse = onProgress(() => { syncHouse(true); void ensurePet(); });
   void ensurePet();
@@ -161,7 +182,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
   function startSleep() {
     if (!plot || sleeping || hidden) return;
     sleeping = true;
-    st.x = plot.x - 155; st.y = plot.y + 72; st.vx = st.vy = 0; tap = null;
+    st.x = plot.x - 200; st.y = plot.y + 60; st.vx = st.vy = 0; tap = null;
     stationBefore = currentStation();
     setStation('nacht', false);
     el.append(night);
@@ -217,6 +238,22 @@ export async function enterWorld(opts: EnterOpts = {}) {
   // Figuren sind Comic-Sprites (2,5D): Mia wird jedes Bild neu gezeichnet, die Tiere sind Zeichnungen
   const miaSpr = createMiaSprite(equippedFor('mia'));
   scene.add(miaSpr.group);
+  // Regenschirm (nur sichtbar, wenn aufgespannt)
+  const umbrella = new THREE.Group();
+  {
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(0.95, 0.5, 12), M.toon({ color: '#e0525a' }));
+    cone.position.y = 2.55;
+    const stripe = new THREE.Mesh(new THREE.ConeGeometry(0.96, 0.5, 12, 1, true, 0, 1.05), M.toon({ color: '#fff3d6' }));
+    stripe.position.y = 2.55;
+    const stick = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 1.2, 6), M.toon({ color: '#7a4d26' }));
+    stick.position.y = 1.95;
+    umbrella.add(cone, stripe, stick);
+    umbrella.visible = false;
+    scene.add(umbrella);
+  }
+  const rainCtx = rainCv.getContext('2d')!;
+  const drops = Array.from({ length: 260 }, () => ({ x: Math.random() * 1180, y: Math.random() * 820, v: 700 + Math.random() * 500, l: 14 + Math.random() * 16 }));
+  let umbT = 0;
   let miaDir: Dir = 'down';
 
   interface NpcView { ent: (typeof model.npcs)[number]; root: THREE.Object3D; fig?: Billboard; label: HTMLElement; mark: HTMLElement; top: number }
@@ -392,6 +429,12 @@ export async function enterWorld(opts: EnterOpts = {}) {
 
   function update() {
     st.t += DT;
+    {
+      const ev = tickWeather(DT, houseInside && isBuilt('dach'));
+      if (ev === 'start') speak('weather.rain');
+      else if (ev === 'wet') speak('weather.wet');
+      else if (ev === 'stop') speak('weather.dry');
+    }
     const isFrozen = frozen();
     let { x: ix, y: iy } = isFrozen ? { x: 0, y: 0 } : controls.vec();
     const stick = ix !== 0 || iy !== 0;
@@ -412,7 +455,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
       else ix = iy = 0;
     }
     if (!hidden) {
-      const sp = RUN;
+      const sp = RUN * (1 - 0.22 * weather.wet);
       const len = Math.hypot(ix, iy) || 1, mag = Math.min(1, Math.hypot(ix, iy));
       const tvx = (ix / len) * sp * mag, tvy = (iy / len) * sp * mag;
       const a = 1 - Math.exp(-(mag > 0 ? 11 : 15) * DT); // sanftes Beschleunigen und Abbremsen
@@ -457,19 +500,21 @@ export async function enterWorld(opts: EnterOpts = {}) {
       cr.x = clamp(cr.x + cr.vx * DT, 40, WW - 40); cr.y = clamp(cr.y + cr.vy * DT, 60, WH - 40);
     }
 
-    // Haustier: läuft im Haus (oder im Garten, solange es keinen Boden gibt) umher
-    if (pt.fig && plot) {
-      if (getPet()?.follow) {
-        // Haustier folgt Mias Spur (so läuft es durch Türen statt durch Wände)
-        const tg = trail.length > 7 ? trail[trail.length - 7] : { x: st.x - 40, y: st.y + 20 };
+    // Haustiere: laufen im Haus (oder im Garten, solange es keinen Boden gibt) umher
+    const plist = getPets();
+    petViews.forEach((pt, pi) => {
+      if (!pt.fig || !plot) return;
+      if (plist[pi]?.follow) {
+        // folgt Mias Spur (so läuft es durch Türen statt durch Wände), jedes Tier etwas weiter hinten
+        const tg = trail.length > 7 + pi * 5 ? trail[trail.length - 7 - pi * 5] : { x: st.x - 40 - pi * 25, y: st.y + 20 };
         const dx = tg.x - pt.x, dy = tg.y - pt.y, dd = Math.hypot(dx, dy), dm = Math.hypot(st.x - pt.x, st.y - pt.y);
         if (dm > 800) { pt.x = tg.x; pt.y = tg.y; pt.vx = pt.vy = 0; }
-        else if (dd > 12 && dm > 75) { const sp = Math.min(300, 60 + dd * 3); pt.vx = (dx / dd) * sp; pt.vy = (dy / dd) * sp; }
+        else if (dd > 12 && dm > 75 + pi * 25) { const sp = Math.min(300, 60 + dd * 3); pt.vx = (dx / dd) * sp; pt.vy = (dy / dd) * sp; }
         else pt.vx = pt.vy = 0;
         pt.x += pt.vx * DT; pt.y += pt.vy * DT;
       } else {
         const indoor = isBuilt('boden') && isBuilt('waende');
-        const r = indoor ? { x0: plot.x - 190, x1: plot.x + 190, y0: plot.y - 60, y1: plot.y + 80 } : { x0: plot.x - 230, x1: plot.x + 230, y0: plot.y + 190, y1: plot.y + 300 };
+        const r = indoor ? { x0: plot.x - 250, x1: plot.x + 250, y0: plot.y - 50, y1: plot.y + 85 } : { x0: plot.x - 230, x1: plot.x + 230, y0: plot.y + 190, y1: plot.y + 300 };
         if (pt.x < r.x0 - 4 || pt.x > r.x1 + 4 || pt.y < r.y0 - 4 || pt.y > r.y1 + 4) { pt.x = clamp(pt.x, r.x0, r.x1); pt.y = clamp(pt.y, r.y0, r.y1); }
         pt.wait -= DT;
         if (pt.wait <= 0) {
@@ -479,12 +524,12 @@ export async function enterWorld(opts: EnterOpts = {}) {
         pt.x = clamp(pt.x + pt.vx * DT, r.x0, r.x1);
         pt.y = clamp(pt.y + pt.vy * DT, r.y0, r.y1);
       }
-      const pm = getPet();
-      if (pm && petMood() === 'hungry' && st.t > petWarnAt && Math.hypot(st.x - pt.x, st.y - pt.y) < 320) {
-        petWarnAt = st.t + 300;
+      const pm = plist[pi];
+      if (pm && petMood(pm) === 'hungry' && st.t > pt.warnAt && Math.hypot(st.x - pt.x, st.y - pt.y) < 320) {
+        pt.warnAt = st.t + 300;
         speak('pet.hungry', { name: pm.name });
       }
-    }
+    });
 
     // Entdecker-Sterne
     for (const sv of starViews) {
@@ -571,6 +616,36 @@ export async function enterWorld(opts: EnterOpts = {}) {
     miaSpr.group.position.set(st.x * S, gy + (sleeping ? 1.0 : 0), st.y * S);
     miaSpr.update(t, st.phase, Math.min(1, spd / RUN), miaDir, false, sleeping);
 
+    // Regenschirm
+    umbrella.visible = weather.umbrella && !hidden && !sleeping;
+    if (umbrella.visible) {
+      umbT += 1 / 60;
+      umbrella.position.set(st.x * S, gy + Math.sin(umbT * 2) * 0.02, st.y * S + 0.05);
+      umbrella.rotation.z = Math.sin(umbT * 1.5) * 0.04;
+    }
+    // Regen: Streifen + leichte Verdunkelung (im überdachten Haus nicht)
+    {
+      const covered = houseInside && isBuilt('dach');
+      const lvl = covered ? 0 : weather.level;
+      rainTint.style.opacity = String(lvl * 0.22);
+      rainCtx.clearRect(0, 0, 1180, 820);
+      if (lvl > 0.03) {
+        rainCtx.strokeStyle = 'rgba(200,225,255,0.65)';
+        rainCtx.lineWidth = 2;
+        rainCtx.beginPath();
+        const n = Math.floor(drops.length * lvl);
+        for (let i = 0; i < n; i++) {
+          const d = drops[i];
+          d.y += d.v / 60; d.x -= d.v / 60 * 0.18;
+          if (d.y > 820 || d.x < -20) { d.y = -30; d.x = Math.random() * 1250; }
+          rainCtx.moveTo(d.x, d.y); rainCtx.lineTo(d.x + d.l * 0.18, d.y - d.l);
+        }
+        rainCtx.stroke();
+      }
+      // Tropfen von der nassen Mia
+      if (weather.wet > 0.3 && !weather.umbrella && Math.random() < 0.12) fx.add(st.x * S + (Math.random() - 0.5) * 0.5, gy + 1.5, st.y * S, (Math.random() - 0.5) * 0.3, -0.2, 0, 0.5, 0.15, '#8fd3ff');
+    }
+
     stage.follow(st.x, st.y, st.vx, st.vy, DT);
     stage.streamChunks(st.x, st.y, 2);
     stage.tick(timeSec);
@@ -611,23 +686,24 @@ export async function enterWorld(opts: EnterOpts = {}) {
       const sh = shakeFog * Math.sin(timeSec * 40) * 0.2;
       fs.sp.position.x = fs.f.x * S + Math.sin(timeSec * 0.5 + fs.f.ph) * 0.5 + sh;
     }
-    if (pt.fig) {
+    petViews.forEach((pt, pi) => {
+      if (!pt.fig) return;
       const moving = Math.hypot(pt.vx, pt.vy) > 5;
       const petIn = !!plot && isBuilt('boden') && Math.abs(pt.x - plot.x) < IN_X && pt.y > plot.y - IN_Y && pt.y < plot.y + IN_Y;
-      pt.fig.group.position.set(pt.x * S, heightAt(pt.x, pt.y) + (petIn ? 0.45 : 0) + (moving ? Math.abs(Math.sin(timeSec * 12)) * 0.1 : 0), pt.y * S);
+      pt.fig.group.position.set(pt.x * S, heightAt(pt.x, pt.y) + (petIn ? 0.45 : 0) + (moving ? Math.abs(Math.sin(timeSec * 12 + pi)) * 0.1 : 0), pt.y * S);
       if (Math.abs(pt.vx) > 3) pt.fig.mesh.scale.x = pt.vx < 0 ? -1 : 1;
       v3.set(pt.x * S, pt.fig.group.position.y + (PET_H[pt.kind] ?? 1) + 0.3, pt.y * S);
       const pp = stage.project(v3);
-      const hungry = petMood() === 'hungry';
-      petMark.style.display = hungry && !(petIn && houseRoofCovers()) ? '' : 'none';
-      petMark.style.transform = `translate(${pp.x}px, ${pp.y + Math.sin(timeSec * 4) * 4}px) translate(-50%, -100%)`;
-    }
+      const hungry = petMood(getPets()[pi]) === 'hungry';
+      pt.mark.style.display = hungry && !(petIn && houseRoofCovers()) ? '' : 'none';
+      pt.mark.style.transform = `translate(${pp.x}px, ${pp.y + Math.sin(timeSec * 4) * 4}px) translate(-50%, -100%)`;
+    });
     if (plot && isBuilt('radio') && currentStation() !== 'wald' && Math.random() < 0.07) {
-      fx.add((plot.x - 202) * S, 3.2, (plot.y + 35) * S, (Math.random() - 0.5) * 0.5, 0.9, 0.1, 1.6, 0.35, ['#ffd54a', '#ff8fab', '#8fd3ff'][Math.floor(Math.random() * 3)]);
+      fx.add((plot.x - 125) * S, 3.2, (plot.y - 120) * S, (Math.random() - 0.5) * 0.5, 0.9, 0.1, 1.6, 0.35, ['#ffd54a', '#ff8fab', '#8fd3ff'][Math.floor(Math.random() * 3)]);
     }
     if (plot) {
       const inh = isBuilt('fundament') && Math.abs(st.x - plot.x) < IN_X && st.y > plot.y - IN_Y && st.y < plot.y + IN_Y && isBuilt('waende');
-      if (inh !== houseInside) { houseInside = inh; house.setInside(inh); }
+      if (inh !== houseInside) { houseInside = inh; house.setInside(inh); stage.setZoom(inh ? 11.5 : 15); }
       house.update(timeSec, DT);
       const ch = house.chimney();
       if (ch && Math.random() < 0.06) fx.add(ch.x + (Math.random() - 0.5) * 0.2, ch.y, ch.z, 0.25, 0.9, 0.1, 2.6, 0.9, '#d8d8d8');
@@ -694,7 +770,8 @@ export async function enterWorld(opts: EnterOpts = {}) {
   };
   stage.follow(st.x, st.y, 0, 0, DT, true);
   stage.streamChunks(st.x, st.y, 30); // die nächsten Kacheln sofort, der Rest läuft nach
-  if (import.meta.env.DEV) (window as unknown as { __mia: unknown }).__mia = st;
+  if (import.meta.env.DEV) (window as unknown as { __mia: unknown; __w: unknown }).__mia = st;
+  if (import.meta.env.DEV) (window as unknown as { __w: unknown }).__w = { weather, forceRain };
   show(screen, { back: null });
   if (!getProgress().seen.goal) {
     mutate((p) => void (p.seen.goal = true));

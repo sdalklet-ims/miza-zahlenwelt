@@ -193,7 +193,8 @@
 .sm-names { text-align: center; } .sm-bigicon { font-size: 110px; line-height: 1.1; } .sm-name-btns { display: flex; gap: 12px; justify-content: center; margin-top: 10px; }
 
 /* ───────── Haustier ───────── */
-.pet-ui { display: flex; gap: 26px; align-items: center; min-width: 720px; }
+.pet-ui { min-width: 720px; } .pet-main { display: flex; gap: 26px; align-items: center; }
+.pet-tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; } .pet-tab { font: 800 20px var(--font); padding: 8px 16px; border-radius: 999px; border: 3px solid #fff; background: #ffffffaa; cursor: pointer; } .pet-tab.on { background: #ffd54a; } .pet-tab.hungry { border-color: #ff8a65; }
 .pet-art { width: 240px; animation: breathe 2.6s ease-in-out infinite; transform-origin: 50% 100%; } .pet-art svg { width: 100%; height: auto; display: block; }
 .pet-info { flex: 1; } .pet-info h3 { margin: 0 0 8px; font: 900 32px var(--font); }
 .pet-bar { height: 26px; border-radius: 14px; background: #e6dcc4; overflow: hidden; border: 3px solid #cbb98f; } .pet-bar i { display: block; height: 100%; transition: width .5s; background: #7ddc7a; }
@@ -223,3 +224,11 @@
 .fish.caught { transform: translateY(300px) scale(.2) rotate(30deg); opacity: 0; pointer-events: none; }
 .fish.glow { animation: pulse .6s ease-in-out infinite; filter: drop-shadow(0 0 14px #fff6a0); }
 .bucket { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); font: 900 34px var(--font); background: #fff; border: 4px solid var(--wood); border-radius: 20px; padding: 4px 24px; }
+
+/* Rucksack + Regen */
+.pack { min-width: 560px; } .pack-grid { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 14px; }
+.pack-item { width: 168px; padding: 14px 8px; border-radius: 22px; border: 4px solid #fff; background: #fff8e6; font: 700 20px var(--font); display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+.pack-item.food { cursor: default; } .pack-item.on { background: #bfe6ff; } .pack-item.hint { animation: breathe 1s ease-in-out infinite; background: #ffe9a8; }
+.pk-icon { font-size: 56px; } .pack-item small { font-size: 15px; text-align: center; }
+.rain-cv { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; } .rain-tint { position: absolute; inset: 0; pointer-events: none; background: #1d3557; opacity: 0; transition: opacity .4s; }
+.hud-btn.pulse { animation: breathe 1s ease-in-out infinite; background: #ffe9a8; }

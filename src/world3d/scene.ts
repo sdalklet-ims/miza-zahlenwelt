@@ -15,6 +15,8 @@ export interface Stage3D {
   follow(x: number, y: number, vx: number, vy: number, dt: number, snap?: boolean): void;
   streamChunks(x: number, y: number, budget: number): void;
   tick(t: number): void;
+  /** Sichtbare Höhe in Einheiten (kleiner = näher heran); weicher Übergang */
+  setZoom(h: number): void;
   project(v: THREE.Vector3): { x: number; y: number; behind: boolean };
   pickGround(clientX: number, clientY: number): { x: number; y: number } | null;
   dispose(): void;
@@ -122,6 +124,7 @@ export function createStage3D(canvas: HTMLCanvasElement, pixelRatio: number): St
   });
 
   const cam = { x: 0, y: 0, z: 0, init: false };
+  let view = VIEW_H, viewTarget = VIEW_H;
   const ray = new THREE.Raycaster();
   const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -0.2);
   const tmp = new THREE.Vector3();
@@ -158,7 +161,15 @@ export function createStage3D(canvas: HTMLCanvasElement, pixelRatio: number): St
       want.sort((a, b) => a[2] - b[2]);
       for (let i = 0; i < Math.min(budget || want.length, want.length); i++) makeChunk(want[i][0], want[i][1]);
     },
+    setZoom(hh) {
+      viewTarget = hh;
+    },
     tick(t) {
+      if (Math.abs(view - viewTarget) > 0.002) {
+        view += (viewTarget - view) * 0.07;
+        camera.left = (-view * asp) / 2; camera.right = (view * asp) / 2; camera.top = view / 2; camera.bottom = -view / 2;
+        camera.updateProjectionMatrix();
+      }
       waveTex.offset.y = -t * 0.12;
       waveTex.offset.x = Math.sin(t * 0.4) * 0.05;
     },

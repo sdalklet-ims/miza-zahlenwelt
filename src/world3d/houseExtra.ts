@@ -18,7 +18,7 @@ export function extraBuilders(anim: ((t: number) => void)[]): Record<string, () 
       const top = cone(1.9, 0.65, '#ffb347', 10);
       top.position.y = 2.65;
       g.add(top, at(sph(0.1, '#e0483f', 1, 1, 1, 6), 0, 3.0, 0));
-      g.position.set(4.6, 0, -4.1);
+      g.position.set(5.6, 0, -4.1);
       return g;
     },
     hochbeet: () => {
@@ -49,7 +49,7 @@ export function extraBuilders(anim: ((t: number) => void)[]): Record<string, () 
       g.add(at(box(1.8, 0.3, 1.8, '#e7c27a'), 0, 0.12, 0));
       for (const [x, z, w, d] of [[0, -0.95, 2.0, 0.12], [0, 0.95, 2.0, 0.12], [-0.95, 0, 0.12, 1.8], [0.95, 0, 0.12, 1.8]]) g.add(at(box(w, 0.3, d, WOOD), x, 0.15, z));
       g.add(at(cyl(0.16, 0.12, 0.2, '#e8504a', 8), -0.4, 0.38, 0.2), at(box(0.06, 0.3, 0.16, '#4a90d9'), 0.3, 0.42, -0.2), at(sph(0.2, '#e7c27a', 1, 0.6, 1, 8), 0.1, 0.32, 0.5));
-      g.position.set(-4.2, 0, -4.0);
+      g.position.set(-5.2, 0, -4.0);
       return g;
     },
     gewaechshaus: () => {
@@ -64,7 +64,7 @@ export function extraBuilders(anim: ((t: number) => void)[]): Record<string, () 
       g.add(gl, roof);
       for (const sx of [-1, 1]) for (const sz of [-1, 1]) g.add(at(box(0.07, 1.3, 0.07, '#dfe6ea'), sx * 1.0, 0.9, sz * 0.75));
       for (let i = 0; i < 5; i++) g.add(at(sph(0.2, '#4f9d5d', 1, 1.2, 1, 6), -0.7 + i * 0.35, 0.5, (i % 2) * 0.3 - 0.15), at(sph(0.09, '#e8504a', 1, 1, 1, 6), -0.7 + i * 0.35, 0.75, (i % 2) * 0.3 - 0.05));
-      g.position.set(-5.9, 0, 5.9);
+      g.position.set(-7.0, 0, 5.9);
       return g;
     },
     feuerstelle: () => {
@@ -76,13 +76,13 @@ export function extraBuilders(anim: ((t: number) => void)[]): Record<string, () 
       g.add(fire);
       anim.push((t) => fire.children.forEach((f, i) => { f.scale.y = 0.8 + Math.sin(t * 9 + i * 2) * 0.35; f.scale.x = 0.9 + Math.sin(t * 7 + i) * 0.15; }));
       for (let i = 0; i < 3; i++) { const a = i * 2.1 + 0.4; const l = rot(cyl(0.16, 0.16, 0.9, '#9a6a3a', 8), 0, -a + Math.PI / 2, Math.PI / 2); l.position.set(Math.cos(a) * 1.5, 0.17, Math.sin(a) * 1.5); g.add(l); }
-      g.position.set(-6.0, 0, 1.2);
+      g.position.set(-7.2, 0, 1.2);
       return g;
     },
     lichterkette: () => {
       const g = new THREE.Group();
       const cols = ['#ff6b6b', '#ffd166', '#6bcBff', '#8aff8a', '#d59bff'];
-      const XL = 7.6, Z0 = -5.0, Z1 = 6.8;
+      const XL = 8.8, Z0 = -5.0, Z1 = 6.8;
       const bulbs: THREE.Mesh[] = [];
       const seg = (x0: number, z0: number, x1: number, z1: number) => {
         const n = 10;
@@ -102,7 +102,7 @@ export function extraBuilders(anim: ((t: number) => void)[]): Record<string, () 
       const g = new THREE.Group();
       g.add(at(sph(0.7, '#3a8a4a', 1.2, 0.9, 1, 8), 0, 0.55, 0));
       for (let i = 0; i < 14; i++) g.add(at(sph(0.13, i % 2 ? '#c66bff' : '#ff8fe0', 1, 1, 1, 6), Math.cos(i * 1.4) * 0.6, 0.8 + (i % 4) * 0.18, Math.sin(i * 1.4) * 0.5));
-      g.position.set(6.6, 0, 5.9);
+      g.position.set(7.8, 0, 5.9);
       return g;
     },
     gartenzwerg: () => {
@@ -150,7 +150,7 @@ export function extraBuilders(anim: ((t: number) => void)[]): Record<string, () 
       const blanket = canvasTex(64, 64, (c) => { c.fillStyle = '#f08aa8'; c.fillRect(0, 0, 64, 64); c.fillStyle = '#fff'; for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) if ((i + j) % 2) c.fillRect(i * 16, j * 16, 16, 16); });
       g.add(at(box(1.7, 0.3, 2.3, WOOD), 0, 0.2, 0), at(box(1.6, 0.25, 2.2, '#fff6e3'), 0, 0.46, 0), at(box(1.8, 1.0, 0.12, WOOD_D), 0, 0.7, -1.18), at(box(1.1, 0.14, 0.45, '#fff'), 0, 0.66, -0.8));
       const bl = new THREE.Mesh(new THREE.BoxGeometry(1.62, 0.12, 1.3), toon({ map: blanket }));
-      bl.position.set(0, 0.62, 0.35);
+      bl.position.set(-4.0, Y0 + 0.1, 1.2);
       g.add(bl);
       g.position.set(-3.1, Y0 + 0.1, 1.45);
       return g;
@@ -161,15 +161,13 @@ export function extraBuilders(anim: ((t: number) => void)[]): Record<string, () 
       const hand = (len: number, w: number) => { const p = new THREE.Group(); p.add(at(box(w, len, 0.03, '#222'), 0, len / 2, 0.06)); g.add(p); return p; };
       const hh = hand(0.2, 0.04), mh = hand(0.3, 0.03);
       anim.push((t) => { mh.rotation.z = -t * 0.5; hh.rotation.z = -t * 0.04; });
-      g.position.set(-0.15, Y0 + 2.5, -2.58);
+      g.position.set(0.2, Y0 + 2.6, -2.58);
       return g;
     },
     spiegel: () => {
       const g = new THREE.Group();
-      g.add(at(box(0.08, 1.4, 0.9, '#d9b45a'), 0, 0, 0), at(new THREE.Mesh(new THREE.PlaneGeometry(0.8, 1.2), new THREE.MeshBasicMaterial({ color: '#d6f0ff' })), 0.05, 0, 0));
-      g.children[1].rotation.y = Math.PI / 2;
-      g.add(at(box(0.01, 0.1, 0.5, '#fff'), 0.055, 0.3, 0.05));
-      g.position.set(-4.28, Y0 + 1.7, -1.7);
+      g.add(at(box(1.0, 1.3, 0.08, '#d9b45a'), 0, 0, 0), at(new THREE.Mesh(new THREE.PlaneGeometry(0.8, 1.1), new THREE.MeshBasicMaterial({ color: '#d6f0ff' })), 0, 0, 0.05), at(box(0.1, 0.5, 0.01, '#ffffff'), -0.2, 0.2, 0.06));
+      g.position.set(-4.5, Y0 + 2.35, -2.58);
       return g;
     },
     aquarium: () => {
@@ -180,7 +178,7 @@ export function extraBuilders(anim: ((t: number) => void)[]): Record<string, () 
       g.add(tank, at(box(1.36, 0.1, 0.56, '#e7c27a'), 0, 0.75, 0));
       for (let i = 0; i < 3; i++) g.add(at(cone(0.06, 0.4, '#3fa65a', 4), -0.4 + i * 0.35, 1.0, -0.15));
       const fish = [0, 1, 2].map((i) => { const f = new THREE.Group(); f.add(sph(0.09, ['#ff8c2a', '#ff5a8a', '#ffd23f'][i], 1.4, 1, 0.7, 8), at(cone(0.07, 0.12, ['#ff8c2a', '#ff5a8a', '#ffd23f'][i], 3), -0.14, 0, 0)); g.add(f); return f; });
-      anim.push((t) => fish.forEach((f, i) => { f.position.set(Math.sin(t * 0.6 + i * 2) * 0.5, 1.05 + i * 0.15, 0.05 * i); f.rotation.y = Math.cos(t * 0.6 + i * 2) > 0 ? 0 : Math.PI; }));
+      anim.push((t) => fish.forEach((f, i) => { f.position.set(-4.5, Y0 + 0.1, -2.3); f.rotation.y = Math.cos(t * 0.6 + i * 2) > 0 ? 0 : Math.PI; }));
       g.position.set(-3.6, Y0 + 0.1, -2.3);
       return g;
     },
@@ -191,7 +189,7 @@ export function extraBuilders(anim: ((t: number) => void)[]): Record<string, () 
       g.add(at(box(0.6, 0.35, 0.7, WOOD_D), -0.45, 0.6, 0), at(cyl(0.22, 0.2, 0.08, '#4a90d9', 10), 0.1, 0.5, 0.75), at(cyl(0.04, 0.05, 0.5, WOOD_D, 6), 0.1, 0.25, 0.75));
       const globe = new THREE.Group();
       globe.add(sph(0.26, '#4a90d9', 1, 1, 1, 12), at(sph(0.1, '#4f9d5d', 1.4, 0.8, 0.5, 6), 0.1, 0.1, 0.2), at(sph(0.08, '#4f9d5d', 1, 1.2, 0.5, 6), -0.12, -0.05, 0.22));
-      globe.position.set(0.55, 1.28, 0);
+      globe.position.set(4.5, Y0 + 0.1, -2.25);
       g.add(globe, at(cyl(0.03, 0.03, 0.25, '#d9b45a', 6), 0.55, 1.0, 0), at(box(0.45, 0.04, 0.3, '#fff'), -0.2, 0.9, 0.1));
       anim.push((t) => (globe.rotation.y = t * 0.4));
       g.position.set(3.0, Y0 + 0.1, -2.25);
@@ -203,14 +201,15 @@ export function extraBuilders(anim: ((t: number) => void)[]): Record<string, () 
       const toys: [number, number, string, string][] = [[-0.3, 0.2, '#f4c430', 's'], [0.1, -0.1, '#4a90d9', 'b'], [0.35, 0.15, '#4f9d5d', 's'], [-0.05, 0.2, '#fff', 'b']];
       toys.forEach(([x, z, c, k]) => g.add(k === 's' ? at(sph(0.14, c, 1, 1, 1, 8), x, 0.75, z) : at(box(0.2, 0.2, 0.2, c), x, 0.75, z)));
       g.add(at(sph(0.16, '#c08a5a', 1, 1, 1, 8), -0.4, 0.82, -0.15), at(sph(0.09, '#c08a5a', 1, 1, 1, 6), -0.4, 0.98, -0.15));
-      g.position.set(3.0, Y0 + 0.1, 1.9);
+      g.position.set(4.0, Y0 + 0.1, 1.9);
       return g;
     },
     wandregal: () => {
       const g = new THREE.Group();
       for (const y of [0, 0.6]) g.add(at(box(0.4, 0.07, 1.6, WOOD), 0, y, 0));
       g.add(at(box(0.2, 0.3, 0.14, '#d9534f'), 0, 0.2, -0.5), at(box(0.2, 0.34, 0.14, '#4a90d9'), 0, 0.22, -0.34), at(cyl(0.1, 0.08, 0.2, '#c0704a', 8), 0, 0.8, 0.3), at(cone(0.1, 0.3, '#4f9d5d', 5), 0, 1.0, 0.3), at(sph(0.14, '#f4c430', 1, 1, 1, 8), 0, 0.2, 0.4));
-      g.position.set(4.3, Y0 + 1.7, -1.3);
+      g.position.set(4.5, Y0 + 1.95, -2.5);
+      g.rotation.y = -Math.PI / 2;
       return g;
     },
     kerzen: () => {
@@ -221,24 +220,25 @@ export function extraBuilders(anim: ((t: number) => void)[]): Record<string, () 
         g.add(at(cyl(0.05, 0.05, h, '#fff6e3', 8), 0, h / 2, z));
         const f = cone(0.04, 0.12, '#ffb300', 5);
         f.material = glow('#ffb300', 1.6);
-        f.position.set(0, h + 0.08, z);
+        f.position.set(2.95, Y0 + 2.06, -2.4);
         g.add(f);
         flames.push(f);
       }
       anim.push((t) => flames.forEach((f, i) => (f.scale.y = 0.8 + Math.sin(t * 11 + i) * 0.3)));
       g.position.set(4.0, Y0 + 2.06, 0.2);
+      g.rotation.y = -Math.PI / 2;
       return g;
     },
     radio: () => {
       const g = new THREE.Group();
       g.add(at(box(0.7, 0.4, 0.3, '#d9534f'), 0, 0.2, 0), at(cyl(0.12, 0.12, 0.04, '#333', 12), -0.18, 0.2, 0.17), at(box(0.2, 0.05, 0.02, '#ffd88a'), 0.15, 0.28, 0.16), at(cyl(0.01, 0.01, 0.5, '#999', 4), 0.3, 0.55, 0));
       g.children[1].rotation.x = Math.PI / 2;
-      g.position.set(-4.05, Y0 + 2.62, 0.7);
+      g.position.set(-2.5, Y0 + 2.62, -2.4);
       return g;
     },
     kissen: () => {
       const g = new THREE.Group();
-      g.add(at(rot(box(0.45, 0.45, 0.14, '#f4b942'), 0.2, 0.3, 0.1), -1.5, 0.95, -1.75), at(rot(box(0.42, 0.42, 0.14, '#e8504a'), 0.2, -0.3, -0.1), 0.3, 0.93, -1.75));
+      g.add(at(rot(box(0.45, 0.45, 0.14, '#f4b942'), 0.2, 0.3, 0.1), -0.7, 0.95, -1.75), at(rot(box(0.42, 0.42, 0.14, '#e8504a'), 0.2, -0.3, -0.1), 1.1, 0.93, -1.75));
       g.position.set(0, Y0 + 0.1, 0);
       return g;
     },
