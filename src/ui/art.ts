@@ -146,12 +146,32 @@ export function hareSvg(): string {
 </svg>`;
 }
 
+/* ───────────── Fuchs Fritz (Händler) ───────────── */
+export function foxSvg(): string {
+  return `<svg viewBox="0 0 200 210" xmlns="http://www.w3.org/2000/svg" class="npc-svg">
+  <path d="M146 170 C196 176 206 112 168 98 C170 126 150 138 138 146Z" fill="#e8742f" stroke="#b9531a" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M176 104 C198 120 196 150 178 164 C186 144 184 124 170 108Z" fill="#fff" />
+  <ellipse cx="100" cy="150" rx="46" ry="48" fill="#f08a3c"/>
+  <ellipse cx="100" cy="162" rx="26" ry="34" fill="#fff2dc"/>
+  <ellipse cx="74" cy="198" rx="17" ry="8" fill="#5b3a22"/><ellipse cx="126" cy="198" rx="17" ry="8" fill="#5b3a22"/>
+  <polygon points="52,70 42,16 92,46" fill="#f08a3c" stroke="#b9531a" stroke-width="3" stroke-linejoin="round"/><polygon points="148,70 158,16 108,46" fill="#f08a3c" stroke="#b9531a" stroke-width="3" stroke-linejoin="round"/>
+  <polygon points="58,60 54,30 80,46" fill="#4a2a18"/><polygon points="142,60 146,30 120,46" fill="#4a2a18"/>
+  <path d="M42 96 Q46 52 100 50 Q154 52 158 96 Q160 122 100 128 Q40 122 42 96Z" fill="#f08a3c" stroke="#b9531a" stroke-width="3"/>
+  <path d="M42 100 Q70 104 100 124 Q130 104 158 100 Q150 128 100 130 Q50 128 42 100Z" fill="#fff2dc"/>
+  <ellipse cx="78" cy="88" rx="8" ry="10" fill="#3b2a1e"/><ellipse cx="122" cy="88" rx="8" ry="10" fill="#3b2a1e"/><circle cx="81" cy="84" r="3" fill="#fff"/><circle cx="125" cy="84" r="3" fill="#fff"/>
+  <ellipse cx="100" cy="108" rx="7" ry="5" fill="#3b2a1e"/><path d="M100 113 q-8 10 -16 3 M100 113 q8 10 16 3" fill="none" stroke="#3b2a1e" stroke-width="3" stroke-linecap="round"/>
+  <path d="M60 146 h80 l-6 22 h-68z" fill="#4a90d9" stroke="#2e69a6" stroke-width="3" stroke-linejoin="round" opacity=".0"/>
+  <circle cx="100" cy="146" r="9" fill="#f4c430" stroke="#c9971c" stroke-width="3"/><text x="100" y="151" text-anchor="middle" font-family="sans-serif" font-weight="900" font-size="13" fill="#8a5a00">€</text>
+</svg>`;
+}
+
 export function npcSvg(kind: string, acc: string[] = []): string {
   switch (kind) {
     case 'owl': return owlSvg(acc);
     case 'hedgehog': return hedgehogSvg();
     case 'badger': return badgerSvg();
     case 'hare': return hareSvg();
+    case 'fox': return foxSvg();
     default: return miaSvg(acc);
   }
 }

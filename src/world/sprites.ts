@@ -62,8 +62,8 @@ export const spritesReady: Promise<void> = (async () => {
 })();
 
 /** Auftraggeber-Sprite (mit angezogenen Accessoires) */
-const NPC_W: Record<string, number> = { owl: 150, hedgehog: 140, badger: 130, hare: 110 };
-const NPC_ASPECT: Record<string, number> = { owl: 270 / 220, hedgehog: 170 / 230, badger: 195 / 200, hare: 235 / 180 };
+const NPC_W: Record<string, number> = { owl: 150, hedgehog: 140, badger: 130, hare: 110, fox: 130 };
+const NPC_ASPECT: Record<string, number> = { owl: 270 / 220, hedgehog: 170 / 230, badger: 195 / 200, hare: 235 / 180, fox: 210 / 200 };
 export async function npcSprite(kind: string, acc: string[]): Promise<Sprite> {
   const w = NPC_W[kind] ?? 130, h = Math.round(w * (NPC_ASPECT[kind] ?? 1));
   return { img: await load(npcSvg(kind, acc), w, h), w, h, ax: w / 2, ay: h * 0.96 };

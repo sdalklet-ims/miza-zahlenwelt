@@ -15,16 +15,16 @@
   },
   "world": {
     "spawn": {
-      "x": 520,
-      "y": 900
+      "x": 920,
+      "y": 1300
     },
     "npcs": [
       {
         "id": "eule",
         "kind": "owl",
         "name": "Eule Olga",
-        "x": 330,
-        "y": 740,
+        "x": 730,
+        "y": 1140,
         "hello": "wald.eule.hello",
         "offers": [
           "video",
@@ -35,8 +35,8 @@
         "id": "igel",
         "kind": "hedgehog",
         "name": "Igel Ingo",
-        "x": 640,
-        "y": 1130,
+        "x": 1040,
+        "y": 1530,
         "hello": "wald.igel.hello",
         "offers": [
           "punkte"
@@ -46,8 +46,8 @@
         "id": "dachs",
         "kind": "badger",
         "name": "Dachs Bruno",
-        "x": 990,
-        "y": 690,
+        "x": 1390,
+        "y": 1090,
         "hello": "wald.dachs.hello",
         "offers": [
           "steine"
@@ -57,8 +57,8 @@
         "id": "hase",
         "kind": "hare",
         "name": "Hase Hugo",
-        "x": 1060,
-        "y": 1160,
+        "x": 1460,
+        "y": 1560,
         "hello": "wald.hase.hello",
         "offers": [
           "kaertchen"
@@ -68,87 +68,167 @@
         "id": "truhe",
         "kind": "chest",
         "name": "Schatzkiste",
-        "x": 1250,
-        "y": 960,
+        "x": 1950,
+        "y": 1330,
         "hello": "wald.truhe.hello",
         "offers": [
           "check"
+        ]
+      },
+      {
+        "id": "fuchs",
+        "kind": "fox",
+        "name": "Fuchs Fritz",
+        "x": 1250,
+        "y": 1180,
+        "hello": "wald.fuchs.hello",
+        "offers": [
+          "shop"
+        ]
+      },
+      {
+        "id": "memory",
+        "kind": "board",
+        "name": "Memory-Brett",
+        "x": 600,
+        "y": 1700,
+        "hello": "wald.memory.hello",
+        "offers": [
+          "memory"
+        ]
+      },
+      {
+        "id": "pilze",
+        "kind": "shroom",
+        "name": "Zahlenpilze",
+        "x": 1500,
+        "y": 800,
+        "hello": "wald.pilze.hello",
+        "offers": [
+          "pilze"
         ]
       }
     ],
     "bushes": [
       {
-        "x": 200,
-        "y": 1000
+        "x": 600,
+        "y": 1400
       },
       {
-        "x": 470,
-        "y": 640
+        "x": 870,
+        "y": 1040
       },
       {
-        "x": 760,
-        "y": 960
+        "x": 1160,
+        "y": 1360
       },
       {
-        "x": 900,
-        "y": 1300
+        "x": 1300,
+        "y": 1700
       },
       {
-        "x": 560,
-        "y": 1380
+        "x": 960,
+        "y": 1780
       },
       {
-        "x": 1180,
+        "x": 1580,
+        "y": 1100
+      },
+      {
+        "x": 540,
+        "y": 920
+      },
+      {
+        "x": 1550,
+        "y": 1800
+      },
+      {
+        "x": 300,
+        "y": 1800
+      },
+      {
+        "x": 1700,
+        "y": 1900
+      },
+      {
+        "x": 1900,
         "y": 700
       },
       {
-        "x": 140,
-        "y": 520
-      },
-      {
-        "x": 1150,
-        "y": 1400
+        "x": 1000,
+        "y": 2200
       }
     ],
     "stars": [
       {
         "id": "s1",
-        "x": 150,
-        "y": 260
+        "x": 550,
+        "y": 660
       },
       {
         "id": "s2",
-        "x": 1290,
-        "y": 330
+        "x": 1690,
+        "y": 730
       },
       {
         "id": "s3",
-        "x": 250,
-        "y": 1560
+        "x": 650,
+        "y": 1960
       },
       {
         "id": "s4",
-        "x": 880,
-        "y": 1650
+        "x": 1280,
+        "y": 2050
+      },
+      {
+        "id": "s5",
+        "x": 300,
+        "y": 300
+      },
+      {
+        "id": "s6",
+        "x": 2050,
+        "y": 420
+      },
+      {
+        "id": "s7",
+        "x": 350,
+        "y": 2300
+      },
+      {
+        "id": "s8",
+        "x": 1100,
+        "y": 2450
       }
     ],
     "critters": [
       {
         "kind": "squirrel",
-        "x": 420,
-        "y": 820
-      },
-      {
-        "kind": "squirrel",
         "x": 820,
-        "y": 1040
+        "y": 1220
       },
       {
         "kind": "squirrel",
-        "x": 1100,
-        "y": 880
+        "x": 1220,
+        "y": 1440
+      },
+      {
+        "kind": "squirrel",
+        "x": 1500,
+        "y": 1280
+      },
+      {
+        "kind": "squirrel",
+        "x": 700,
+        "y": 1900
+      },
+      {
+        "kind": "squirrel",
+        "x": 1750,
+        "y": 1100
       }
-    ]
+    ],
+    "coins": 45
   },
   "games": {
     "punkte": {
@@ -745,6 +825,58 @@
     "wald.star.found": [
       "mia",
       "Ein versteckter Stern! Gut aufgepasst!"
+    ],
+    "wald.fuchs.hello": [
+      "fuchs",
+      "Psst, Mia! Bei mir gibt es die tollsten Sachen. Sammle Münzen und kauf dir was Schönes!"
+    ],
+    "wald.fuchs.buy": [
+      "fuchs",
+      "Prima Wahl! Viel Spaß damit."
+    ],
+    "wald.fuchs.poor": [
+      "fuchs",
+      "Dafür brauchst du noch ein paar Münzen. Such welche im Wald oder spiel die Minispiele!"
+    ],
+    "wald.memory.hello": [
+      "mia",
+      "Ein Memory-Brett! Ich suche zu jeder Zahl die passenden Punkte."
+    ],
+    "wald.memory.prompt": [
+      "mia",
+      "Finde die Paare: eine Zahl und ihre Punkte in der Stellentafel."
+    ],
+    "wald.memory.match": [
+      "mia",
+      "Ein Paar! Die Punkte passen zur Zahl {n}."
+    ],
+    "wald.memory.nomatch": [
+      "mia",
+      "Das passt nicht zusammen. Merk dir die Karten!"
+    ],
+    "wald.memory.hint": [
+      "mia",
+      "Zähle die Punkte: Hunderter, Zehner, Einer. Welche Zahl ist das?"
+    ],
+    "wald.pilze.hello": [
+      "mia",
+      "Zahlenpilze! Wenn ich sie in der richtigen Reihenfolge pflücke, gibt es Sterne."
+    ],
+    "wald.pilze.prompt.up": [
+      "mia",
+      "Pflücke die Pilze von der kleinsten zur größten Zahl!"
+    ],
+    "wald.pilze.prompt.down": [
+      "mia",
+      "Pflücke die Pilze von der größten zur kleinsten Zahl!"
+    ],
+    "wald.pilze.oops.up": [
+      "mia",
+      "Hoppla, da ist noch eine kleinere Zahl. Vergleiche zuerst die Hunderter, dann die Zehner."
+    ],
+    "wald.pilze.oops.down": [
+      "mia",
+      "Hoppla, da ist noch eine größere Zahl. Vergleiche zuerst die Hunderter, dann die Zehner."
     ]
   }
 }

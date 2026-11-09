@@ -39,3 +39,18 @@ export function toggleEquip(it: RewardItem) {
     else p.equipped[k] = it.id;
   });
 }
+
+/* ── Münzen & Gadgets ── */
+export const coins = () => getProgress().coins;
+export const addCoins = (n: number) => mutate((p) => void (p.coins += n));
+export const hasGadget = (id: string) => !!getProgress().gadgets[id];
+
+/** Kauft ein Gadget; false, wenn zu wenig Münzen oder schon vorhanden */
+export function buyGadget(id: string, price: number): boolean {
+  if (hasGadget(id) || coins() < price) return false;
+  mutate((p) => {
+    p.coins -= price;
+    p.gadgets[id] = true;
+  });
+  return true;
+}

@@ -29,6 +29,12 @@
       "pitch": 1.6,
       "rate": 1.1,
       "color": "#f3b6c4"
+    },
+    "fuchs": {
+      "name": "Fuchs Fritz",
+      "pitch": 1.3,
+      "rate": 1.05,
+      "color": "#f08a4b"
     }
   },
   "texts": {
@@ -156,6 +162,38 @@
         "slot": "hals",
         "name": "Fliege",
         "stars": 12
+      }
+    ]
+  },
+  "shop": {
+    "items": [
+      {
+        "id": "turbo",
+        "name": "Turbo-Schuhe",
+        "desc": "Mia läuft schneller.",
+        "price": 12,
+        "icon": "👟"
+      },
+      {
+        "id": "glitzer",
+        "name": "Glitzerspur",
+        "desc": "Mia hinterlässt funkelnden Glitzer.",
+        "price": 8,
+        "icon": "✨"
+      },
+      {
+        "id": "magnet",
+        "name": "Münz-Magnet",
+        "desc": "Münzen in der Nähe fliegen zu dir.",
+        "price": 15,
+        "icon": "🧲"
+      },
+      {
+        "id": "fernglas",
+        "name": "Sternen-Fernglas",
+        "desc": "Ein Pfeil zeigt dir den nächsten versteckten Stern.",
+        "price": 22,
+        "icon": "🔭"
       }
     ]
   }

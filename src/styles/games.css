@@ -103,3 +103,40 @@
 .rbtns { display: flex; gap: 16px; justify-content: center; margin-top: 20px; }
 .celebrate { text-align: center; } .cel-art { width: 240px; margin: 0 auto; animation: breathe 2s ease-in-out infinite; }
 .cel-name { font: 900 46px var(--font); margin: 8px 0 18px; }
+
+/* ───────── Shop ───────── */
+.shop { min-width: 760px; text-align: center; }
+.shop-coins { font: 900 34px var(--font); margin-bottom: 14px; }
+.shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.shop-item { background: #fff; border: 4px solid #d6bf93; border-bottom-width: 8px; border-radius: 22px; padding: 12px 14px 14px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.shop-item.own { border-color: var(--leaf); background: #eaf7e2; }
+.shop-icon { font-size: 64px; line-height: 1.1; } .shop-name { font: 900 26px var(--font); } .shop-desc { font: 700 20px/1.2 var(--font); color: #6b5a44; min-height: 48px; }
+.shop-own { font: 900 26px var(--font); color: var(--leaf-d); min-height: 68px; display: grid; place-items: center; }
+.shop-note { display: block; margin-top: 12px; font: 700 18px var(--font); color: #6b5a44; }
+
+/* ───────── Memory ───────── */
+.mem { display: grid; place-items: center; height: 100%; }
+.mem-grid { display: grid; grid-template-columns: repeat(4, 190px); gap: 14px; }
+.mem-card { position: relative; width: 190px; height: 150px; padding: 0; border: 0; background: none; perspective: 600px; }
+.mem-back, .mem-front { position: absolute; inset: 0; border-radius: 20px; border: 5px solid #6b8fd6; border-bottom-width: 10px; display: grid; place-items: center; backface-visibility: hidden; transition: transform .4s; background: #fff; }
+.mem-back { background: linear-gradient(135deg, #8fb4ff, #5b84d6); color: #fff; font: 900 64px var(--font); }
+.mem-front { transform: rotateY(180deg); }
+.mem-card.up .mem-back, .mem-card.done .mem-back { transform: rotateY(180deg); }
+.mem-card.up .mem-front, .mem-card.done .mem-front { transform: rotateY(360deg); }
+.mem-card.done .mem-front { background: #eaf7e2; border-color: var(--leaf); }
+.mem-card.glow { animation: pulse .6s ease-in-out infinite; }
+.mem-num { font: 900 66px var(--font); color: #3f62b8; }
+.mini-board { display: flex; gap: 6px; }
+.mb-col { width: 50px; min-height: 90px; padding: 5px 3px; border-radius: 10px; display: flex; flex-wrap: wrap; gap: 3px; align-content: flex-start; justify-content: center; }
+.mb-col.H { background: #ffe6dc; } .mb-col.Z { background: #dfeeff; } .mb-col.E { background: #e1f5da; }
+.mb-dot { width: 13px; height: 13px; border-radius: 50%; } .mb-dot.H { background: #e8704a; } .mb-dot.Z { background: #4a90d9; } .mb-dot.E { background: #4f9d5d; }
+
+/* ───────── Zahlenpilze ───────── */
+.task.pilze { position: relative; height: 100%; }
+.shroom-field { position: absolute; inset: 0 0 70px 0; background: radial-gradient(ellipse at 50% 60%, #bfe69a, #8fcd72); border-radius: 30px; border: 5px solid #6bb25a; }
+.shroom { position: absolute; width: 160px; height: 150px; padding: 0; border: 0; background: none; transition: transform .45s, opacity .45s; }
+.shroom .cap { position: absolute; left: 0; top: 0; width: 160px; height: 96px; border-radius: 80px 80px 18px 18px; background: radial-gradient(circle at 35% 25%, #fff6, transparent 40%), var(--c); box-shadow: inset -8px -8px 0 rgba(0,0,0,.14), 0 6px 0 rgba(0,0,0,.18); display: grid; place-items: center; }
+.shroom .cap b { background: #fff; border-radius: 16px; padding: 0 14px; font: 900 40px/54px var(--font); color: #3b2a1e; }
+.shroom .stem { position: absolute; left: 52px; top: 86px; width: 56px; height: 56px; border-radius: 10px 10px 24px 24px; background: linear-gradient(90deg, #fbf0d8, #e2cfa4); }
+.shroom.gone { transform: translateY(-40px) scale(.1); opacity: 0; pointer-events: none; }
+.basket { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); font: 900 34px var(--font); background: #fff; border: 4px solid var(--wood); border-radius: 20px; padding: 4px 24px; }

@@ -90,3 +90,4 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 .alb-item.locked { filter: grayscale(1); opacity: .6; }
 .alb-thumb { width: 110px; margin: 0 auto; }
 .alb-name { font: 900 22px var(--font); margin-top: 4px; } .alb-sub { font: 700 18px var(--font); color: #6b5a44; }
+.hud-stars.coin { background: #fff0b8; border-bottom-color: #d9b84c; }

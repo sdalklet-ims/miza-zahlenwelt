@@ -1,5 +1,5 @@
 import { h } from '../core/dom';
-import { totalStars } from '../core/rewards';
+import { totalStars, coins } from '../core/rewards';
 import { onProgress } from '../core/progress';
 import { layers } from './stage';
 
@@ -12,11 +12,13 @@ export interface HudHandlers {
 let root: HTMLElement;
 let backBtn: HTMLButtonElement;
 let starsEl: HTMLElement;
+let coinEl: HTMLElement;
 
 export const hud = {
   init(handlers: HudHandlers) {
     backBtn = h('button', { class: 'hud-btn back', 'aria-label': 'Zurück' }, '◀ Zurück');
     starsEl = h('div', { class: 'hud-stars', 'aria-label': 'Sterne' });
+    coinEl = h('div', { class: 'hud-stars coin', 'aria-label': 'Münzen' });
     const btn = (icon: string, label: string, fn?: () => void) =>
       fn ? h('button', { class: 'hud-btn icon', 'aria-label': label, title: label, onclick: fn }, icon) : null;
     root = h(
@@ -24,6 +26,7 @@ export const hud = {
       { class: 'hud-bar' },
       backBtn,
       h('div', { class: 'spacer' }),
+      coinEl,
       starsEl,
       btn('🗺️', 'Karte', handlers.onMap),
       btn('🎩', 'Album', handlers.onAlbum),
@@ -43,5 +46,6 @@ export const hud = {
   },
   refresh() {
     if (starsEl) starsEl.textContent = `⭐ ${totalStars()}`;
+    if (coinEl) coinEl.textContent = `🪙 ${coins()}`;
   },
 };

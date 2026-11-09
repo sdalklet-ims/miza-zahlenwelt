@@ -27,6 +27,11 @@ export interface Progress {
   pos?: { x: number; y: number };
   /** Gefundene Entdecker-Belohnungen */
   discovered: Record<string, boolean>;
+  /** Münzen (Währung für den Laden) und eingesammelte Münzen in der Welt */
+  coins: number;
+  coinsGot: Record<string, boolean>;
+  /** Gekaufte Gadgets */
+  gadgets: Record<string, boolean>;
 }
 
 const KEY = 'mia.progress.v1';
@@ -42,6 +47,9 @@ const defaults = (): Progress => ({
   seen: {},
   mapAt: "wald",
   discovered: {},
+  coins: 0,
+  coinsGot: {},
+  gadgets: {},
 });
 
 let state: Progress = load();

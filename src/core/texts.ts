@@ -5,6 +5,7 @@ export interface WorldMeta {
   map: { x: number; y: number }; status: 'open' | 'locked';
 }
 export interface WorldContent { id: string; meta: WorldMeta; texts: Record<string, [string, string]>; [k: string]: any }
+export interface ShopItem { id: string; name: string; desc: string; price: number; icon: string }
 export interface RewardItem { id: string; target: string; slot: string; name: string; stars: number }
 
 const files = import.meta.glob('/content/**/*.json', { eager: true, import: 'default' }) as Record<string, any>;
@@ -13,6 +14,7 @@ export const common = files['/content/common.json'] as {
   speakers: Record<string, SpeakerDef>;
   texts: Record<string, [string, string]>;
   rewards: { items: RewardItem[] };
+  shop: { items: ShopItem[] };
 };
 
 export const worlds: WorldContent[] = Object.entries(files)

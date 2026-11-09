@@ -7,6 +7,7 @@ import { createShell, type Shell } from '../../ui/shell';
 import { createBoard } from '../../ui/board';
 import { createStoneBoard } from '../../ui/stones';
 import { award, showResult } from '../../ui/results';
+import { addCoins } from '../../core/rewards';
 import type { Screen } from '../../core/router';
 import { runBuild, runCards, runCount, type TaskHooks, type TaskResult } from './tasks';
 import { genCards, NumberGen, numOf, type CardRule, type PunkteRule } from './generators';
@@ -51,13 +52,14 @@ async function playRounds(o: { shell: Shell; total: number; key: string; ad: Ada
 
 async function finishRound(shell: Shell, key: string, hits: number, total: number, done: () => void, again: () => void) {
   const stars = starsFor(hits, total);
+  addCoins(stars * 2);
   await award(key, stars);
   if (shell.dead) return;
   shell.pulseHint(false);
   showResult({
     title: 'Geschafft!',
     stars,
-    text: `${hits} von ${total} gleich beim ersten Versuch richtig.`,
+    text: `${hits} von ${total} gleich beim ersten Versuch richtig.  +${stars * 2} 🪙`,
     speakId: 'common.round.done',
     buttons: [{ label: '🔁 Nochmal', cls: 'sun', onClick: again }, { label: 'Zurück in den Wald', onClick: done }],
   });
@@ -165,6 +167,7 @@ export function steineScreen(done: () => void): Screen {
       await shell.speakId('wald.steine.dup', { n });
     } else {
       found.add(n);
+      addCoins(1);
       mutate((p) => void p.found.push(n));
       refresh();
       chips.get(n)?.classList.add('new');
@@ -239,6 +242,7 @@ export function checkScreen(done: () => void, again: () => void): Screen {
     if (shell.dead) return;
     shell.setInfo(`Geschafft!   ${marks.join(' ')}`);
     const stars = hits >= 5 ? 3 : hits >= 3 ? 2 : 1;
+    addCoins(stars * 3);
     await award('wald.check', stars);
     if (shell.dead) return;
     showResult({

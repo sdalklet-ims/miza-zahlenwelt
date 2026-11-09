@@ -43,7 +43,11 @@ Die Eule klingt etwas tiefer, Mia heller (Tonhöhe pro Figur aus `content/common
 - Oben rechts: ⭐ Sterne, 🗺️ Weltkarte (Schnellreise), 🎩 Album, ⚙️ Einstellungen.
 - Am Rechner: Pfeile/WASD, Leertaste/E = Pfote.
 
-Sterne gibt es auch fürs Entdecken: 4 versteckte Sterne im Wald und das Eichhörnchen-Kraulen (langsam herangehen).
+**Münzen und Laden:** Münzen (🪙) liegen überall im Wald (45 Stück, einmal einsammelbar) und gibt es für jedes Spiel. Bei **Fuchs Fritz** kauft man Gadgets: Turbo-Schuhe, Glitzerspur, Münz-Magnet und Sternen-Fernglas (Pfeil zum nächsten versteckten Stern). Gadgets stehen in `content/common.json → shop.items`, ihre Wirkung ist in `src/world/worldScreen.ts`. Sterne bleiben der Fortschritt (Album) und werden nie ausgegeben.
+
+**Minispiele für Sterne und Münzen** (ohne Zeitdruck, beliebig oft spielbar): **Memory** am Memory-Brett (Zahl ↔ Punkte in der Stellentafel) und **Zahlenpilze** im Pilzring (Zahlen auf- oder absteigend ordnen). Sie liegen in `src/stations/wald/minigames.ts`.
+
+Sterne gibt es auch fürs Entdecken (8 versteckte im Wald): 4 versteckte Sterne im Wald und das Eichhörnchen-Kraulen (langsam herangehen).
 
 ## Aufbau
 
@@ -86,7 +90,7 @@ MP3s können also später einfach in `public/audio/` gelegt werden, ohne Code zu
 
 **Gebiet (z. B. „Wiese“):**
 1. `content/worlds/wiese.json` ausfüllen und `meta.status` auf `"open"` setzen. Das Gebiet ist automatisch eine Zone der Welt (Reihenfolge = `meta.order`); das Nebeltor davor verschwindet.
-   - `world.spawn`, `world.npcs` (Auftraggeber mit `offers`), `world.bushes`, `world.stars`, `world.critters`: Koordinaten **relativ zur Zone** (Zone = 1400 × 1800).
+   - `world.spawn`, `world.npcs` (Auftraggeber mit `offers`), `world.bushes`, `world.stars`, `world.critters`: Koordinaten **relativ zur Zone** (Zone = 2200 × 2600, siehe `content/world.json`).
    - Look: `meta.theme` (`forest|meadow|river|mountain|village`), Farben in `content/world.json`.
    - `texts`: sprechbare Texte als `"<welt>.<name>": ["<sprecher>", "Text"]`.
 2. **Station:** `src/stations/wiese/` anlegen (Vorlage `src/stations/wald/`) und `registerStations('wiese', start)` aufrufen; `start(offer, npc, back)` zeigt den Spielbildschirm per `show(...)` und ruft am Ende `back()`.

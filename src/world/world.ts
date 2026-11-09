@@ -15,12 +15,13 @@ export interface Drawable { x: number; y: number; ext: number; draw: (c: CanvasR
 export interface Interact { id: string; x: number; y: number; r: number; label: string; icon: string; run: () => void; follow?: { x: number; y: number } }
 export interface Critter { x: number; y: number; vx: number; vy: number; hx: number; hy: number; tx: number; ty: number; wait: number; face: number; fleeing: boolean }
 export interface Bush { x: number; y: number; occupied: boolean }
+export interface Coin { id: string; x: number; y: number; got: boolean }
 export interface Star { id: string; x: number; y: number; got: boolean }
 
 export interface WorldModel {
   solids: Circle[]; rects: Rect[]; drawables: Drawable[]; interacts: Interact[];
   fogs: { x: number; y: number; s: number; ph: number }[];
-  critters: Critter[]; bushes: Bush[]; stars: Star[];
+  critters: Critter[]; bushes: Bush[]; stars: Star[]; coins: Coin[];
   butterflies: { x: number; y: number; ph: number; col: string }[];
   spawns: Record<string, { x: number; y: number }>;
 }
@@ -31,6 +32,8 @@ export interface Hooks {
   onBush: (b: Bush) => void;
   onSquirrel: (c: Critter) => void;
 }
+
+const AREA = (ZW * WH) / (1400 * 1800); // Dichte der Dekoration wächst mit der Zonengröße
 
 export const isOpen = (w: WorldContent) => w.meta.status === 'open' && !!stationStarters[w.id];
 
@@ -66,8 +69,43 @@ function drawSquirrel(c: CanvasRenderingContext2D, x: number, y: number, t: numb
   c.restore();
 }
 
+/** Prozedurale Objekte: Schatzkiste, Memory-Brett, Pilzring */
+function drawProp(c: CanvasRenderingContext2D, kind: string, sx: number, sy: number, t: number) {
+  if (kind === 'chest') {
+    drawSprite(c, S.chest, sx, sy, 1.1);
+    if (Math.sin(t * 3) > 0.9) ellipse(c, sx + 20, sy - 50, 4, 4, '#fff6b0');
+  } else if (kind === 'board') {
+    ellipse(c, sx, sy + 2, 52, 10, 'rgba(0,0,0,.2)');
+    c.fillStyle = '#7a4d26'; c.fillRect(sx - 38, sy - 40, 8, 42); c.fillRect(sx + 30, sy - 40, 8, 42);
+    c.fillStyle = '#c07b45'; c.strokeStyle = '#6a3f1c'; c.lineWidth = 4;
+    c.beginPath(); c.roundRect(sx - 56, sy - 96, 112, 64, 8); c.fill(); c.stroke();
+    const cols = ['#4a90d9', '#e8704a', '#4f9d5d', '#f4b942'];
+    for (let i = 0; i < 4; i++) { c.fillStyle = '#fff'; c.beginPath(); c.roundRect(sx - 48 + i * 25, sy - 86, 20, 44, 4); c.fill(); c.fillStyle = cols[i]; c.fillRect(sx - 44 + i * 25, sy - 76, 12, 6); }
+    c.fillStyle = '#3b2a1e'; c.font = '900 15px system-ui'; c.textAlign = 'center'; c.fillText('?', sx - 36, sy - 58); c.fillText('347', sx + 14, sy - 56);
+  } else if (kind === 'shroom') {
+    const cols = ['#e8504a', '#e9a24b', '#c3a6ff', '#e8504a'];
+    for (let i = 0; i < 4; i++) {
+      const a = (i / 4) * 6.28 + 0.6, mx = sx + Math.cos(a) * 34, my = sy + Math.sin(a) * 14, k = 1 + Math.sin(t * 2 + i) * 0.03;
+      ellipse(c, mx, my + 2, 16, 5, 'rgba(0,0,0,.18)');
+      c.fillStyle = '#f6ead2'; c.fillRect(mx - 5, my - 16, 10, 16);
+      c.fillStyle = cols[i]; c.beginPath(); c.ellipse(mx, my - 18, 20 * k, 14 * k, 0, Math.PI, 0); c.fill();
+      c.fillStyle = '#fff'; c.beginPath(); c.arc(mx - 7, my - 22, 3, 0, 7); c.arc(mx + 6, my - 25, 2.4, 0, 7); c.fill();
+    }
+  }
+}
+
+/** Marktstand neben dem Händler */
+function drawStall(c: CanvasRenderingContext2D, sx: number, sy: number) {
+  ellipse(c, sx, sy + 2, 80, 12, 'rgba(0,0,0,.2)');
+  c.fillStyle = '#7a4d26'; c.fillRect(sx - 70, sy - 96, 8, 98); c.fillRect(sx + 62, sy - 96, 8, 98);
+  for (let i = 0; i < 7; i++) { c.fillStyle = i % 2 ? '#fff' : '#d9534f'; c.beginPath(); c.moveTo(sx - 78 + i * 22.3, sy - 100); c.lineTo(sx - 56 + i * 22.3, sy - 100); c.lineTo(sx - 52 + i * 22.3, sy - 78); c.lineTo(sx - 82 + i * 22.3, sy - 78); c.fill(); }
+  c.fillStyle = '#c07b45'; c.strokeStyle = '#6a3f1c'; c.lineWidth = 4; c.beginPath(); c.roundRect(sx - 72, sy - 40, 144, 40, 6); c.fill(); c.stroke();
+  const it = ['#4a90d9', '#f4c430', '#4f9d5d', '#e8504a'];
+  for (let i = 0; i < 4; i++) { ellipse(c, sx - 48 + i * 32, sy - 48, 11, 9, it[i]); }
+}
+
 export async function buildWorld(hooks: Hooks): Promise<WorldModel> {
-  const m: WorldModel = { solids: [], rects: [], drawables: [], interacts: [], fogs: [], critters: [], bushes: [], stars: [], butterflies: [], spawns: {} };
+  const m: WorldModel = { solids: [], rects: [], drawables: [], interacts: [], fogs: [], critters: [], bushes: [], stars: [], coins: [], butterflies: [], spawns: {} };
   const keep: Circle[] = [];
   const disc = getProgress().discovered;
 
@@ -86,10 +124,15 @@ export async function buildWorld(hooks: Hooks): Promise<WorldModel> {
       const nx = x0 + n.x, ny = n.y;
       keep.push({ x: nx, y: ny, r: 150 });
       const npc: Npc = { ...n, x: nx, y: ny };
-      if (n.kind === 'chest') {
+      const proc = n.kind === 'chest' || n.kind === 'board' || n.kind === 'shroom';
+      if (proc) {
         addSolid(nx, ny, 28);
-        m.drawables.push({ x: nx, y: ny, ext: 80, draw: (c, sx, sy, t) => { drawSprite(c, S.chest, sx, sy, 1.1); if (Math.sin(t * 3) > 0.9) ellipse(c, sx + 20, sy - 50, 4, 4, '#fff6b0'); } });
+        m.drawables.push({ x: nx, y: ny, ext: 110, draw: (c, sx, sy, t) => drawProp(c, n.kind, sx, sy, t) });
       } else {
+        if (n.kind === 'fox') {
+          addSolid(nx - 100, ny + 6, 22); addSolid(nx + 100, ny + 6, 22);
+          m.drawables.push({ x: nx, y: ny + 40, ext: 130, draw: (c, sx, sy) => drawStall(c, sx, sy) });
+        }
         const spr = await npcSprite(n.kind, equippedFor(n.id));
         addSolid(nx, ny, 20);
         m.drawables.push({
@@ -105,7 +148,7 @@ export async function buildWorld(hooks: Hooks): Promise<WorldModel> {
         x: nx, y: ny + 0.1, ext: 200,
         draw: (c, sx, sy, t) => {
           const near = mia.d(nx, ny) < 260;
-          const top = n.kind === 'chest' ? 78 : 150;
+          const top = proc ? 96 : 150;
           if (near) {
             c.font = '800 18px ui-rounded, system-ui, sans-serif';
             const wv = c.measureText(n.name).width + 22;
@@ -114,10 +157,10 @@ export async function buildWorld(hooks: Hooks): Promise<WorldModel> {
             c.fillStyle = '#3b2a1e'; c.textAlign = 'center'; c.fillText(n.name, sx, sy - top - 10);
           }
           c.font = '26px system-ui, sans-serif'; c.textAlign = 'center';
-          c.fillText(n.kind === 'chest' ? '⭐' : '💬', sx, sy - top - 38 + Math.sin(t * 3 + nx) * 4);
+          c.fillText(n.kind === 'chest' ? '⭐' : n.kind === 'board' || n.kind === 'shroom' ? '🎮' : n.kind === 'fox' ? '🛒' : '💬', sx, sy - top - 38 + Math.sin(t * 3 + nx) * 4);
         },
       });
-      m.interacts.push({ id: `npc.${n.id}`, x: nx, y: ny, r: 120, label: n.kind === 'chest' ? 'Öffnen' : 'Ansprechen', icon: n.kind === 'chest' ? '🗝️' : '💬', run: () => hooks.onNpc(npc, w.id) });
+      m.interacts.push({ id: `npc.${n.id}`, x: nx, y: ny, r: 120, label: n.kind === 'chest' ? 'Öffnen' : proc ? 'Spielen' : n.kind === 'fox' ? 'Zum Laden' : 'Ansprechen', icon: n.kind === 'chest' ? '🗝️' : proc ? '🎮' : n.kind === 'fox' ? '🛒' : '💬', run: () => hooks.onNpc(npc, w.id) });
     }
 
     for (const b of d.bushes ?? []) {
@@ -169,6 +212,35 @@ export async function buildWorld(hooks: Hooks): Promise<WorldModel> {
     }
   }
 
+  /* ── Münzen (einmal einsammelbar, gespeichert) ── */
+  const got = getProgress().coinsGot;
+  for (let zi = 0; zi < worlds.length; zi++) {
+    const w = worlds[zi];
+    if (!w.world?.coins) continue;
+    const r = rng(zi * 53 + 11);
+    for (let i = 0; i < w.world.coins; i++) {
+      const id = `${w.id}.c${i}`;
+      // um Wege und Lichtungen verteilt (Münzen dürfen auch weiter abseits liegen)
+      const x = zi * ZW + 120 + r() * (ZW - 240);
+      const y = r() < 0.5 ? pathY(x) + (r() - 0.5) * 360 : 120 + r() * (WH - 240);
+      if (keep.some((k) => Math.hypot(x - k.x, y - k.y) < k.r * 0.8) || y < 80 || y > WH - 80) continue;
+      keep.push({ x, y, r: 44 }); // Bäume wachsen nicht auf Münzen
+      const coin: Coin = { id, x, y, got: !!got[id] };
+      m.coins.push(coin);
+      m.drawables.push({
+        x, y: y + 0.2, ext: 40,
+        draw: (c, sx, sy, t) => {
+          if (coin.got) return;
+          const yy = sy - 22 + Math.sin(t * 3 + x) * 3, wd = Math.abs(Math.cos(t * 2.4 + x * 0.1)) * 9 + 3;
+          ellipse(c, sx, sy, 9, 3, 'rgba(0,0,0,.18)');
+          c.fillStyle = '#f4c430'; c.strokeStyle = '#c9971c'; c.lineWidth = 2.5;
+          c.beginPath(); c.ellipse(sx, yy, wd, 10, 0, 0, 7); c.fill(); c.stroke();
+          if (wd > 7) { c.fillStyle = '#c9971c'; c.font = '900 11px system-ui'; c.textAlign = 'center'; c.fillText('1', sx, yy + 4); }
+        },
+      });
+    }
+  }
+
   /* ── Nebeltore zwischen gesperrten Gebieten ── */
   for (let zi = 1; zi < worlds.length; zi++) {
     const bx = zi * ZW, py = pathY(bx);
@@ -215,7 +287,8 @@ export async function buildWorld(hooks: Hooks): Promise<WorldModel> {
     const x0 = zi * ZW;
     const r = rng(zi * 977 + 3);
     const rv = riverOf(zi);
-    const place = (n: number, gap: number, corridor: number, fn: (x: number, y: number) => void, edgeBias = 0.4) => {
+    const place = (n0: number, gap: number, corridor: number, fn: (x: number, y: number) => void, edgeBias = 0.4) => {
+      const n = Math.round(n0 * AREA);
       for (let i = 0, tries = 0; i < n && tries < n * 12; tries++) {
         const edge = r() < edgeBias;
         const y = edge ? (r() < 0.5 ? 70 + r() * 260 : WH - 70 - r() * 260) : 70 + r() * (WH - 140);
@@ -240,7 +313,7 @@ export async function buildWorld(hooks: Hooks): Promise<WorldModel> {
       place(26, 40, 110, (x, y) => { addSolid(x, y, 20); const k = 0.9 + r() * 0.5; m.drawables.push({ x, y, ext: 70, draw: (c, sx, sy) => drawSprite(c, S.rock, sx, sy, k) }); }, 0.2);
     } else if (theme === 'village') {
       for (let k = 0; k < 6; k++) {
-        const hx = x0 + 180 + k * 190, hy = pathY(hx) + (k % 2 ? 250 : -230);
+        const hx = x0 + 260 + k * 300, hy = pathY(hx) + (k % 2 ? 250 : -230);
         const key = k % 2 ? 'house_blue' : 'house_red';
         m.rects.push({ x: hx - 78, y: hy - 56, w: 156, h: 56 });
         keep.push({ x: hx, y: hy, r: 130 });
@@ -252,7 +325,7 @@ export async function buildWorld(hooks: Hooks): Promise<WorldModel> {
 
   // Schmetterlinge
   const br = rng(99);
-  for (let i = 0; i < 28; i++) m.butterflies.push({ x: br() * Math.min(WW, ZW * 3), y: 200 + br() * 1400, ph: br() * 6.3, col: ['#ff8fab', '#ffd166', '#8fd3ff', '#c3a6ff'][i % 4] });
+  for (let i = 0; i < 40; i++) m.butterflies.push({ x: br() * Math.min(WW, ZW * 2), y: 200 + br() * (WH - 400), ph: br() * 6.3, col: ['#ff8fab', '#ffd166', '#8fd3ff', '#c3a6ff'][i % 4] });
 
   return m;
 }

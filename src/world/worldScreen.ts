@@ -5,7 +5,8 @@
 import { h, clamp, pick } from '../core/dom';
 import { worlds, textOf } from '../core/texts';
 import { getProgress, mutate } from '../core/progress';
-import { equippedFor } from '../core/rewards';
+import { equippedFor, hasGadget, addCoins } from '../core/rewards';
+import { openShop } from '../ui/shop';
 import { show } from '../core/router';
 import { createControls } from '../input/controls';
 import { speak } from '../audio/speak';
@@ -24,8 +25,9 @@ export interface EnterOpts { spawnWorld?: string }
 const R = 13; // Mias Kollisionsradius (an den Füßen)
 const DT = 1 / 60;
 const RUN = 235;
+const GLITTER = ['#ff8fab', '#ffd166', '#8fd3ff', '#c3a6ff', '#9ae6a0'];
 
-interface Particle { x: number; y: number; vx: number; vy: number; life: number; max: number; kind: 'heart' | 'spark' | 'ring' | 'dust'; col?: string }
+interface Particle { x: number; y: number; vx: number; vy: number; life: number; max: number; kind: 'heart' | 'spark' | 'ring' | 'dust' | 'coin'; col?: string }
 
 let vignette: HTMLCanvasElement | null = null;
 function getVignette() {
@@ -154,11 +156,12 @@ export async function enterWorld(opts: EnterOpts = {}) {
     const labels: Record<string, string> = {
       video: '▶ Erklärvideo', discover: '🔍 Ausprobieren', check: '⭐ Mini-Check',
       punkte: '🎯 Punkte zählen', steine: '🪨 Steine-Meister', kaertchen: '🃏 Kärtchen-Duell',
+      memory: '🃏 Memory spielen', pilze: '🍄 Pilze pflücken', shop: '🛒 Zum Laden',
     };
-    const starKey: Record<string, string> = { check: `${worldId}.check`, punkte: `${worldId}.punkte`, steine: `${worldId}.steine`, kaertchen: `${worldId}.kaertchen` };
+    const starKey: Record<string, string> = { check: `${worldId}.check`, punkte: `${worldId}.punkte`, steine: `${worldId}.steine`, kaertchen: `${worldId}.kaertchen`, memory: `${worldId}.memory`, pilze: `${worldId}.pilze` };
     const btns = npc.offers.map((o) => {
       const s = starKey[o] ? getProgress().stars[starKey[o]] ?? 0 : null;
-      return h('button', { class: 'btn ' + (o === 'video' ? 'sun' : o === 'check' ? 'coral' : ''), onclick: () => { savePos(); closeDialog(); start?.(o as Offer, npc, () => void enterWorld()); } },
+      return h('button', { class: 'btn ' + (o === 'video' || o === 'shop' ? 'sun' : o === 'check' ? 'coral' : ''), onclick: () => { savePos(); closeDialog(); if (o === 'shop') openShop(); else start?.(o as Offer, npc, () => void enterWorld()); } },
         labels[o] ?? o, s != null && h('small', { class: 'btn-stars' }, '★'.repeat(s) + '☆'.repeat(3 - s)));
     });
     bubble = h('div', { class: 'bubble world-bubble' },
@@ -210,7 +213,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
       else { ix = iy = 0; }
     }
     if (!hidden) {
-      const sp = RUN;
+      const sp = hasGadget('turbo') ? RUN * 1.35 : RUN;
       const mag = Math.min(1, Math.hypot(ix, iy));
       const tvx = (ix / (Math.hypot(ix, iy) || 1)) * sp * mag, tvy = (iy / (Math.hypot(ix, iy) || 1)) * sp * mag;
       const a = 1 - Math.exp(-(mag > 0 ? 11 : 15) * DT); // sanftes Beschleunigen und Abbremsen
@@ -221,6 +224,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
       collide();
       const spd = Math.hypot(st.vx, st.vy);
       st.phase += spd * DT * 0.062; // Beinbewegung folgt der echten Geschwindigkeit
+      if (hasGadget('glitzer') && spd > 60 && Math.random() < 0.5) parts.push({ x: st.x + (Math.random() - 0.5) * 16, y: st.y - 10 - Math.random() * 30, vx: (Math.random() - 0.5) * 30, vy: -20 - Math.random() * 20, life: 0.7, max: 0.7, kind: 'spark', col: GLITTER[Math.floor(Math.random() * 5)] });
       dustT -= DT;
       if (spd > 120 && dustT <= 0) {
         dustT = 0.11;
@@ -271,6 +275,20 @@ export async function enterWorld(opts: EnterOpts = {}) {
       for (let i = 0; i < 14; i++) { const a = (i / 14) * 6.28; parts.push({ x: s.x, y: s.y - 34, vx: Math.cos(a) * 90, vy: Math.sin(a) * 90, life: 0.8, max: 0.8, kind: 'spark', col: '#ffd54a' }); }
       speak('wald.star.found');
       award(`wald.entdecker.${s.id}`, 1);
+    }
+
+    // Münzen (mit Magnet fliegen sie zu Mia)
+    const mag = hasGadget('magnet');
+    for (const co of model.coins) {
+      if (co.got) continue;
+      const d = Math.hypot(co.x - st.x, co.y - st.y);
+      if (mag && d < 170 && d > 20) { co.x += ((st.x - co.x) / d) * 260 * DT; co.y += ((st.y - co.y) / d) * 260 * DT; }
+      if (d < 30) {
+        co.got = true;
+        mutate((p) => void (p.coinsGot[co.id] = true));
+        addCoins(1);
+        for (let i = 0; i < 6; i++) parts.push({ x: co.x, y: co.y - 20, vx: (Math.random() - 0.5) * 80, vy: -60 - Math.random() * 40, life: 0.5, max: 0.5, kind: 'spark', col: '#ffd54a' });
+      }
     }
 
     // Partikel
@@ -387,6 +405,21 @@ export async function enterWorld(opts: EnterOpts = {}) {
       c.globalAlpha = 0.96;
       c.drawImage(fogCloud, f.x - cx - w / 2 + Math.sin(t * 0.5 + f.ph) * 18 + sh, f.y - cy - hh / 2, w, hh);
       c.globalAlpha = 1;
+    }
+
+    // Sternen-Fernglas: Pfeil zum nächsten versteckten Stern
+    if (hasGadget('fernglas')) {
+      let best: { x: number; y: number } | null = null, bd = 1e9;
+      for (const s of model.stars) { if (s.got) continue; const d = Math.hypot(s.x - st.x, s.y - st.y); if (d < bd) { bd = d; best = s; } }
+      if (best && bd > 140) {
+        const a = Math.atan2(best.y - st.y, best.x - st.x), ax = clamp(st.x - cx + Math.cos(a) * 190, 60, VW - 60), ay = clamp(st.y - cy - 40 + Math.sin(a) * 150, 110, VH - 90);
+        c.save(); c.translate(ax, ay); c.rotate(a);
+        c.fillStyle = '#ffd54a'; c.strokeStyle = '#c98a14'; c.lineWidth = 3; c.lineJoin = 'round';
+        const pulse = 1 + Math.sin(t * 5) * 0.1; c.scale(pulse, pulse);
+        c.beginPath(); c.moveTo(22, 0); c.lineTo(-10, -16); c.lineTo(-2, 0); c.lineTo(-10, 16); c.closePath(); c.fill(); c.stroke();
+        c.restore();
+        c.fillStyle = '#fff'; c.font = '800 16px system-ui'; c.textAlign = 'center'; c.fillText('⭐ ' + Math.round(bd / 10) + ' m', ax, ay + 34);
+      }
     }
 
     // Stimmung: warme Tönung + Vignette
