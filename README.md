@@ -34,21 +34,38 @@ Die Eule klingt etwas tiefer, Mia heller (Tonhöhe pro Figur aus `content/common
 
 > iPad-Safari erlaubt Sprache und Ton erst nach einer Berührung – deshalb gibt es den Startbildschirm „Tippe zum Starten“.
 
+## Steuerung (iPad, Querformat)
+
+- **Joystick** links unten: Mia läuft in Zeigerichtung, Tempo nach Auslenkung, sanftes Anfahren und Abbremsen.
+- **Pfoten-Knopf** rechts unten: erscheint nur, wenn etwas in Reichweite ist (💬 Ansprechen, 🗝️ Öffnen, 🌿 Verstecken, 🐿️ Streicheln, 🌫️ Nebeltor).
+- **Schleichen** (Knopf daneben, an/aus): Mia läuft geduckt und langsam. Tiere erschrecken dann erst viel später – so kann man ein Eichhörnchen streicheln.
+- **Verstecken:** Am Busch den Pfoten-Knopf drücken; Mia ist versteckt (nur die Augen gucken heraus). Joystick bewegen = wieder herauskommen.
+- **Tippen** auf die Welt = dorthin laufen (in den Einstellungen abschaltbar). Joystick und Knopf funktionieren gleichzeitig (Multi-Touch).
+- Oben rechts: ⭐ Sterne, 🗺️ Weltkarte (Schnellreise), 🎩 Album, ⚙️ Einstellungen.
+- Am Rechner: Pfeile/WASD, Leertaste/E = Pfote, Shift = Schleichen.
+
+Sterne gibt es auch fürs Entdecken: 4 versteckte Sterne im Wald und das Eichhörnchen-Kraulen.
+
 ## Aufbau
 
 ```
 content/
   common.json            Sprecher (Name/Tonhöhe/Tempo), gemeinsame Texte, Belohnungs-Items
-  worlds/<id>.json       je Welt: Kartenposition, Texte (stabile IDs), Figuren, Aufgabenregeln, Videoskript
+  world.json             Welt: Höhe, Zonenbreite, Wegverlauf, Farben/Bodenstil je Thema
+  worlds/<id>.json       je Gebiet: Kartenposition, Texte (stabile IDs), world.* (Startpunkt, Auftraggeber,
+                         Büsche, Sterne, Tiere), Aufgabenregeln, Videoskript
 src/
+  world/                 Engine: worldScreen (Schleife, Kamera, Kollision, Interaktion), world (Aufbau aus JSON),
+                         terrain (Boden-Kacheln), sprites, miaSprite (Mia in 4 Richtungen)
+  input/controls.ts      Joystick, Pfoten- und Schleichen-Knopf, Tastatur
+  stations/              Mathe-Spiele als Module (stations/<welt>/: games, tasks, generators, video) + Register
   core/                  Karte, Router, Fortschritt, Belohnungen, adaptive Schwierigkeit, Textzugriff
   audio/speak.ts         speak(textId): erst /audio/<textId>.mp3, sonst Systemstimme
   ui/                    Bühne (1180×820, skaliert), HUD, Stellentafel, Drag & Drop, Figuren-SVGs, Album, Einstellungen
-  worlds/index.ts        Register der Welten
-  worlds/wald/           Gebiet, Spiele, Aufgaben-Bausteine, Generatoren, Erklärvideo
-public/                  Manifest, Icons, (später) audio/<textId>.mp3
-tools/                   Service-Worker-Vorlage, Icon-Generator
+  worlds/                Register der Gebiete (enter())
 ```
+
+**Engine-Wahl:** eigener Canvas-2D-Renderer statt Phaser/Pixi. Die Welt braucht nur Kamera, gecachte Boden-Kacheln, Sprites, Tiefensortierung und Kreis-Kollisionen; das ist klein, lädt sofort und braucht keine Zusatzbibliothek. Spielschleife mit festem Zeitschritt (60 Hz), Zeichnen pro Bildschirmbild. Die Spiel-Bildschirme (Stellentafel usw.) bleiben DOM.
 
 ## Wie es funktioniert
 
@@ -66,23 +83,22 @@ tools/                   Service-Worker-Vorlage, Icon-Generator
 Jeder sprechbare Text hat eine stabile ID in den JSONs (z. B. `wald.video.03`). `speak(textId)` prüft zuerst, ob `public/audio/<textId>.mp3` existiert, und nutzt sonst die Systemstimme.
 MP3s können also später einfach in `public/audio/` gelegt werden, ohne Code zu ändern. (Texte mit Platzhaltern wie `{n}` bleiben bei der Systemstimme.)
 
-## Neue Welt hinzufügen (z. B. „Wiese“)
+## Neues Gebiet / neuen Auftrag hinzufügen
 
-1. **Inhalt:** `content/worlds/wiese.json` ausfüllen (die Stub-Dateien für Wiese, Fluss, Berg, Dorf gibt es schon):
-   - `meta`: Titel, Thema, `order`, `icon`, `theme` (`forest|meadow|river|mountain|village`), `color`, `map` (Position auf der Karte), `status` auf `"open"` setzen.
-   - `texts`: alle sprechbaren Texte als `"<welt>.<name>": ["<sprecher>", "Text"]` (Sprecher aus `common.json → speakers`; neue Figuren dort ergänzen).
-   - weitere Daten nach Muster des Waldes: `npcs`, `games.*.levels`, `video.steps`, `check`.
-2. **Modul:** Ordner `src/worlds/wiese/` anlegen. Vorlage ist `src/worlds/wald/`:
-   - `area.ts` (begehbare Fläche, Auftraggeber) – bei Bedarf wiederverwenden/anpassen,
-   - `tasks.ts`/`games.ts` für neue Aufgabentypen; Spiele nutzen `createShell`, `createBoard`, `runCount`-artige Bausteine und `Adaptive`,
-   - `index.ts` mit `registerWorld('wiese', { enter })`.
-3. **Registrieren:** in `src/main.ts` die Zeile `import './worlds/wiese';` ergänzen.
-4. Fertig: Die Karte liest die Station aus der JSON, öffnet sie und zeigt Sterne (`stars["wiese.<spiel>"]`). Neue Album-Items kommen in `common.json → rewards.items` (Grafik in `src/ui/art.ts`).
+**Gebiet (z. B. „Wiese“):**
+1. `content/worlds/wiese.json` ausfüllen und `meta.status` auf `"open"` setzen. Das Gebiet ist automatisch eine Zone der Welt (Reihenfolge = `meta.order`); das Nebeltor davor verschwindet.
+   - `world.spawn`, `world.npcs` (Auftraggeber mit `offers`), `world.bushes`, `world.stars`, `world.critters`: Koordinaten **relativ zur Zone** (Zone = 1400 × 1800).
+   - Look: `meta.theme` (`forest|meadow|river|mountain|village`), Farben in `content/world.json`.
+   - `texts`: sprechbare Texte als `"<welt>.<name>": ["<sprecher>", "Text"]`.
+2. **Station:** `src/stations/wiese/` anlegen (Vorlage `src/stations/wald/`) und `registerStations('wiese', start)` aufrufen; `start(offer, npc, back)` zeigt den Spielbildschirm per `show(...)` und ruft am Ende `back()`.
+3. `src/worlds/wiese/index.ts` mit `registerWorld('wiese', { enter })` (wie beim Wald) und `import './worlds/wiese';` in `src/main.ts`.
 
-Eine Welt ohne Modul (oder mit `status: "locked"`) bleibt automatisch im Nebel.
+**Auftrag in einem bestehenden Gebiet:** Eintrag in `world.npcs` (neue Figur: Zeichnung in `src/ui/art.ts` ergänzen) mit `offers`, passend zu einem Fall in `src/stations/<welt>/index.ts`.
+
+Gebiete ohne Station oder mit `status: "locked"` bleiben hinter dem Nebeltor („Bald dabei“).
 
 ## Bekannte Grenzen des Prototyps
 
-- Mia läuft im Wald in alle Richtungen mit derselben Frontansicht (nur gespiegelt).
+- Die Zonen Wiese, Fluss, Berg und Dorf sind nur Kulisse hinter dem Nebeltor (nicht betretbar, solange sie gesperrt sind).
 - Im Mini-Check sprechen die Hinweise noch mit der Stimme der jeweiligen Spiel-Figur (Igel/Hase), obwohl die Eule fragt.
 - Kein Login, kein Backend, kein Shop, kein TTS-Anbieter.
