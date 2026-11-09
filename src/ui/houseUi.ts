@@ -15,7 +15,7 @@ export interface HouseUiOpts {
 }
 
 /** Preis als Mini-Stellentafel (Stellenwerte üben ganz nebenbei) */
-function priceDots(n: number) {
+export function priceDots(n: number) {
   const [a, b, c] = digitsOf(n);
   const col = (cls: string, k: number) => h('div', { class: 'mb-col ' + cls + ' tiny' }, ...Array.from({ length: k }, () => h('i', { class: 'mb-dot ' + cls })));
   return h('div', { class: 'mini-board tiny', title: String(n) }, col('H', a), col('Z', b), col('E', c));

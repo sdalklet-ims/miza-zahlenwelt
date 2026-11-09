@@ -72,10 +72,10 @@ export function buildWorld(hooks: Hooks): WorldModel {
       const proc = PROC_KINDS.includes(n.kind);
       m.npcs.push({ npc, id: n.id, kind: n.kind, name: n.name, x: nx, y: ny, worldId: w.id });
       addSolid(nx, ny, proc ? 28 : 20);
-      if (n.kind === 'fox') { addSolid(nx - 100, ny + 6, 22); addSolid(nx + 100, ny + 6, 22); }
+      if (n.kind === 'fox') m.rects.push({ x: nx - 175, y: ny - 330, w: 350, h: 190 }); // Supermarkt-Gebäude hinter dem Händler
       m.interacts.push({
         id: `npc.${n.id}`, x: nx, y: ny, r: 120,
-        label: n.kind === 'chest' ? 'Öffnen' : proc ? 'Spielen' : n.kind === 'fox' ? 'Zum Laden' : 'Ansprechen',
+        label: n.kind === 'chest' ? 'Öffnen' : proc ? 'Spielen' : n.kind === 'fox' ? 'Einkaufen' : 'Ansprechen',
         icon: n.kind === 'chest' ? '🗝️' : proc ? '🎮' : n.kind === 'fox' ? '🛒' : '💬',
         run: () => hooks.onNpc(npc, w.id),
       });

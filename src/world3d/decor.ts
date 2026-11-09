@@ -4,11 +4,11 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { worlds, worldCfg } from '../core/texts';
 import { S, ZW, WH, PLOT, heightAt, pathY, riverOf } from '../world/terrain';
 import type { WorldModel, Decor } from '../world/world';
-import { createHouse } from './models';
+import { createHouse, toon } from './models';
 
 export const windUniform = { value: 0 };
 
-function wind(m: THREE.MeshStandardMaterial, amp: number, base: number) {
+function wind(m: THREE.MeshToonMaterial, amp: number, base: number) {
   m.onBeforeCompile = (sh) => {
     sh.uniforms.uTime = windUniform;
     sh.vertexShader = 'uniform float uTime;\n' + sh.vertexShader.replace(
@@ -117,7 +117,8 @@ function instanced(geo: THREE.BufferGeometry, mat: THREE.Material, items: Decor[
 export function buildDecor(model: WorldModel): THREE.Group {
   const g = new THREE.Group();
   const vm = (flat: boolean, amp = 0, base = 1) => {
-    const m = new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: flat, roughness: 0.9 });
+    const m = toon({ vertexColors: true });
+    void flat;
     return amp ? wind(m, amp, base) : m;
   };
   const byKind = (k: string) => model.decor.filter((d) => d.kind === k);
@@ -174,7 +175,7 @@ export function buildDecor(model: WorldModel): THREE.Group {
       flowerItems.push({ d: { kind: 'f', x, y, s: 0.8 + rnd() * 0.5, rot: 0 }, c: colors[Math.floor(rnd() * 5)] });
     }
   });
-  const gm = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, side: THREE.DoubleSide });
+  const gm = toon({ vertexColors: true, side: THREE.DoubleSide });
   const grass = instanced(tuft, wind(gm, 0.25, 0.0), grassItems, 1, false);
   grass.castShadow = false;
   g.add(grass);
@@ -182,10 +183,10 @@ export function buildDecor(model: WorldModel): THREE.Group {
   if (flowerItems.length) {
     const stemG = new THREE.CylinderGeometry(0.012, 0.014, 0.36, 4);
     stemG.translate(0, 0.18, 0);
-    const stems = instanced(stemG, new THREE.MeshStandardMaterial({ color: '#4a9a50', roughness: 1 }), flowerItems.map((f) => f.d), 1, false);
+    const stems = instanced(stemG, toon({ color: '#4a9a50' }), flowerItems.map((f) => f.d), 1, false);
     const headG = new THREE.SphereGeometry(0.085, 7, 5);
     headG.translate(0, 0.38, 0);
-    const heads = instanced(headG, new THREE.MeshStandardMaterial({ roughness: 0.8 }), flowerItems.map((f) => f.d), 1, false);
+    const heads = instanced(headG, toon({}), flowerItems.map((f) => f.d), 1, false);
     flowerItems.forEach((f, i) => heads.setColorAt(i, f.c));
     g.add(stems, heads);
   }

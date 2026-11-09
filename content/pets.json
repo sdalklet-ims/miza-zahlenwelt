@@ -1,0 +1,25 @@
+{
+  "kinds": [
+    { "id": "meerschwein", "name": "Meerschweinchen", "icon": "🐹", "price": 30, "likes": ["salat", "gurke", "heu"], "names": ["Pummel", "Flocke", "Nuss"] },
+    { "id": "kaninchen", "name": "Kaninchen", "icon": "🐰", "price": 30, "likes": ["moehre", "heu", "salat"], "names": ["Hoppel", "Schnuffel", "Wölkchen"] },
+    { "id": "hamster", "name": "Hamster", "icon": "🐹", "price": 24, "likes": ["koerner", "apfel"], "names": ["Krümel", "Backe", "Sunny"] },
+    { "id": "wellensittich", "name": "Wellensittich", "icon": "🐦", "price": 24, "likes": ["koerner", "apfel"], "names": ["Hansi", "Pippo", "Mango"] }
+  ],
+  "foods": [
+    { "id": "heu", "name": "Heu", "icon": "🌾", "price": 2, "fill": 18 },
+    { "id": "salat", "name": "Salat", "icon": "🥬", "price": 3, "fill": 26 },
+    { "id": "moehre", "name": "Möhre", "icon": "🥕", "price": 3, "fill": 26 },
+    { "id": "gurke", "name": "Gurke", "icon": "🥒", "price": 3, "fill": 26 },
+    { "id": "apfel", "name": "Apfelstück", "icon": "🍎", "price": 3, "fill": 24 },
+    { "id": "koerner", "name": "Körnermix", "icon": "🌻", "price": 2, "fill": 22 }
+  ],
+  "texts": {
+    "pet.adopt": ["mia", "{name} ist eingezogen! Jetzt muss ich gut für {name} sorgen."],
+    "pet.hungry": ["mia", "{name} hat Hunger! Futter gibt es im Supermarkt."],
+    "pet.fed": ["mia", "Mmm! {name} lässt es sich schmecken."],
+    "pet.fed.fav": ["mia", "{name} liebt das! Ganz viele Herzen."],
+    "pet.full": ["mia", "{name} ist satt und zufrieden."],
+    "pet.nofood": ["mia", "Ich habe kein Futter mehr. Im Supermarkt gibt es welches!"],
+    "pet.locked": ["mia", "Ein Haustier ziehe ich erst ein, wenn mein Haus bewohnbar ist."]
+  }
+}

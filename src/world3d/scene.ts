@@ -3,12 +3,13 @@ import * as THREE from 'three';
 import { worlds } from '../core/texts';
 import { S, CHUNK, WW, WH, getChunk, heightAt, riverOf } from '../world/terrain';
 import { W as VW, H as VH } from '../ui/stage';
-import { canvasTex, mat } from './models';
+import { canvasTex, mat, toon } from './models';
+import { PITCH } from './sprites';
 
 export interface Stage3D {
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
-  camera: THREE.PerspectiveCamera;
+  camera: THREE.OrthographicCamera;
   setPixelRatio(k: number): void;
   /** Kamera und Sonne folgen (Position in Spiel-Pixeln) */
   follow(x: number, y: number, vx: number, vy: number, dt: number, snap?: boolean): void;
@@ -19,7 +20,9 @@ export interface Stage3D {
   dispose(): void;
 }
 
-const CAM_OFFSET = new THREE.Vector3(0, 10, 10.4);
+const VIEW_H = 15; // sichtbare Höhe in Einheiten (Bildschirm)
+const CAM_DIST = 70;
+const CAM_OFFSET = new THREE.Vector3(0, CAM_DIST * Math.sin(PITCH), CAM_DIST * Math.cos(PITCH));
 
 export function createStage3D(canvas: HTMLCanvasElement, pixelRatio: number): Stage3D {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
@@ -27,56 +30,31 @@ export function createStage3D(canvas: HTMLCanvasElement, pixelRatio: number): St
   renderer.setSize(VW, VH, false);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
+  renderer.toneMapping = THREE.NoToneMapping;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   const scene = new THREE.Scene();
-  const HORIZON = new THREE.Color('#d3ecf7');
+  const HORIZON = new THREE.Color('#bfe6f5');
   scene.background = HORIZON;
-  scene.fog = new THREE.Fog(HORIZON, 30, 92);
+  scene.fog = new THREE.Fog(HORIZON, 74, 135);
 
-  const camera = new THREE.PerspectiveCamera(42, VW / VH, 0.5, 400);
+  const asp = VW / VH;
+  const camera = new THREE.OrthographicCamera((-VIEW_H * asp) / 2, (VIEW_H * asp) / 2, VIEW_H / 2, -VIEW_H / 2, 1, 260);
 
   /* Licht: warme Sonne + Himmelslicht */
-  scene.add(new THREE.HemisphereLight('#cfe8ff', '#7a9a5a', 1.05));
-  const sun = new THREE.DirectionalLight('#fff1d0', 2.4);
+  scene.add(new THREE.HemisphereLight('#ffffff', '#9ab87a', 1.55));
+  const sun = new THREE.DirectionalLight('#fff3d6', 1.5);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
-  const ext = 20;
+  const ext = 18;
   Object.assign(sun.shadow.camera, { left: -ext, right: ext, top: ext, bottom: -ext, near: 1, far: 90 });
   sun.shadow.bias = -0.0004;
   sun.shadow.normalBias = 0.03;
   scene.add(sun, sun.target);
   const SUN_DIR = new THREE.Vector3(-0.55, 1, 0.42).normalize().multiplyScalar(40);
 
-  /* Himmel: Farbverlauf-Kuppel + Wolken */
-  const skyMat = new THREE.ShaderMaterial({
-    side: THREE.BackSide, depthWrite: false, fog: false,
-    uniforms: { top: { value: new THREE.Color('#4fa6ec') }, mid: { value: new THREE.Color('#a9dcf6') }, hor: { value: HORIZON } },
-    vertexShader: 'varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
-    fragmentShader: 'varying vec3 vP; uniform vec3 top; uniform vec3 mid; uniform vec3 hor; void main(){ float h = normalize(vP).y; vec3 c = mix(hor, mid, smoothstep(0.0, 0.25, h)); c = mix(c, top, smoothstep(0.2, 0.8, h)); gl_FragColor = vec4(c, 1.0); }',
-  });
-  const sky = new THREE.Mesh(new THREE.SphereGeometry(250, 24, 16), skyMat);
-  scene.add(sky);
-  const clouds = new THREE.Group();
-  const cloudMat = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 1, flatShading: true, emissive: '#dfeaf5', emissiveIntensity: 0.5, fog: false });
-  for (let i = 0; i < 16; i++) {
-    const c = new THREE.Group();
-    for (let k = 0; k < 4; k++) {
-      const b = new THREE.Mesh(new THREE.IcosahedronGeometry(2 + Math.random() * 2.2, 1), cloudMat);
-      b.position.set(k * 2.6 - 4, Math.random(), Math.random() * 1.5);
-      b.scale.y = 0.55;
-      c.add(b);
-    }
-    c.position.set((Math.random() - 0.5) * 220, 38 + Math.random() * 14, (Math.random() - 0.5) * 160 - 40);
-    c.userData.sp = 0.3 + Math.random() * 0.5;
-    clouds.add(c);
-  }
-  scene.add(clouds);
-
   /* Untergrund außerhalb der Welt */
-  const under = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), new THREE.MeshStandardMaterial({ color: '#5f9a55', roughness: 1 }));
+  const under = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), toon({ color: '#5f9a55' }));
   under.rotation.x = -Math.PI / 2;
   under.position.y = -0.6;
   under.receiveShadow = true;
@@ -105,7 +83,7 @@ export function createStage3D(canvas: HTMLCanvasElement, pixelRatio: number): St
     const tex = new THREE.CanvasTexture(getChunk(cx, cy));
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-    const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ map: tex, roughness: 1 }));
+    const mesh = new THREE.Mesh(geo, toon({ map: tex }));
     mesh.receiveShadow = true;
     terrain.add(mesh);
     chunks.set(cx + ',' + cy, mesh);
@@ -123,7 +101,7 @@ export function createStage3D(canvas: HTMLCanvasElement, pixelRatio: number): St
     const rv = riverOf(i);
     if (!rv) return;
     waveTex.repeat.set(((rv.x1 - rv.x0) * S) / 4, (WH * S) / 4);
-    const w = new THREE.Mesh(new THREE.PlaneGeometry((rv.x1 - rv.x0) * S, WH * S), new THREE.MeshStandardMaterial({ map: waveTex, transparent: true, opacity: 0.78, roughness: 0.2, metalness: 0.1, emissive: '#1d5f94', emissiveIntensity: 0.25 }));
+    const w = new THREE.Mesh(new THREE.PlaneGeometry((rv.x1 - rv.x0) * S, WH * S), new THREE.MeshBasicMaterial({ map: waveTex, transparent: true, opacity: 0.8 }));
     w.rotation.x = -Math.PI / 2;
     w.position.set(((rv.x0 + rv.x1) / 2) * S, 0.03, (WH / 2) * S);
     waters.push(w);
@@ -159,12 +137,11 @@ export function createStage3D(canvas: HTMLCanvasElement, pixelRatio: number): St
       cam.x += (tx - cam.x) * a;
       cam.z += (tz - cam.z) * a;
       camera.position.set(cam.x + CAM_OFFSET.x, CAM_OFFSET.y, cam.z + CAM_OFFSET.z);
-      camera.lookAt(cam.x, 0.8, cam.z - 0.4);
+      camera.lookAt(cam.x, 0.6, cam.z);
       // Sonne folgt Mia (in Schritten, damit Schatten nicht flimmern)
       const sx = Math.round(x * S * 2) / 2, sz = Math.round(y * S * 2) / 2;
       sun.target.position.set(sx, 0, sz);
       sun.position.set(sx + SUN_DIR.x, SUN_DIR.y, sz + SUN_DIR.z);
-      sky.position.copy(camera.position);
     },
     streamChunks(x, y, budget) {
       const cx = Math.floor(x / CHUNK), cy = Math.floor(y / CHUNK);
@@ -173,7 +150,7 @@ export function createStage3D(canvas: HTMLCanvasElement, pixelRatio: number): St
       last = key;
       // Reihenfolge: nahe zuerst
       const want: [number, number, number][] = [];
-      for (let dy = -3; dy <= 3; dy++) for (let dx = -4; dx <= 4; dx++) {
+      for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) {
         const gx = cx + dx, gy = cy + dy;
         if (gx < 0 || gy < 0 || gx > cx1 || gy > cy1 || chunks.has(gx + ',' + gy)) continue;
         want.push([gx, gy, dx * dx + dy * dy]);
@@ -184,7 +161,6 @@ export function createStage3D(canvas: HTMLCanvasElement, pixelRatio: number): St
     tick(t) {
       waveTex.offset.y = -t * 0.12;
       waveTex.offset.x = Math.sin(t * 0.4) * 0.05;
-      clouds.children.forEach((c) => { c.position.x += c.userData.sp * 0.016; if (c.position.x > 130) c.position.x = -130; });
     },
     project(v) {
       tmp.copy(v).project(camera);

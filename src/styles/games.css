@@ -166,3 +166,41 @@
 .milestone { text-align: center; min-width: 560px; } .milestone .big { font-size: 110px; line-height: 1.1; } .milestone p { font: 800 28px/1.3 var(--font); margin: 6px 0 14px; }
 .confetti { position: absolute; top: -40px; font-size: 34px; pointer-events: none; animation: confetti 3.2s linear forwards; z-index: 40; }
 @keyframes confetti { to { transform: translateY(900px) rotate(540deg); opacity: .8; } }
+
+/* ───────── Supermarkt ───────── */
+.sm { min-width: 0; margin: -10px -26px; }
+.sm-sign { background: linear-gradient(#e0483f, #b9302a); color: #fff; font: 900 44px var(--font); text-align: center; padding: 6px 0 10px; border-radius: 18px 18px 0 0; letter-spacing: 6px; text-shadow: 0 3px 0 rgba(0,0,0,.25); border-bottom: 8px solid #7d1f1a; }
+.sm-aisles { display: flex; gap: 8px; padding: 10px 14px 0; background: #e8f1f7; }
+.sm-aisle { flex: 1; height: 66px; border: 0; border-radius: 12px 12px 0 0; background: #4a90d9; color: #fff; font: 900 22px var(--font); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.05; border-bottom: 5px solid #2e69a6; }
+.sm-aisle small { font: 700 14px var(--font); opacity: .85; } .sm-aisle.on { background: #fff; color: #2e69a6; border-bottom-color: #fff; }
+.sm-body { display: flex; gap: 0; background: #e8f1f7; padding: 0 0 12px; }
+.sm-shelf { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 10px; padding: 14px; max-height: 470px; overflow: auto; background: linear-gradient(#fff, #fff); border-radius: 0 0 0 18px; }
+.sm-prod { position: relative; background: #fffdf5; border: 3px solid #e6dcc4; border-bottom: 9px solid #b8956a; border-radius: 14px; padding: 8px 6px 10px; display: flex; flex-direction: column; align-items: center; gap: 2px; font-family: var(--font); }
+.sm-prod.in { border-color: var(--leaf); background: #eaf7e2; } .sm-prod.off { opacity: .55; }
+.sm-pic { font-size: 48px; line-height: 1.1; } .sm-name { font: 800 17px/1.1 var(--font); min-height: 38px; display: grid; place-items: center; text-align: center; }
+.sm-tag { background: #ffd23f; border: 3px solid #e6a800; border-radius: 10px; padding: 0 12px; font: 900 22px/30px var(--font); transform: rotate(-3deg); box-shadow: 0 3px 0 rgba(0,0,0,.18); }
+.sm-note { font: 700 12px/1.1 var(--font); color: #8a6a44; min-height: 14px; text-align: center; }
+.sm-badge { position: absolute; top: -8px; right: -6px; background: var(--leaf); color: #fff; border-radius: 12px; padding: 0 9px; font: 900 18px/26px var(--font); }
+.sm-cart { width: 300px; flex: none; background: #fff7e0; border-left: 5px dashed #c9ad74; padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 8px; border-radius: 0 0 18px 0; }
+.sm-cart-title { font: 900 26px var(--font); text-align: center; }
+.sm-lines { flex: 1; min-height: 190px; max-height: 250px; overflow: auto; display: flex; flex-direction: column; gap: 4px; }
+.sm-line { display: flex; align-items: center; gap: 6px; font: 800 17px var(--font); background: #fff; border-radius: 10px; padding: 3px 8px; } .sm-l-name { flex: 1; }
+.sm-qty { display: flex; align-items: center; gap: 6px; } .sm-qty button, .sm-del { width: 30px; height: 30px; border-radius: 8px; border: 0; background: #ffe9b0; font: 900 18px var(--font); }
+.sm-del { background: #ffd4c7; } .sm-empty { color: #8a6a44; font: 700 17px var(--font); text-align: center; padding: 20px 6px; }
+.sm-till { background: #fff; border: 3px solid #c9ad74; border-radius: 14px; padding: 8px 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.sm-sum { font: 900 20px var(--font); color: #6b5a44; } .sm-eq { font: 900 24px/1.1 var(--font); text-align: center; word-break: break-word; } .sm-have { font: 800 17px var(--font); }
+.sm-till .btn { min-height: 54px; font-size: 22px; width: 100%; }
+.sm-names { text-align: center; } .sm-bigicon { font-size: 110px; line-height: 1.1; } .sm-name-btns { display: flex; gap: 12px; justify-content: center; margin-top: 10px; }
+
+/* ───────── Haustier ───────── */
+.pet-ui { display: flex; gap: 26px; align-items: center; min-width: 720px; }
+.pet-art { width: 240px; animation: breathe 2.6s ease-in-out infinite; transform-origin: 50% 100%; } .pet-art svg { width: 100%; height: auto; display: block; }
+.pet-info { flex: 1; } .pet-info h3 { margin: 0 0 8px; font: 900 32px var(--font); }
+.pet-bar { height: 26px; border-radius: 14px; background: #e6dcc4; overflow: hidden; border: 3px solid #cbb98f; } .pet-bar i { display: block; height: 100%; transition: width .5s; background: #7ddc7a; }
+.pet-bar.ok i { background: #ffd23f; } .pet-bar.hungry i { background: #ff8a6a; }
+.pet-mood { font: 800 22px var(--font); margin: 6px 0 10px; }
+.pet-foods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pet-food { background: #fff; border: 3px solid #e6dcc4; border-bottom-width: 7px; border-radius: 14px; padding: 6px; display: flex; flex-direction: column; align-items: center; font-family: var(--font); }
+.pet-food.fav { border-color: #ffb3c0; } .pet-food:disabled { opacity: .45; } .pf-icon { font-size: 36px; } .pf-name { font: 800 16px var(--font); } .pet-food small { font: 700 14px var(--font); color: #6b5a44; }
+.pet-hint { display: block; margin-top: 10px; font: 700 16px var(--font); color: #6b5a44; }
+.pet-mark { position: absolute; left: 0; top: 0; font-size: 32px; pointer-events: none; will-change: transform; }

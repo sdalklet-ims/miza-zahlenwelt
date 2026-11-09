@@ -1,61 +1,680 @@
 {
   "title": "Mias Haus",
   "categories": [
-    { "id": "bau", "name": "Rohbau", "icon": "🧱" },
-    { "id": "aussen", "name": "Außen", "icon": "🏠" },
-    { "id": "garten", "name": "Garten", "icon": "🌳" },
-    { "id": "innen", "name": "Innen", "icon": "🛋️" }
+    {
+      "id": "bau",
+      "name": "Rohbau",
+      "icon": "🧱"
+    },
+    {
+      "id": "aussen",
+      "name": "Außen",
+      "icon": "🏠"
+    },
+    {
+      "id": "garten",
+      "name": "Garten",
+      "icon": "🌳"
+    },
+    {
+      "id": "innen",
+      "name": "Innen",
+      "icon": "🛋️"
+    }
   ],
-  "core": ["fundament", "geruest", "boden", "wand_hinten", "wand_links", "wand_rechts", "wand_vorn", "dachgeruest", "dach", "tuer", "fenster_vorn"],
-  "roofColors": [["Rot", "#d9534f"], ["Blau", "#4a90d9"], ["Grün", "#4f9d5d"], ["Braun", "#9a6a3a"]],
-  "wallColors": [["Creme", "#fff0d4"], ["Gelb", "#ffe08a"], ["Rosa", "#ffc6d0"], ["Himmel", "#bfe0ff"]],
+  "core": [
+    "fundament",
+    "boden",
+    "waende",
+    "dach",
+    "tuer",
+    "fenster"
+  ],
+  "roofColors": [
+    [
+      "Rot",
+      "#d9534f"
+    ],
+    [
+      "Blau",
+      "#4a90d9"
+    ],
+    [
+      "Grün",
+      "#4f9d5d"
+    ],
+    [
+      "Braun",
+      "#9a6a3a"
+    ]
+  ],
+  "wallColors": [
+    [
+      "Creme",
+      "#fff0d4"
+    ],
+    [
+      "Gelb",
+      "#ffe08a"
+    ],
+    [
+      "Rosa",
+      "#ffc6d0"
+    ],
+    [
+      "Himmel",
+      "#bfe0ff"
+    ]
+  ],
   "parts": [
-    { "id": "fundament", "cat": "bau", "icon": "🪨", "name": "Fundament", "price": 12, "requires": [] },
-    { "id": "geruest", "cat": "bau", "icon": "🪵", "name": "Holzgerüst", "price": 18, "requires": ["fundament"] },
-    { "id": "boden", "cat": "bau", "icon": "🟫", "name": "Dielenboden", "price": 12, "requires": ["fundament"] },
-    { "id": "wand_hinten", "cat": "bau", "icon": "🧱", "name": "Rückwand", "price": 14, "requires": ["geruest"] },
-    { "id": "wand_links", "cat": "bau", "icon": "🧱", "name": "Wand links", "price": 14, "requires": ["geruest"] },
-    { "id": "wand_rechts", "cat": "bau", "icon": "🧱", "name": "Wand rechts", "price": 14, "requires": ["geruest"] },
-    { "id": "wand_vorn", "cat": "bau", "icon": "🚪", "name": "Vorderwand", "price": 16, "requires": ["geruest"] },
-    { "id": "dachgeruest", "cat": "bau", "icon": "📐", "name": "Dachstuhl", "price": 20, "requires": ["wand_hinten", "wand_links", "wand_rechts", "wand_vorn"] },
-    { "id": "dach", "cat": "bau", "icon": "🏠", "name": "Dach", "price": 28, "requires": ["dachgeruest"] },
-    { "id": "tuer", "cat": "bau", "icon": "🚪", "name": "Haustür", "price": 10, "requires": ["wand_vorn"] },
-    { "id": "fenster_vorn", "cat": "bau", "icon": "🪟", "name": "Fenster vorn", "price": 10, "requires": ["wand_vorn"] },
-    { "id": "fenster_seite", "cat": "bau", "icon": "🪟", "name": "Seitenfenster", "price": 8, "requires": ["wand_links", "wand_rechts"] },
-    { "id": "schornstein", "cat": "aussen", "icon": "🏭", "name": "Schornstein", "price": 14, "requires": ["dach"] },
-    { "id": "treppe", "cat": "aussen", "icon": "🪜", "name": "Eingangsstufen", "price": 6, "requires": ["fundament"] },
-    { "id": "veranda", "cat": "aussen", "icon": "⛱️", "name": "Veranda", "price": 20, "requires": ["treppe", "wand_vorn"] },
-    { "id": "dachrinne", "cat": "aussen", "icon": "🌧️", "name": "Dachrinne", "price": 6, "requires": ["dach"] },
-    { "id": "blumenkasten", "cat": "aussen", "icon": "🌼", "name": "Blumenkästen", "price": 7, "requires": ["fenster_vorn"] },
-    { "id": "namensschild", "cat": "aussen", "icon": "🪧", "name": "Namensschild Mia", "price": 4, "requires": ["tuer"] },
-    { "id": "fussmatte", "cat": "aussen", "icon": "🟩", "name": "Fußmatte", "price": 3, "requires": ["tuer"] },
-    { "id": "katzentuer", "cat": "aussen", "icon": "🐾", "name": "Katzenklappe", "price": 4, "requires": ["tuer"] },
-    { "id": "wimpel", "cat": "aussen", "icon": "🎏", "name": "Wimpelkette", "price": 6, "requires": ["dach"] },
-    { "id": "wetterhahn", "cat": "aussen", "icon": "🐓", "name": "Wetterhahn", "price": 7, "requires": ["dach"] },
-    { "id": "fahne", "cat": "aussen", "icon": "🚩", "name": "Katzenfahne", "price": 5, "requires": ["dach"] },
-    { "id": "zaun", "cat": "garten", "icon": "🏡", "name": "Gartenzaun", "price": 18, "requires": [] },
-    { "id": "tor", "cat": "garten", "icon": "🚧", "name": "Gartentor", "price": 6, "requires": ["zaun"] },
-    { "id": "weg", "cat": "garten", "icon": "🪨", "name": "Steinweg", "price": 8, "requires": [] },
-    { "id": "briefkasten", "cat": "garten", "icon": "📬", "name": "Briefkasten", "price": 5, "requires": [] },
-    { "id": "laterne", "cat": "garten", "icon": "🏮", "name": "Gartenlaternen", "price": 8, "requires": ["weg"] },
-    { "id": "blumenbeet", "cat": "garten", "icon": "🌷", "name": "Blumenbeete", "price": 8, "requires": [] },
-    { "id": "bank", "cat": "garten", "icon": "🪑", "name": "Gartenbank", "price": 8, "requires": [] },
-    { "id": "apfelbaum", "cat": "garten", "icon": "🍎", "name": "Apfelbaum", "price": 12, "requires": [] },
-    { "id": "vogelhaus", "cat": "garten", "icon": "🐦", "name": "Vogelhaus", "price": 7, "requires": [] },
-    { "id": "brunnen", "cat": "garten", "icon": "⛲", "name": "Brunnen", "price": 15, "requires": [] },
-    { "id": "schaukel", "cat": "garten", "icon": "🎠", "name": "Schaukel", "price": 14, "requires": [] },
-    { "id": "kratzbaum", "cat": "garten", "icon": "🐈", "name": "Kratzbaum", "price": 14, "requires": [] },
-    { "id": "teich", "cat": "garten", "icon": "🪷", "name": "Seerosenteich", "price": 15, "requires": [] },
-    { "id": "korb", "cat": "innen", "icon": "🧺", "name": "Katzenkorb", "price": 10, "requires": ["boden", "wand_hinten"] },
-    { "id": "teppich", "cat": "innen", "icon": "🟥", "name": "Teppich", "price": 8, "requires": ["boden"] },
-    { "id": "tisch", "cat": "innen", "icon": "🍽️", "name": "Tisch und Stühle", "price": 12, "requires": ["boden"] },
-    { "id": "sofa", "cat": "innen", "icon": "🛋️", "name": "Sofa", "price": 16, "requires": ["boden", "wand_hinten"] },
-    { "id": "regal", "cat": "innen", "icon": "📚", "name": "Bücherregal", "price": 14, "requires": ["wand_links"] },
-    { "id": "lampe", "cat": "innen", "icon": "💡", "name": "Stehlampe", "price": 7, "requires": ["boden"] },
-    { "id": "bild", "cat": "innen", "icon": "🖼️", "name": "Bilder", "price": 5, "requires": ["wand_hinten"] },
-    { "id": "pflanze", "cat": "innen", "icon": "🪴", "name": "Zimmerpflanze", "price": 5, "requires": ["boden"] },
-    { "id": "napf", "cat": "innen", "icon": "🥣", "name": "Futternapf", "price": 3, "requires": ["boden"] },
-    { "id": "kamin", "cat": "innen", "icon": "🔥", "name": "Kamin", "price": 18, "requires": ["wand_rechts", "schornstein"] },
-    { "id": "vorhang", "cat": "innen", "icon": "🎀", "name": "Vorhänge", "price": 6, "requires": ["fenster_vorn"] }
+    {
+      "id": "fundament",
+      "cat": "bau",
+      "icon": "🪨",
+      "name": "Fundament",
+      "price": 10,
+      "requires": []
+    },
+    {
+      "id": "boden",
+      "cat": "bau",
+      "icon": "🟫",
+      "name": "Dielenboden",
+      "price": 10,
+      "requires": [
+        "fundament"
+      ]
+    },
+    {
+      "id": "waende",
+      "cat": "bau",
+      "icon": "🧱",
+      "name": "Wände",
+      "price": 20,
+      "requires": [
+        "fundament"
+      ]
+    },
+    {
+      "id": "dach",
+      "cat": "bau",
+      "icon": "🏠",
+      "name": "Dach",
+      "price": 24,
+      "requires": [
+        "waende"
+      ]
+    },
+    {
+      "id": "tuer",
+      "cat": "bau",
+      "icon": "🚪",
+      "name": "Haustür",
+      "price": 8,
+      "requires": [
+        "waende"
+      ]
+    },
+    {
+      "id": "fenster",
+      "cat": "bau",
+      "icon": "🪟",
+      "name": "Fenster",
+      "price": 10,
+      "requires": [
+        "waende"
+      ]
+    },
+    {
+      "id": "treppe",
+      "cat": "aussen",
+      "icon": "🪜",
+      "name": "Eingangsstufen",
+      "price": 5,
+      "requires": [
+        "fundament"
+      ]
+    },
+    {
+      "id": "veranda",
+      "cat": "aussen",
+      "icon": "⛱️",
+      "name": "Veranda",
+      "price": 16,
+      "requires": [
+        "treppe",
+        "waende"
+      ]
+    },
+    {
+      "id": "schornstein",
+      "cat": "aussen",
+      "icon": "🏭",
+      "name": "Schornstein",
+      "price": 10,
+      "requires": [
+        "dach"
+      ]
+    },
+    {
+      "id": "dachrinne",
+      "cat": "aussen",
+      "icon": "🌧️",
+      "name": "Dachrinne",
+      "price": 5,
+      "requires": [
+        "dach"
+      ]
+    },
+    {
+      "id": "blumenkasten",
+      "cat": "aussen",
+      "icon": "🌼",
+      "name": "Blumenkästen",
+      "price": 6,
+      "requires": [
+        "fenster"
+      ]
+    },
+    {
+      "id": "namensschild",
+      "cat": "aussen",
+      "icon": "🪧",
+      "name": "Namensschild Mia",
+      "price": 3,
+      "requires": [
+        "tuer"
+      ]
+    },
+    {
+      "id": "hausnummer",
+      "cat": "aussen",
+      "icon": "🔢",
+      "name": "Hausnummer",
+      "price": 3,
+      "requires": [
+        "tuer"
+      ]
+    },
+    {
+      "id": "kranz",
+      "cat": "aussen",
+      "icon": "💐",
+      "name": "Türkranz",
+      "price": 4,
+      "requires": [
+        "tuer"
+      ]
+    },
+    {
+      "id": "fussmatte",
+      "cat": "aussen",
+      "icon": "🟩",
+      "name": "Fußmatte",
+      "price": 3,
+      "requires": [
+        "tuer"
+      ]
+    },
+    {
+      "id": "katzentuer",
+      "cat": "aussen",
+      "icon": "🐾",
+      "name": "Katzenklappe",
+      "price": 4,
+      "requires": [
+        "tuer"
+      ]
+    },
+    {
+      "id": "wimpel",
+      "cat": "aussen",
+      "icon": "🎏",
+      "name": "Wimpelkette",
+      "price": 5,
+      "requires": [
+        "dach"
+      ]
+    },
+    {
+      "id": "wetterhahn",
+      "cat": "aussen",
+      "icon": "🐓",
+      "name": "Wetterhahn",
+      "price": 6,
+      "requires": [
+        "dach"
+      ]
+    },
+    {
+      "id": "fahne",
+      "cat": "aussen",
+      "icon": "🚩",
+      "name": "Katzenfahne",
+      "price": 4,
+      "requires": [
+        "dach"
+      ]
+    },
+    {
+      "id": "windspiel",
+      "cat": "aussen",
+      "icon": "🎐",
+      "name": "Windspiel",
+      "price": 5,
+      "requires": [
+        "veranda"
+      ]
+    },
+    {
+      "id": "schaukelstuhl",
+      "cat": "aussen",
+      "icon": "🪑",
+      "name": "Schaukelstuhl",
+      "price": 9,
+      "requires": [
+        "veranda"
+      ]
+    },
+    {
+      "id": "zaun",
+      "cat": "garten",
+      "icon": "🏡",
+      "name": "Gartenzaun",
+      "price": 14,
+      "requires": []
+    },
+    {
+      "id": "tor",
+      "cat": "garten",
+      "icon": "🚧",
+      "name": "Gartentor",
+      "price": 5,
+      "requires": [
+        "zaun"
+      ]
+    },
+    {
+      "id": "lichterkette",
+      "cat": "garten",
+      "icon": "💡",
+      "name": "Lichterkette",
+      "price": 8,
+      "requires": [
+        "zaun"
+      ]
+    },
+    {
+      "id": "weg",
+      "cat": "garten",
+      "icon": "🪨",
+      "name": "Steinweg",
+      "price": 6,
+      "requires": []
+    },
+    {
+      "id": "laterne",
+      "cat": "garten",
+      "icon": "🏮",
+      "name": "Gartenlaternen",
+      "price": 7,
+      "requires": [
+        "weg"
+      ]
+    },
+    {
+      "id": "briefkasten",
+      "cat": "garten",
+      "icon": "📬",
+      "name": "Briefkasten",
+      "price": 4,
+      "requires": []
+    },
+    {
+      "id": "gartenzwerg",
+      "cat": "garten",
+      "icon": "🧙",
+      "name": "Gartenzwerg",
+      "price": 4,
+      "requires": [
+        "weg"
+      ]
+    },
+    {
+      "id": "blumenbeet",
+      "cat": "garten",
+      "icon": "🌷",
+      "name": "Blumenbeete",
+      "price": 7,
+      "requires": []
+    },
+    {
+      "id": "bank",
+      "cat": "garten",
+      "icon": "🪑",
+      "name": "Gartenbank",
+      "price": 7,
+      "requires": []
+    },
+    {
+      "id": "apfelbaum",
+      "cat": "garten",
+      "icon": "🍎",
+      "name": "Apfelbaum",
+      "price": 10,
+      "requires": []
+    },
+    {
+      "id": "vogelhaus",
+      "cat": "garten",
+      "icon": "🐦",
+      "name": "Vogelhaus",
+      "price": 6,
+      "requires": []
+    },
+    {
+      "id": "brunnen",
+      "cat": "garten",
+      "icon": "⛲",
+      "name": "Brunnen",
+      "price": 12,
+      "requires": []
+    },
+    {
+      "id": "teich",
+      "cat": "garten",
+      "icon": "🪷",
+      "name": "Seerosenteich",
+      "price": 12,
+      "requires": []
+    },
+    {
+      "id": "schaukel",
+      "cat": "garten",
+      "icon": "🎠",
+      "name": "Schaukel",
+      "price": 12,
+      "requires": []
+    },
+    {
+      "id": "kratzbaum",
+      "cat": "garten",
+      "icon": "🐈",
+      "name": "Kratzbaum",
+      "price": 12,
+      "requires": []
+    },
+    {
+      "id": "sandkasten",
+      "cat": "garten",
+      "icon": "🏖️",
+      "name": "Sandkasten",
+      "price": 9,
+      "requires": []
+    },
+    {
+      "id": "sonnenschirm",
+      "cat": "garten",
+      "icon": "⛱️",
+      "name": "Sonnenschirm mit Tisch",
+      "price": 12,
+      "requires": []
+    },
+    {
+      "id": "hochbeet",
+      "cat": "garten",
+      "icon": "🥕",
+      "name": "Gemüse-Hochbeet",
+      "price": 9,
+      "requires": []
+    },
+    {
+      "id": "windrad",
+      "cat": "garten",
+      "icon": "🎡",
+      "name": "Windrad",
+      "price": 5,
+      "requires": []
+    },
+    {
+      "id": "feuerstelle",
+      "cat": "garten",
+      "icon": "🔥",
+      "name": "Feuerstelle",
+      "price": 10,
+      "requires": []
+    },
+    {
+      "id": "gewaechshaus",
+      "cat": "garten",
+      "icon": "🏕️",
+      "name": "Gewächshaus",
+      "price": 16,
+      "requires": []
+    },
+    {
+      "id": "schmetterling",
+      "cat": "garten",
+      "icon": "🦋",
+      "name": "Schmetterlingsstrauch",
+      "price": 6,
+      "requires": []
+    },
+    {
+      "id": "korb",
+      "cat": "innen",
+      "icon": "🧺",
+      "name": "Katzenkorb",
+      "price": 8,
+      "requires": [
+        "boden",
+        "waende"
+      ]
+    },
+    {
+      "id": "teppich",
+      "cat": "innen",
+      "icon": "🟥",
+      "name": "Teppich",
+      "price": 7,
+      "requires": [
+        "boden"
+      ]
+    },
+    {
+      "id": "sofa",
+      "cat": "innen",
+      "icon": "🛋️",
+      "name": "Sofa",
+      "price": 14,
+      "requires": [
+        "boden",
+        "waende"
+      ]
+    },
+    {
+      "id": "kissen",
+      "cat": "innen",
+      "icon": "🟦",
+      "name": "Kuschelkissen",
+      "price": 4,
+      "requires": [
+        "sofa"
+      ]
+    },
+    {
+      "id": "tisch",
+      "cat": "innen",
+      "icon": "🍽️",
+      "name": "Tisch und Stühle",
+      "price": 10,
+      "requires": [
+        "boden"
+      ]
+    },
+    {
+      "id": "bett",
+      "cat": "innen",
+      "icon": "🛏️",
+      "name": "Mias Bett",
+      "price": 16,
+      "requires": [
+        "boden",
+        "waende"
+      ]
+    },
+    {
+      "id": "schreibtisch",
+      "cat": "innen",
+      "icon": "🖊️",
+      "name": "Schreibtisch mit Globus",
+      "price": 12,
+      "requires": [
+        "boden",
+        "waende"
+      ]
+    },
+    {
+      "id": "regal",
+      "cat": "innen",
+      "icon": "📚",
+      "name": "Bücherregal",
+      "price": 12,
+      "requires": [
+        "waende"
+      ]
+    },
+    {
+      "id": "radio",
+      "cat": "innen",
+      "icon": "📻",
+      "name": "Radio",
+      "price": 5,
+      "requires": [
+        "regal"
+      ]
+    },
+    {
+      "id": "wandregal",
+      "cat": "innen",
+      "icon": "🪵",
+      "name": "Wandregal",
+      "price": 6,
+      "requires": [
+        "waende"
+      ]
+    },
+    {
+      "id": "lampe",
+      "cat": "innen",
+      "icon": "💡",
+      "name": "Stehlampe",
+      "price": 6,
+      "requires": [
+        "boden"
+      ]
+    },
+    {
+      "id": "bild",
+      "cat": "innen",
+      "icon": "🖼️",
+      "name": "Bilder",
+      "price": 4,
+      "requires": [
+        "waende"
+      ]
+    },
+    {
+      "id": "uhr",
+      "cat": "innen",
+      "icon": "🕰️",
+      "name": "Wanduhr",
+      "price": 5,
+      "requires": [
+        "waende"
+      ]
+    },
+    {
+      "id": "spiegel",
+      "cat": "innen",
+      "icon": "🪞",
+      "name": "Spiegel",
+      "price": 6,
+      "requires": [
+        "waende"
+      ]
+    },
+    {
+      "id": "aquarium",
+      "cat": "innen",
+      "icon": "🐠",
+      "name": "Aquarium",
+      "price": 14,
+      "requires": [
+        "boden",
+        "waende"
+      ]
+    },
+    {
+      "id": "spielzeugkiste",
+      "cat": "innen",
+      "icon": "🧸",
+      "name": "Spielzeugkiste",
+      "price": 8,
+      "requires": [
+        "boden"
+      ]
+    },
+    {
+      "id": "pflanze",
+      "cat": "innen",
+      "icon": "🪴",
+      "name": "Zimmerpflanze",
+      "price": 4,
+      "requires": [
+        "boden"
+      ]
+    },
+    {
+      "id": "napf",
+      "cat": "innen",
+      "icon": "🥣",
+      "name": "Futternapf",
+      "price": 3,
+      "requires": [
+        "boden"
+      ]
+    },
+    {
+      "id": "kamin",
+      "cat": "innen",
+      "icon": "🔥",
+      "name": "Kamin",
+      "price": 16,
+      "requires": [
+        "waende",
+        "schornstein"
+      ]
+    },
+    {
+      "id": "kerzen",
+      "cat": "innen",
+      "icon": "🕯️",
+      "name": "Kerzen",
+      "price": 4,
+      "requires": [
+        "kamin"
+      ]
+    },
+    {
+      "id": "vorhang",
+      "cat": "innen",
+      "icon": "🎀",
+      "name": "Vorhänge",
+      "price": 5,
+      "requires": [
+        "fenster"
+      ]
+    }
   ]
 }

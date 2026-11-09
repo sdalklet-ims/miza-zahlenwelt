@@ -1,0 +1,142 @@
+/**
+ * Supermarkt von Fuchs Fritz: Gänge (Abteilungen) mit Regalen, Preisschildern, Einkaufswagen und Kasse.
+ * An der Kasse wird die Summe gezeigt (Addieren, Stellentafel) – bezahlt wird mit Münzen.
+ */
+import { h } from '../core/dom';
+import { houseCfg } from '../core/texts';
+import { getProgress, mutate, onProgress } from '../core/progress';
+import { coins } from '../core/rewards';
+import { isOwned, isBuilt, parts, partById } from '../core/house';
+import { kinds, foods, kindById, foodById, adopt, addFood, pet, petUnlocked } from '../core/pet';
+import { openModal } from './modal';
+import { priceDots } from './houseUi';
+import { speak } from '../audio/speak';
+import { sfx } from '../audio/music';
+
+interface Line { key: string; name: string; icon: string; price: number; qty: number }
+
+export function openSupermarket() {
+  const cart = new Map<string, Line>();
+  const aisles = [...houseCfg.categories.map((c) => ({ id: c.id, name: c.name, icon: c.icon })), { id: 'tier', name: 'Tierbedarf', icon: '🐾' }];
+  let aisle = aisles[0].id;
+
+  const shelf = h('div', { class: 'sm-shelf' });
+  const tabs = h('div', { class: 'sm-aisles' });
+  const cartBox = h('div', { class: 'sm-cart' });
+
+  const total = () => [...cart.values()].reduce((a, l) => a + l.price * l.qty, 0);
+
+  function toggle(l: Omit<Line, 'qty'>, multi = false) {
+    const ex = cart.get(l.key);
+    if (ex && !multi) cart.delete(l.key);
+    else if (ex) ex.qty++;
+    else cart.set(l.key, { ...l, qty: 1 });
+    sfx.pop();
+    render();
+  }
+
+  function product(icon: string, name: string, price: number, key: string, state: 'free' | 'owned' | 'locked', note = '', multi = false) {
+    const inCart = cart.get(key);
+    const card = h('button', {
+      class: 'sm-prod' + (inCart ? ' in' : '') + (state !== 'free' ? ' off' : ''),
+      disabled: state !== 'free',
+      onclick: () => toggle({ key, name, icon, price }, multi),
+    },
+      h('div', { class: 'sm-pic' }, icon), h('div', { class: 'sm-name' }, name),
+      h('div', { class: 'sm-tag' }, state === 'owned' ? '✓' : state === 'locked' ? '🔒' : `🪙 ${price}`),
+      note ? h('small', { class: 'sm-note' }, note) : null,
+      inCart ? h('div', { class: 'sm-badge' }, multi ? `×${inCart.qty}` : '🛒') : null);
+    return card;
+  }
+
+  function renderShelf() {
+    const items: HTMLElement[] = [];
+    if (aisle !== 'tier') {
+      for (const p of parts.filter((x) => x.cat === aisle)) {
+        const owned = isOwned(p.id) || isBuilt(p.id);
+        items.push(product(p.icon, p.name, p.price, 'part:' + p.id, owned ? 'owned' : 'free', !owned && p.requires.length ? 'baut auf: ' + p.requires.map((r) => partById(r).name).join(', ') : ''));
+      }
+    } else {
+      const has = !!pet();
+      for (const k of kinds) {
+        const locked = !petUnlocked();
+        items.push(product(k.icon, k.name, k.price, 'pet:' + k.id, has ? 'owned' : locked ? 'locked' : 'free', has ? 'du hast schon ein Haustier' : locked ? 'erst wenn das Haus bewohnbar ist' : 'zieht bei Mia ein'));
+      }
+      for (const f of foods) items.push(product(f.icon, f.name, f.price, 'food:' + f.id, 'free', `Vorrat: ${getProgress().petStock[f.id] ?? 0}`, true));
+    }
+    shelf.replaceChildren(...items);
+  }
+
+  function renderCart() {
+    const lines = [...cart.values()];
+    const sum = total(), have = coins(), enough = have >= sum;
+    const eq = lines.length <= 6 ? lines.map((l) => (l.qty > 1 ? `${l.qty}×${l.price}` : `${l.price}`)).join(' + ') + ' = ' : '';
+    cartBox.replaceChildren(
+      h('div', { class: 'sm-cart-title' }, '🛒 Einkaufswagen'),
+      h('div', { class: 'sm-lines' },
+        ...(lines.length
+          ? lines.map((l) => h('div', { class: 'sm-line' },
+              h('span', { class: 'sm-l-name' }, `${l.icon} ${l.name}`),
+              l.key.startsWith('food:') ? h('span', { class: 'sm-qty' },
+                h('button', { onclick: () => { l.qty--; if (l.qty <= 0) cart.delete(l.key); render(); } }, '−'), `${l.qty}`, h('button', { onclick: () => { l.qty++; render(); } }, '+')) : null,
+              h('b', {}, `${l.price * l.qty}`),
+              h('button', { class: 'sm-del', 'aria-label': 'Entfernen', onclick: () => { cart.delete(l.key); render(); } }, '✕')))
+          : [h('div', { class: 'sm-empty' }, 'Noch leer. Tippe auf Waren, um sie einzupacken.')])),
+      h('div', { class: 'sm-till' },
+        h('div', { class: 'sm-sum' }, 'Kasse'),
+        h('div', { class: 'sm-eq' }, sum ? `${eq}${sum}` : '0'),
+        sum ? priceDots(sum) : null,
+        h('div', { class: 'sm-have' }, `Du hast 🪙 ${have}` + (sum && enough ? `  ·  danach 🪙 ${have - sum}` : '')),
+        h('button', { class: 'btn ' + (enough && sum ? 'sun' : 'ghost'), disabled: !sum || !enough, onclick: checkout }, !sum ? 'Bezahlen' : enough ? `🪙 ${sum} bezahlen` : 'Zu wenig Münzen'))
+    );
+  }
+
+  function renderTabs() {
+    tabs.replaceChildren(...aisles.map((a, i) => h('button', { class: 'sm-aisle' + (a.id === aisle ? ' on' : ''), onclick: () => { aisle = a.id; render(); } }, h('small', {}, `Gang ${i + 1}`), `${a.icon} ${a.name}`)));
+  }
+
+  function render() {
+    renderTabs();
+    renderShelf();
+    renderCart();
+  }
+
+  function checkout() {
+    const sum = total();
+    if (!sum || coins() < sum) return;
+    const petLine = [...cart.values()].find((l) => l.key.startsWith('pet:'));
+    mutate((p) => {
+      p.coins -= sum;
+      for (const l of cart.values()) if (l.key.startsWith('part:')) p.house.owned[l.key.slice(5)] = true;
+    });
+    for (const l of cart.values()) if (l.key.startsWith('food:')) addFood(l.key.slice(5), l.qty);
+    sfx.buy();
+    speak('wald.fuchs.buy');
+    cart.clear();
+    render();
+    if (petLine) chooseName(petLine.key.slice(4));
+  }
+
+  function chooseName(kindId: string) {
+    const k = kindById(kindId);
+    const close = openModal({
+      title: `Wie soll dein ${k.name} heißen?`,
+      closable: false,
+      content: h('div', { class: 'sm-names' }, h('div', { class: 'sm-bigicon' }, k.icon),
+        h('div', { class: 'sm-name-btns' }, ...k.names.map((n) => h('button', { class: 'btn sun', onclick: () => { adopt(kindId, n); sfx.star(); close(); speak('pet.adopt', { name: n }); } }, n)))),
+    });
+  }
+
+  render();
+  const off = onProgress(() => { renderShelf(); renderCart(); });
+  openModal({
+    title: '',
+    wide: true,
+    onClose: () => off(),
+    content: h('div', { class: 'sm' },
+      h('div', { class: 'sm-sign' }, '🛒 SUPERMARKT'),
+      tabs,
+      h('div', { class: 'sm-body' }, shelf, cartBox)),
+  });
+  void foodById;
+}

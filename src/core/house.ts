@@ -17,7 +17,7 @@ export const canBuild = (id: string) => isOwned(id) && !isBuilt(id) && missing(i
 export const builtCount = () => parts.filter((p) => isBuilt(p.id)).length;
 export const readyCount = () => parts.filter((p) => canBuild(p.id)).length;
 
-const ROH = ['geruest', 'wand_hinten', 'wand_links', 'wand_rechts', 'wand_vorn'];
+const ROH = ['fundament', 'waende'];
 export const stageNow = () => (parts.every((p) => isBuilt(p.id)) ? 3 : houseCfg.core.every(isBuilt) ? 2 : ROH.every(isBuilt) ? 1 : 0);
 
 /** Kauft ein Teil (Material liegt dann beim Bauplatz bereit). */

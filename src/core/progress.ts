@@ -1,9 +1,8 @@
 /** Fortschritt in localStorage (kein Login). Fällt still auf Arbeitsspeicher zurück, wenn Speichern nicht geht. */
 export interface Settings {
-  voiceURI: string | null;
-  rate: number;
-  muted: boolean;
-  subtitles: boolean;
+  /** Musik: Lautstärke 0–1 und an/aus */
+  music: number;
+  musicOn: boolean;
   /** Tippen auf die Welt = dorthin laufen */
   tapWalk: boolean;
 }
@@ -33,6 +32,9 @@ export interface Progress {
   /** Mias Haus: gekaufte und aufgebaute Teile, Farben, Meilensteine */
   house: { owned: Record<string, boolean>; built: Record<string, boolean>; roof: string; wall: string; stage: number };
   posV: number;
+  /** Haustier (null = noch keins) und Futtervorrat */
+  pet: { kind: string; name: string; fill: number; t: number; stock: Record<string, number>; fed: number } | null;
+  petStock: Record<string, number>;
 }
 
 const KEY = 'mia.progress.v1';
@@ -43,7 +45,7 @@ const defaults = (): Progress => ({
   levels: {},
   found: [],
   equipped: {},
-  settings: { voiceURI: null, rate: 0.88, muted: false, subtitles: true, tapWalk: true },
+  settings: { music: 0.6, musicOn: true, tapWalk: true },
   weak: {},
   seen: {},
   mapAt: "wald",
@@ -52,6 +54,8 @@ const defaults = (): Progress => ({
   coinsGot: {},
   house: { owned: {}, built: {}, roof: '#d9534f', wall: '#fff0d4', stage: 0 },
   posV: 0,
+  pet: null,
+  petStock: {},
 });
 
 let state: Progress = load();

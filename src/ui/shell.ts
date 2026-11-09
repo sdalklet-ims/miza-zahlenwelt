@@ -38,13 +38,12 @@ export function createShell(npc: NpcInfo): Shell {
   };
 
   const hintBtn = h('button', { class: 'btn sun gs-hint', onclick: () => shell.onHint?.() }, '💡 Tipp');
-  const replay = h('button', { class: 'gs-replay', 'aria-label': 'Nochmal vorlesen', onclick: () => lastPrompt && talking(speak(lastPrompt[0], lastPrompt[1])) }, '🔊');
 
   const el = h(
     'div',
     { class: 'gshell' },
     h('div', { class: 'gs-side' }, npcArt, h('div', { class: 'gs-name' }, npc.name), hintBtn, miaEl),
-    h('div', { class: 'gs-prompt' }, promptText, replay),
+    h('div', { class: 'gs-prompt' }, promptText),
     info,
     main
   );

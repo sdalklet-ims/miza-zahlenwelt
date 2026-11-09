@@ -14,6 +14,10 @@ import { createControls } from '../input/controls';
 import { speak } from '../audio/speak';
 import { award } from '../ui/results';
 import { openHouseUi, setBuilder } from '../ui/houseUi';
+import { openSupermarket } from '../ui/supermarket';
+import { openPetUi } from '../ui/petUi';
+import { pet as getPet, mood as petMood } from '../core/pet';
+import { sfx } from '../audio/music';
 import { openModal } from '../ui/modal';
 import { createHouse3D } from '../world3d/house';
 import { getScale, layers, W as VW } from '../ui/stage';
@@ -24,6 +28,9 @@ import { createStage3D } from '../world3d/scene';
 import { buildDecor, windUniform } from '../world3d/decor';
 import { Particles } from '../world3d/fx';
 import * as M from '../world3d/models';
+import { createMiaSprite, svgFigure, SPR_Y, type Billboard } from '../world3d/sprites';
+import type { Dir } from '../world3d/comic';
+import { npcSvg, squirrelSvg, petSvg, type PetKind } from '../ui/art';
 import '../styles/world.css';
 import '../styles/wald.css';
 
@@ -107,9 +114,30 @@ export async function enterWorld(opts: EnterOpts = {}) {
   }
   syncHouse(false);
   house.onLand = (_id, p) => {
+    sfx.build();
     for (let i = 0; i < 16; i++) fx.add(p.x + (Math.random() - 0.5) * 2.5, p.y - 0.3, p.z + (Math.random() - 0.5) * 2.5, (Math.random() - 0.5) * 1.5, 0.6 + Math.random(), (Math.random() - 0.5) * 1.5, 0.8, 0.5, '#e2cda0');
   };
-  const offHouse = onProgress(() => syncHouse(true));
+  /* ── Haustier ── */
+  const PET_H: Record<string, number> = { meerschwein: 0.85, kaninchen: 1.45, hamster: 0.8, wellensittich: 1.2 };
+  const pt = { x: plot?.x ?? 0, y: plot?.y ?? 0, vx: 0, vy: 0, wait: 1, kind: '', fig: null as Billboard | null };
+  const petMark = h('div', { class: 'pet-mark' }, '🍽️');
+  labels.append(petMark);
+  let petInteract: Interact | null = null;
+  let petWarnAt = 0;
+  async function ensurePet() {
+    const p = getPet();
+    if (!p || !plot || pt.kind === p.kind) return;
+    pt.kind = p.kind;
+    if (pt.fig) scene.remove(pt.fig.group);
+    pt.fig = await svgFigure(petSvg(p.kind as PetKind), PET_H[p.kind] ?? 1);
+    scene.add(pt.fig.group);
+    if (!petInteract) {
+      petInteract = { id: 'pet', x: 0, y: 0, r: 110, label: 'Füttern', icon: '🥕', follow: pt, run: () => openPetUi() };
+      model.interacts.push(petInteract);
+    }
+  }
+  const offHouse = onProgress(() => { syncHouse(true); void ensurePet(); });
+  void ensurePet();
 
   function confetti() {
     for (let i = 0; i < 40; i++) {
@@ -133,44 +161,45 @@ export async function enterWorld(opts: EnterOpts = {}) {
     else speak('wald.haus.built');
   });
 
-  const miaRig = M.createMia(equippedFor('mia'));
-  miaRig.root.scale.setScalar(0.82); // schlanker und kleiner als zuvor
-  scene.add(miaRig.root);
-  // Silhouette: Mia bleibt auch hinter Bäumen und Häusern sichtbar (zeichnet nur dort, wo etwas davor ist)
-  const silhouette = new THREE.MeshBasicMaterial({ color: '#ffb84d', transparent: true, opacity: 0.5, depthFunc: THREE.GreaterDepth, depthWrite: false });
-  const bodyMeshes: THREE.Mesh[] = [];
-  miaRig.root.traverse((o) => { if ((o as THREE.Mesh).isMesh && o.visible) bodyMeshes.push(o as THREE.Mesh); });
-  for (const m of bodyMeshes) { const sm = new THREE.Mesh(m.geometry, silhouette); sm.renderOrder = 20; m.add(sm); }
+  // Figuren sind Comic-Sprites (2,5D): Mia wird jedes Bild neu gezeichnet, die Tiere sind Zeichnungen
+  const miaSpr = createMiaSprite(equippedFor('mia'));
+  scene.add(miaSpr.group);
+  let miaDir: Dir = 'down';
 
-  interface NpcView { ent: (typeof model.npcs)[number]; root: THREE.Object3D; rig?: M.NpcRig; label: HTMLElement; mark: HTMLElement; top: number }
+  interface NpcView { ent: (typeof model.npcs)[number]; root: THREE.Object3D; fig?: Billboard; label: HTMLElement; mark: HTMLElement; top: number }
   const npcViews: NpcView[] = [];
   const eulerAcc = equippedFor('eule');
+  const FIG_H: Record<string, number> = { owl: 2.5, hedgehog: 1.3, badger: 1.7, hare: 2.1, fox: 2.0 };
   for (const e of model.npcs) {
-    let root: THREE.Object3D, rig: M.NpcRig | undefined, top = 3.4;
+    let root: THREE.Object3D, fig: Billboard | undefined, top = 3.4;
     if (e.kind === 'chest') { root = M.createChest(); top = 1.9; }
     else if (e.kind === 'board') { root = M.createBoard(); top = 2.6; }
     else if (e.kind === 'shroom') { root = M.createShroomRing(); top = 1.8; }
-    else { rig = M.createNpc(e.kind, e.id === 'eule' ? eulerAcc : []); root = rig.root; top = e.kind === 'owl' ? 3.3 : e.kind === 'fox' ? 2.7 : e.kind === 'hare' ? 3.0 : 2.1; }
+    else {
+      const fh = FIG_H[e.kind] ?? 1.8;
+      fig = await svgFigure(npcSvg(e.kind, e.id === 'eule' ? eulerAcc : []), fh);
+      root = fig.group;
+      top = fh + 0.15;
+    }
     root.position.set(e.x * S, heightAt(e.x, e.y), e.y * S);
     scene.add(root);
     if (e.kind === 'fox') {
-      const stall = M.createStall();
-      stall.position.set(e.x * S, heightAt(e.x, e.y + 40), (e.y + 40) * S);
-      stall.scale.setScalar(1.25);
-      scene.add(stall);
+      const market = M.createSupermarket();
+      market.position.set(e.x * S, heightAt(e.x, e.y - 230), (e.y - 230) * S);
+      scene.add(market);
     }
     const label = h('div', { class: 'npc3-name' }, e.name);
     const mark = h('div', { class: 'npc3-mark' }, e.kind === 'chest' ? '⭐' : PROC_KINDS.includes(e.kind) ? '🎮' : e.kind === 'fox' ? '🛒' : '💬');
     labels.append(label, mark);
-    npcViews.push({ ent: e, root, rig, label, mark, top });
+    npcViews.push({ ent: e, root, fig, label, mark, top });
   }
 
-  const critters = model.critters.map((c) => {
-    const sq = M.createSquirrel();
-    sq.root.scale.setScalar(1.0);
-    scene.add(sq.root);
-    return { c, sq, yaw: 0 };
-  });
+  const critters: { c: (typeof model.critters)[number]; fig: Billboard }[] = [];
+  for (const c of model.critters) {
+    const fig = await svgFigure(squirrelSvg(), 1.0);
+    scene.add(fig.group);
+    critters.push({ c, fig });
+  }
 
   const bushViews = model.bushes.map((b) => {
     const v = M.createBush();
@@ -281,7 +310,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
     const starKey: Record<string, string> = { check: `${worldId}.check`, punkte: `${worldId}.punkte`, steine: `${worldId}.steine`, kaertchen: `${worldId}.kaertchen`, memory: `${worldId}.memory`, pilze: `${worldId}.pilze` };
     const btns = npc.offers.map((o) => {
       const s = starKey[o] ? getProgress().stars[starKey[o]] ?? 0 : null;
-      return h('button', { class: 'btn ' + (o === 'video' || o === 'shop' ? 'sun' : o === 'check' ? 'coral' : ''), onclick: () => { savePos(); closeDialog(); if (o === 'shop') openHouseUi({ mode: 'shop' }); else start?.(o as Offer, npc, () => void enterWorld()); } },
+      return h('button', { class: 'btn ' + (o === 'video' || o === 'shop' ? 'sun' : o === 'check' ? 'coral' : ''), onclick: () => { savePos(); closeDialog(); if (o === 'shop') openSupermarket(); else start?.(o as Offer, npc, () => void enterWorld()); } },
         labelsTxt[o] ?? o, s != null && h('small', { class: 'btn-stars' }, '★'.repeat(s) + '☆'.repeat(3 - s)));
     });
     bubble = h('div', { class: 'bubble world-bubble' },
@@ -353,7 +382,6 @@ export async function enterWorld(opts: EnterOpts = {}) {
         dustT = 0.09;
         fx.add(st.x * S - (st.vx / spd) * 0.3, gy + 0.08, st.y * S - (st.vy / spd) * 0.3, (Math.random() - 0.5) * 0.4, 0.5, (Math.random() - 0.5) * 0.4, 0.55, 0.3, '#e2cda0');
       }
-      if (spd > 12) st.yaw += angDiff(st.yaw, Math.atan2(st.vx, st.vy)) * Math.min(1, 13 * DT);
     }
 
     const z = zoneIndex(st.x);
@@ -381,6 +409,25 @@ export async function enterWorld(opts: EnterOpts = {}) {
       cr.x = clamp(cr.x + cr.vx * DT, 40, WW - 40); cr.y = clamp(cr.y + cr.vy * DT, 60, WH - 40);
     }
 
+    // Haustier: läuft im Haus (oder im Garten, solange es keinen Boden gibt) umher
+    if (pt.fig && plot) {
+      const indoor = isBuilt('boden') && isBuilt('waende');
+      const r = indoor ? { x0: plot.x - 120, x1: plot.x + 120, y0: plot.y - 60, y1: plot.y + 80 } : { x0: plot.x - 230, x1: plot.x + 230, y0: plot.y + 190, y1: plot.y + 300 };
+      if (pt.x < r.x0 - 4 || pt.x > r.x1 + 4 || pt.y < r.y0 - 4 || pt.y > r.y1 + 4) { pt.x = clamp(pt.x, r.x0, r.x1); pt.y = clamp(pt.y, r.y0, r.y1); }
+      pt.wait -= DT;
+      if (pt.wait <= 0) {
+        if (Math.hypot(pt.vx, pt.vy) > 1 || Math.random() < 0.4) { pt.vx = pt.vy = 0; pt.wait = 1.5 + Math.random() * 3; }
+        else { const a = Math.random() * 6.28; pt.vx = Math.cos(a) * 34; pt.vy = Math.sin(a) * 34; pt.wait = 0.8 + Math.random() * 1.6; }
+      }
+      pt.x = clamp(pt.x + pt.vx * DT, r.x0, r.x1);
+      pt.y = clamp(pt.y + pt.vy * DT, r.y0, r.y1);
+      const pm = getPet();
+      if (pm && petMood() === 'hungry' && st.t > petWarnAt && Math.hypot(st.x - pt.x, st.y - pt.y) < 320) {
+        petWarnAt = st.t + 300;
+        speak('pet.hungry', { name: pm.name });
+      }
+    }
+
     // Entdecker-Sterne
     for (const sv of starViews) {
       const s = sv.s;
@@ -390,6 +437,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
       mutate((p) => void (p.discovered[s.id] = true));
       for (let i = 0; i < 26; i++) { const a = (i / 26) * 6.28; fx.add(s.x * S, heightAt(s.x, s.y) + 1.1, s.y * S, Math.cos(a) * 2.6, 1 + Math.random() * 2, Math.sin(a) * 2.6, 0.9, 0.3, '#ffd54a', -3); }
       speak('wald.star.found');
+      sfx.star();
       addCoins(5);
       award(`wald.entdecker.${s.id}`, 1);
     }
@@ -401,6 +449,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
       const d = Math.hypot(co.x - st.x, co.y - st.y);
       if (d < 30) {
         co.got = true;
+        sfx.coin();
         cw.m.visible = false;
         mutate((p) => void (p.coinsGot[co.id] = true));
         addCoins(1);
@@ -468,28 +517,28 @@ export async function enterWorld(opts: EnterOpts = {}) {
   }
 
   /* ── Darstellung ── */
+  const houseRoofCovers = () => isBuilt('dach') && !houseInside;
   const v3 = new THREE.Vector3();
   function render(timeSec: number) {
     const t = st.t;
     windUniform.value = timeSec;
     const gy = heightAt(st.x, st.y);
     const spd = Math.hypot(st.vx, st.vy);
-    miaRig.root.visible = !hidden;
-    miaRig.root.position.set(st.x * S, gy, st.y * S);
-    miaRig.root.rotation.y = st.yaw;
-    miaRig.animate(t, st.phase, Math.min(1, spd / RUN));
+    if (spd > 12) miaDir = Math.abs(st.vx) > Math.abs(st.vy) ? (st.vx < 0 ? 'left' : 'right') : st.vy < 0 ? 'up' : 'down';
+    miaSpr.setHidden(!!hidden);
+    miaSpr.group.position.set(st.x * S, gy, st.y * S);
+    miaSpr.update(t, st.phase, Math.min(1, spd / RUN), miaDir, false);
 
     stage.follow(st.x, st.y, st.vx, st.vy, DT);
     stage.streamChunks(st.x, st.y, 2);
     stage.tick(timeSec);
 
     for (const nv of npcViews) {
-      nv.rig?.update(timeSec);
       const d = Math.hypot(nv.ent.x - st.x, nv.ent.y - st.y);
-      if (nv.rig && d < 420) {
-        const want = Math.atan2(st.x - nv.ent.x, st.y - nv.ent.y);
-        nv.root.rotation.y += angDiff(nv.root.rotation.y, want) * 0.06;
-      } else if (nv.rig) nv.root.rotation.y += angDiff(nv.root.rotation.y, 0) * 0.03;
+      if (nv.fig) {
+        nv.fig.mesh.scale.y = SPR_Y * (1 + Math.sin(timeSec * 2.2 + nv.ent.x) * 0.018); // atmet
+        if (nv.ent.kind === 'hedgehog') nv.fig.mesh.scale.x = st.x > nv.ent.x ? -1 : 1; // schaut zu Mia
+      }
       v3.set(nv.ent.x * S, heightAt(nv.ent.x, nv.ent.y) + nv.top, nv.ent.y * S);
       const p = stage.project(v3);
       const vis = !p.behind && p.x > -60 && p.x < VW + 60 && p.y > -40;
@@ -501,10 +550,8 @@ export async function enterWorld(opts: EnterOpts = {}) {
 
     for (const c of critters) {
       const cr = c.c, moving = Math.hypot(cr.vx, cr.vy) > 8;
-      c.sq.root.position.set(cr.x * S, heightAt(cr.x, cr.y), cr.y * S);
-      if (moving) c.yaw += angDiff(c.yaw, Math.atan2(cr.vx, cr.vy)) * 0.2;
-      c.sq.root.rotation.y = c.yaw;
-      c.sq.update(timeSec, moving);
+      c.fig.group.position.set(cr.x * S, heightAt(cr.x, cr.y) + (moving ? Math.abs(Math.sin(timeSec * 14)) * 0.14 : 0), cr.y * S);
+      if (Math.abs(cr.vx) > 5) c.fig.mesh.scale.x = cr.vx < 0 ? -1 : 1;
     }
     for (const bv of bushViews) {
       bv.eyes.visible = bv.b.occupied;
@@ -526,8 +573,18 @@ export async function enterWorld(opts: EnterOpts = {}) {
       const sh = shakeFog * Math.sin(timeSec * 40) * 0.2;
       fs.sp.position.x = fs.f.x * S + Math.sin(timeSec * 0.5 + fs.f.ph) * 0.5 + sh;
     }
+    if (pt.fig) {
+      const moving = Math.hypot(pt.vx, pt.vy) > 5;
+      pt.fig.group.position.set(pt.x * S, heightAt(pt.x, pt.y) + (isBuilt('boden') ? 0.45 : 0) + (moving ? Math.abs(Math.sin(timeSec * 12)) * 0.1 : 0), pt.y * S);
+      if (Math.abs(pt.vx) > 3) pt.fig.mesh.scale.x = pt.vx < 0 ? -1 : 1;
+      v3.set(pt.x * S, pt.fig.group.position.y + (PET_H[pt.kind] ?? 1) + 0.3, pt.y * S);
+      const pp = stage.project(v3);
+      const hungry = petMood() === 'hungry';
+      petMark.style.display = hungry && !houseRoofCovers() ? '' : 'none';
+      petMark.style.transform = `translate(${pp.x}px, ${pp.y + Math.sin(timeSec * 4) * 4}px) translate(-50%, -100%)`;
+    }
     if (plot) {
-      const inh = isBuilt('fundament') && Math.abs(st.x - plot.x) < 160 && st.y > plot.y - 125 && st.y < plot.y + 125 && isBuilt('wand_hinten');
+      const inh = isBuilt('fundament') && Math.abs(st.x - plot.x) < 160 && st.y > plot.y - 125 && st.y < plot.y + 125 && isBuilt('waende');
       if (inh !== houseInside) { houseInside = inh; house.setInside(inh); }
       house.update(timeSec, DT);
       const ch = house.chimney();
