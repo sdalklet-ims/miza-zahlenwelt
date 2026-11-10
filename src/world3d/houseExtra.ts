@@ -1,6 +1,7 @@
 /** Zusätzliche Deko-Teile für Mias Haus (Garten, Außen, Innen). Gleiche Konventionen wie house.ts. */
 import * as THREE from 'three';
 import { box, cyl, cone, sph, mat, canvasTex, at, rot, toon } from './models';
+import { aquaLook } from './aquaShared';
 
 const Y0 = 0.35;
 const WOOD = '#a8693a', WOOD_D = '#7a4d26';
@@ -177,8 +178,14 @@ export function extraBuilders(anim: ((t: number) => void)[]): Record<string, () 
       tank.position.y = 1.1;
       g.add(tank, at(box(1.36, 0.1, 0.56, '#e7c27a'), 0, 0.75, 0));
       for (let i = 0; i < 3; i++) g.add(at(cone(0.06, 0.4, '#3fa65a', 4), -0.4 + i * 0.35, 1.0, -0.15));
-      const fish = [0, 1, 2].map((i) => { const f = new THREE.Group(); f.add(sph(0.09, ['#ff8c2a', '#ff5a8a', '#ffd23f'][i], 1.4, 1, 0.7, 8), at(cone(0.07, 0.12, ['#ff8c2a', '#ff5a8a', '#ffd23f'][i], 3), -0.14, 0, 0)); g.add(f); return f; });
-      anim.push((t) => fish.forEach((f, i) => { f.position.set(Math.sin(t * 0.6 + i * 2) * 0.5, 1.05 + i * 0.15, 0.05 * i); f.rotation.y = Math.cos(t * 0.6 + i * 2) > 0 ? 0 : Math.PI; }));
+      // Fische nur, wenn welche gekauft wurden (bis zu 6 sichtbar), in den Farben der gekauften Arten
+      const fish = [0, 1, 2, 3, 4, 5].map((i) => { const f = new THREE.Group(); f.add(sph(0.09, '#ff8c2a', 1.4, 1, 0.7, 8), at(cone(0.07, 0.12, '#ff8c2a', 3), -0.14, 0, 0)); g.add(f); return f; });
+      let looked = '';
+      anim.push((t) => {
+        const cols = aquaLook.colors, key = cols.join();
+        if (key !== looked) { looked = key; fish.forEach((f, i) => { const c = cols[i % Math.max(1, cols.length)] ?? '#ff8c2a'; (f.children[0] as THREE.Mesh).material = mat(c); (f.children[1] as THREE.Mesh).material = mat(c); }); }
+        fish.forEach((f, i) => { f.visible = i < cols.length; f.position.set(Math.sin(t * 0.6 + i * 1.7) * 0.5, 1.0 + (i % 3) * 0.14, 0.05 * (i % 3)); f.rotation.y = Math.cos(t * 0.6 + i * 1.7) > 0 ? 0 : Math.PI; });
+      });
       g.position.set(-4.5, Y0 + 0.1, -2.3);
       return g;
     },

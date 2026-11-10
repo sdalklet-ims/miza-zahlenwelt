@@ -9,6 +9,7 @@ import { coins } from '../core/rewards';
 import { isOwned, isBuilt, parts, partById } from '../core/house';
 import { kinds, foods, kindById, foodById, adopt, addFood, pets, petUnlocked, MAX_PETS } from '../core/pet';
 import { meals, addMeal, mealStock } from '../core/hunger';
+import { MAX_AQUA, addAqua, addFishFood, aquaCount, aquaReady, aquaTotal, fishFood, fishFoods, species, speciesById } from '../core/aquarium';
 import { openModal } from './modal';
 import { priceDots } from './houseUi';
 import { speak } from '../audio/speak';
@@ -18,7 +19,7 @@ interface Line { key: string; name: string; icon: string; price: number; qty: nu
 
 export function openSupermarket() {
   const cart = new Map<string, Line>();
-  const aisles = [...houseCfg.categories.map((c) => ({ id: c.id, name: c.name, icon: c.icon })), { id: 'essen', name: 'Essen', icon: '🍎' }, { id: 'tier', name: 'Tierbedarf', icon: '🐾' }];
+  const aisles = [...houseCfg.categories.map((c) => ({ id: c.id, name: c.name, icon: c.icon })), { id: 'essen', name: 'Essen', icon: '🍎' }, { id: 'aqua', name: 'Aquarium', icon: '🐠' }, { id: 'tier', name: 'Tierbedarf', icon: '🐾' }];
   let aisle = aisles[0].id;
 
   const shelf = h('div', { class: 'sm-shelf' });
@@ -52,7 +53,16 @@ export function openSupermarket() {
 
   function renderShelf() {
     const items: HTMLElement[] = [];
-    if (aisle === 'essen') {
+    if (aisle === 'aqua') {
+      const ICON: Record<string, string> = { goldfisch: '🐠', guppy: '🐟', neon: '🐟', skalar: '🐡', kampffisch: '🐠', wels: '🐟', schnecke: '🐌', garnele: '🦐' };
+      const inCart = [...cart.values()].filter((l) => l.key.startsWith('aq:')).reduce((a, l) => a + l.qty, 0);
+      const full = aquaTotal() + inCart >= MAX_AQUA;
+      for (const s of species) {
+        const st = !aquaReady() ? 'locked' : full ? 'owned' : 'free';
+        items.push(product(ICON[s.id] ?? '🐟', s.name, s.price, 'aq:' + s.id, st, !aquaReady() ? 'erst das Aquarium aufstellen' : full ? 'Becken ist voll' : `${s.blurb} · im Becken: ${aquaCount(s.id)}`, true));
+      }
+      for (const f of fishFoods) items.push(product(f.icon, f.name, f.price, 'ff:' + f.id, 'free', `${f.portions} Portion${f.portions > 1 ? 'en' : ''} · Vorrat: ${fishFood()}`, true));
+    } else if (aisle === 'essen') {
       for (const m of meals) items.push(product(m.icon, m.name, m.price, 'meal:' + m.id, 'free', `sättigt +${m.fill} · Vorrat ${mealStock(m.id)}`, true));
     } else if (aisle !== 'tier') {
       for (const p of parts.filter((x) => x.cat === aisle)) {
@@ -80,7 +90,7 @@ export function openSupermarket() {
         ...(lines.length
           ? lines.map((l) => h('div', { class: 'sm-line' },
               h('span', { class: 'sm-l-name' }, `${l.icon} ${l.name}`),
-              l.key.startsWith('food:') || l.key.startsWith('meal:') ? h('span', { class: 'sm-qty' },
+              l.key.startsWith('food:') || l.key.startsWith('meal:') || l.key.startsWith('aq:') || l.key.startsWith('ff:') ? h('span', { class: 'sm-qty' },
                 h('button', { onclick: () => { l.qty--; if (l.qty <= 0) cart.delete(l.key); render(); } }, '−'), `${l.qty}`, h('button', { onclick: () => { l.qty++; render(); } }, '+')) : null,
               h('b', {}, `${l.price * l.qty}`),
               h('button', { class: 'sm-del', 'aria-label': 'Entfernen', onclick: () => { cart.delete(l.key); render(); } }, '✕')))
@@ -114,6 +124,10 @@ export function openSupermarket() {
     });
     for (const l of cart.values()) if (l.key.startsWith('food:')) addFood(l.key.slice(5), l.qty);
     for (const l of cart.values()) if (l.key.startsWith('meal:')) addMeal(l.key.slice(5), l.qty);
+    for (const l of cart.values()) if (l.key.startsWith('ff:')) addFishFood((fishFoods.find((f) => f.id === l.key.slice(3))?.portions ?? 1) * l.qty);
+    const aqLines = [...cart.values()].filter((l) => l.key.startsWith('aq:'));
+    for (const l of aqLines) addAqua(l.key.slice(3), l.qty);
+    if (aqLines.length) speak('aqua.new', { name: aqLines.length > 1 ? 'Die neuen Tiere' : speciesById(aqLines[0].key.slice(3)).name });
     sfx.buy();
     speak('wald.fuchs.buy');
     cart.clear();

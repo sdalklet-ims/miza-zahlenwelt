@@ -41,6 +41,9 @@ import { createCarShop, createChargeStation, createVehicle, rideKindOf, type Cha
 import { batteryEmpty, chargeAll, chargeOf, currentRide, drainBattery, needsCharge, ownsElectric, rideSpeed, saveCharge } from '../core/vehicles';
 import { openCarShop } from '../ui/carshop';
 import { openBadgeBook } from '../ui/badges';
+import { openAquarium } from '../ui/aquarium';
+import { aquaColors, aquaHungry, fishFood } from '../core/aquarium';
+import { aquaLook } from '../world3d/aquaShared';
 import { examPassed, gameBadges, missingBadges, allBadges } from '../core/badges';
 import { examScreen } from '../stations/exam';
 import '../styles/world.css';
@@ -137,6 +140,8 @@ export async function enterWorld(opts: EnterOpts = {}) {
     house.sync(hs.built, { roof: hs.roof, wall: hs.wall }, animate);
     dyn = house.collisions(hs.built, plot.x, plot.y);
     if (hs.built.radio && !model.interacts.some((i) => i.id === 'radio')) model.interacts.push({ id: 'radio', x: plot.x - 125, y: plot.y - 120, r: 150, label: 'Radio', icon: '📻', run: () => openRadio() });
+    aquaLook.colors = aquaColors();
+    if (hs.built.aquarium && !model.interacts.some((i) => i.id === 'aquarium')) model.interacts.push({ id: 'aquarium', x: plot.x - 225, y: plot.y - 78, r: 120, label: 'Aquarium ansehen', icon: '🐠', run: () => openAquarium() });
     if (hs.built.bett && !model.interacts.some((i) => i.id === 'bed')) model.interacts.push({ id: 'bed', x: plot.x - 200, y: plot.y + 60, r: 110, label: 'Schlafen', icon: '😴', run: () => startSleep() });
   }
   syncHouse(false);
@@ -270,7 +275,9 @@ export async function enterWorld(opts: EnterOpts = {}) {
   let charging: { x: number; y: number } | null = null, chargeSound = 0, lastBat = 100;
   const chargeBar = h('div', { class: 'charge-bar off' }, h('span', {}, '🔋 Akku lädt …'), h('div', { class: 'cb-track' }, h('i', {})));
   el.append(chargeBar);
-  let hungerTick = 3, lastHunger = hungerLevel(), lastSpd = 0, hungerSaid = 0;
+  let hungerTick = 3, lastHunger = hungerLevel(), lastSpd = 0, hungerSaid = 0, aquaSaid = 0;
+  const aquaMark = h('div', { class: 'pet-mark mia-mark' }, '🐟🍽️');
+  labels.append(aquaMark);
   const miaMark = h('div', { class: 'pet-mark mia-mark' }, '🍽️');
   labels.append(miaMark);
   let vehicle: Vehicle3D | null = null, vehKind = '', vehYaw = 0, lastRiding = false, pedal = 0, steerNow = 0, leanNow = 0;
@@ -518,6 +525,10 @@ export async function enterWorld(opts: EnterOpts = {}) {
     if (hungerTick <= 0) {
       hungerTick = 2;
       const lv = hungerLevel();
+      if (aquaHungry() && st.t - aquaSaid > 160 && !frozen()) { // ab und zu: die Fische haben Hunger
+        aquaSaid = st.t;
+        speak(fishFood() > 0 ? 'aqua.hungry.food' : 'aqua.hungry');
+      }
       const hasFood = meals.some((m) => mealStock(m.id) > 0);
       if (lv !== lastHunger) {
         if (lv === 'rumble') speak('mia.hunger.rumble');
@@ -774,6 +785,15 @@ export async function enterWorld(opts: EnterOpts = {}) {
       pedal += (spd / 60) * 0.1;
     }
     shopTick?.(timeSec);
+    if (plot) {
+      const showA = aquaHungry() && houseInside;
+      aquaMark.style.display = showA ? '' : 'none';
+      if (showA) {
+        v3.set((plot.x - 225) * S, heightAt(plot.x, plot.y) + 2.9, (plot.y - 115) * S);
+        const ap = stage.project(v3);
+        aquaMark.style.transform = `translate(${ap.x}px, ${ap.y + Math.sin(timeSec * 4) * 4}px) translate(-50%, -100%)`;
+      }
+    }
     {
       const lvM = hungerLevel(), show = (lvM === 'hungry' || lvM === 'weak' || lvM === 'empty') && !sleeping && !hidden;
       miaMark.style.display = show ? '' : 'none';

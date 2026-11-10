@@ -1,0 +1,155 @@
+{
+  "species": [
+    {
+      "id": "goldfisch",
+      "name": "Goldfisch",
+      "kind": "fish",
+      "shape": "gold",
+      "price": 4,
+      "color": "#ff9a2a",
+      "color2": "#ffd27a",
+      "size": 1.0,
+      "speed": 0.9,
+      "blurb": "Rund, orange und gemütlich."
+    },
+    {
+      "id": "guppy",
+      "name": "Guppy",
+      "kind": "fish",
+      "shape": "guppy",
+      "price": 3,
+      "color": "#ff6fa8",
+      "color2": "#5fd0ff",
+      "size": 0.62,
+      "speed": 1.25,
+      "blurb": "Klein mit bunter Schwanzflosse."
+    },
+    {
+      "id": "neon",
+      "name": "Neon-Salmler",
+      "kind": "fish",
+      "shape": "neon",
+      "price": 3,
+      "color": "#4aa8ff",
+      "color2": "#ff4a4a",
+      "size": 0.5,
+      "speed": 1.6,
+      "school": true,
+      "blurb": "Schwimmt gern im Schwarm, leuchtet blau-rot."
+    },
+    {
+      "id": "skalar",
+      "name": "Silber-Skalar",
+      "kind": "fish",
+      "shape": "angel",
+      "price": 6,
+      "color": "#dfe7ee",
+      "color2": "#4b5662",
+      "size": 1.15,
+      "speed": 0.7,
+      "blurb": "Hoch wie ein Segel, silbern mit Streifen."
+    },
+    {
+      "id": "kampffisch",
+      "name": "Kampffisch",
+      "kind": "fish",
+      "shape": "betta",
+      "price": 7,
+      "color": "#e0483f",
+      "color2": "#3a4cc0",
+      "size": 0.95,
+      "speed": 0.8,
+      "blurb": "Mit langen, wallenden Flossen."
+    },
+    {
+      "id": "wels",
+      "name": "Panzerwels",
+      "kind": "bottom",
+      "shape": "cory",
+      "price": 5,
+      "color": "#b9935f",
+      "color2": "#f0dcb0",
+      "size": 0.75,
+      "speed": 0.7,
+      "blurb": "Wuselt am Boden und sucht Krümel."
+    },
+    {
+      "id": "schnecke",
+      "name": "Apfelschnecke",
+      "kind": "snail",
+      "shape": "snail",
+      "price": 3,
+      "color": "#f2c14a",
+      "color2": "#8a5a2a",
+      "size": 0.7,
+      "speed": 0.25,
+      "blurb": "Gemächlich mit gelbem Haus."
+    },
+    {
+      "id": "garnele",
+      "name": "Zwerggarnele",
+      "kind": "shrimp",
+      "shape": "shrimp",
+      "price": 2,
+      "color": "#ff8a7a",
+      "color2": "#ffffff",
+      "size": 0.5,
+      "speed": 0.5,
+      "blurb": "Winzig, durchsichtig und flink."
+    }
+  ],
+  "foods": [
+    {
+      "id": "flocken",
+      "name": "Fischfutter (Flocken)",
+      "icon": "🥣",
+      "price": 2,
+      "portions": 1
+    },
+    {
+      "id": "dose",
+      "name": "Fischfutter-Dose",
+      "icon": "🥫",
+      "price": 6,
+      "portions": 4
+    }
+  ],
+  "texts": {
+    "aqua.new": [
+      "mia",
+      "{name} ist ins Aquarium eingezogen! Jetzt schwimmt dort etwas."
+    ],
+    "aqua.locked": [
+      "mia",
+      "Erst muss das Aquarium aufgestellt sein, dann können die Fische einziehen."
+    ],
+    "aqua.full": [
+      "mia",
+      "Das Becken ist voll. Noch mehr Tiere passen nicht hinein."
+    ],
+    "aqua.hungry": [
+      "mia",
+      "Die Fische im Aquarium haben Hunger! Fischfutter gibt es im Supermarkt."
+    ],
+    "aqua.hungry.food": [
+      "mia",
+      "Die Fische im Aquarium haben Hunger! Ich habe noch Fischfutter und gehe sie füttern."
+    ],
+    "aqua.fed": [
+      "mia",
+      "Guten Appetit, ihr Lieben! Die Fische schnappen sich die Flocken."
+    ],
+    "aqua.full.fed": [
+      "mia",
+      "Die Fische sind noch satt. Etwas später gibt es wieder Futter."
+    ],
+    "aqua.nofood": [
+      "mia",
+      "Ich habe kein Fischfutter mehr. Im Supermarkt, Gang Aquarium, gibt es welches."
+    ],
+    "aqua.nofish": [
+      "mia",
+      "Das Aquarium ist noch leer. Fische, Schnecken und Garnelen gibt es im Supermarkt im Gang Aquarium."
+    ]
+  }
+}

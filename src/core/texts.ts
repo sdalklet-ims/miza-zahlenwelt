@@ -67,6 +67,10 @@ export const vehicleCfg = files['/content/vehicles.json'] as { vehicles: Vehicle
 export interface BadgeGameDef { id: string; name: string; icon: string; color: string; shape: string; npc: string; what: string }
 export const badgeCfg = files['/content/badges.json'] as { worlds: Record<string, { title: string; icon: string; master: BadgeGameDef; games: BadgeGameDef[] }> };
 
+export interface AquaSpecies { id: string; name: string; kind: 'fish' | 'bottom' | 'snail' | 'shrimp'; shape: string; price: number; color: string; color2: string; size: number; speed: number; school?: boolean; blurb: string }
+export interface AquaFood { id: string; name: string; icon: string; price: number; portions: number }
+export const aquaCfg = files['/content/aquarium.json'] as { species: AquaSpecies[]; foods: AquaFood[] };
+
 export interface MealDef { id: string; name: string; icon: string; price: number; fill: number; kind?: 'obst' | 'cat' | 'premium' }
 export const mealCfg = files['/content/meals.json'] as { meals: MealDef[] };
 

@@ -98,3 +98,12 @@
 .pack-item.cloth { width: 190px; } .pack-item.cloth img { height: 150px; width: auto; display: block; filter: drop-shadow(0 4px 3px rgba(0,0,0,.25)); }
 .pack-item.cloth.on { background: #bfe6ff; } .pack-item.cloth.locked img { filter: grayscale(1) opacity(.45); }
 .item-img { height: 260px; width: auto; display: block; margin: 0 auto; }
+
+/* Aquarium-Ansicht */
+.aq { min-width: 880px; }
+.aq-frame { border: 10px solid #8a5a2b; border-radius: 18px; background: #5a3a1c; box-shadow: 0 8px 0 rgba(0,0,0,.25), inset 0 0 0 4px #c98a4a; overflow: hidden; }
+.aq-canvas { display: block; width: 100%; height: auto; touch-action: manipulation; }
+.aq-bar { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-top: 14px; }
+.aq-state { font: 800 22px var(--font); margin-bottom: 4px; } .aq-status { flex: 1; } .aq-status .pet-bar { height: 20px; }
+.aq-feed { white-space: nowrap; }
+.aq-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; } .aq-chip { padding: 4px 14px; border-radius: 999px; background: #fff; border: 3px solid #cfe9f5; font: 800 18px var(--font); } .aq-chip.empty { border-style: dashed; color: #6b5a44; }

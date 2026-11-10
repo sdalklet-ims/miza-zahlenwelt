@@ -51,6 +51,8 @@ export interface Progress {
   charge: Record<string, number>;
   /** Fehlerfreie Durchläufe je Spiel ("wald.punkte" → 0..), ab 2 gehört das Abzeichen Mia */
   badges: Record<string, number>;
+  /** Aquarium: Tiere je Art, Futterportionen, Sättigung (0–100 zum Zeitpunkt t) */
+  aqua: { fish: Record<string, number>; food: number; fill: number; t: number };
   /** Bestandene Mathearbeiten je Welt (Punkte 4–5) */
   passed: Record<string, number>;
 }
@@ -82,6 +84,7 @@ const defaults = (): Progress => ({
   ride: null,
   charge: {},
   badges: {},
+  aqua: { fish: {}, food: 0, fill: 80, t: Date.now() },
   passed: {},
 });
 
