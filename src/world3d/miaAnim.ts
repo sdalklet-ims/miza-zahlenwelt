@@ -8,10 +8,17 @@
  */
 import atlas from '../../assets/mia/atlas.json';
 import atlasUrl from '../../assets/mia/atlas.png';
+import accData from '../../assets/mia/accessories.json';
+import accUrl from '../../assets/mia/accessories.png';
 
 export const CELL_W: number = atlas.cell.w;
 export const CELL_H: number = atlas.cell.h;
 export const BASE: number = atlas.baseline;
+/** Leinwand mit Rand: oben Platz für Mützenbommel/Kapuze, seitlich etwas Luft */
+export const MARGIN_X = 30;
+export const MARGIN_TOP = 110;
+export const CANVAS_W = CELL_W + 2 * MARGIN_X;
+export const CANVAS_H = CELL_H + MARGIN_TOP;
 
 export type Face = 'neutral' | 'happy' | 'think' | 'surprised' | 'sad';
 export type Facing = 'left' | 'right' | 'up' | 'down';
@@ -28,6 +35,23 @@ const portraitUrls: Record<Face, string> = {
 type FrameDef = { x: number; y: number; w: number; h: number };
 const frames = atlas.frames as unknown as Record<string, FrameDef>;
 
+type AccPlace = { sx: number; sy: number; sw: number; sh: number; x: number; y: number; w: number; h: number };
+const accFrames = (accData as unknown as { frames: Record<string, Record<string, AccPlace>> }).frames;
+let accImg: HTMLImageElement | null = null;
+/** Welche Mia-Items welches Accessoire-Bild bedeuten (Reihenfolge = Zeichenreihenfolge: Kapuze, Mütze, Brille) */
+const ACC_ORDER: [string, string][] = [['mia-regencape', 'cape'], ['mia-zipfel', 'hat'], ['mia-brille', 'glasses']];
+
+/** Accessoires auf ein Bild malen. (ox, oy) = linke obere Ecke des Mia-Bildes in ctx-Koordinaten, k = Maßstab des Bildes. */
+function drawOverlays(ctx: CanvasRenderingContext2D, name: string, ox: number, oy: number, k: number, acc: string[]) {
+  const e = accFrames[name];
+  if (!e || !accImg || !acc.length) return;
+  for (const [id, key] of ACC_ORDER) {
+    const p = e[key];
+    if (!p || !acc.includes(id)) continue;
+    ctx.drawImage(accImg, p.sx, p.sy, p.sw, p.sh, ox + p.x * k, oy + p.y * k, p.w * k, p.h * k);
+  }
+}
+
 let atlasImg: HTMLImageElement | null = null;
 const portraits: Partial<Record<Face, HTMLImageElement>> = {};
 let loading: Promise<void> | null = null;
@@ -42,8 +66,9 @@ const loadImg = (src: string) => new Promise<HTMLImageElement>((res) => {
 /** Lädt Atlas und Porträts (einmal). */
 export function loadMia(): Promise<void> {
   loading ??= (async () => {
-    const [a, ...ps] = await Promise.all([loadImg(atlasUrl), ...(Object.keys(portraitUrls) as Face[]).map((k) => loadImg(portraitUrls[k]))]);
+    const [a, ac, ...ps] = await Promise.all([loadImg(atlasUrl), loadImg(accUrl), ...(Object.keys(portraitUrls) as Face[]).map((k) => loadImg(portraitUrls[k]))]);
     atlasImg = a;
+    accImg = ac;
     (Object.keys(portraitUrls) as Face[]).forEach((k, i) => (portraits[k] = ps[i]));
   })();
   return loading;
@@ -68,6 +93,8 @@ export interface AnimInput {
   speed: number;
   sleep?: boolean;
   ride?: RideKind;
+  /** angelegte Mia-Items (z. B. 'mia-zipfel'); sonst die mit setAccessories gesetzten */
+  acc?: string[];
   /** Fahrtwind 0..1 (nur Fahrzeuge) */
   wind?: number;
 }
@@ -86,6 +113,9 @@ export class MiaAnimator {
   private prev: Layer | null = null;
   private fade = 1;
   private idleT = 0;
+  private acc: string[] = [];
+  setAccessories(a: string[]) { this.acc = a; }
+  private curAcc: string[] = [];
 
   /** Feier-Animation (zweimal celebrate) starten */
   celebrate() { this.celebT = 0; }
@@ -138,12 +168,16 @@ export class MiaAnimator {
     } else this.cur = next;
     this.fade = Math.min(1, this.fade + dt / 0.14);
 
-    ctx.clearRect(0, 0, CELL_W, CELL_H);
+    this.curAcc = inp.acc ?? this.acc;
+    ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
     if (!atlasImg) return;
+    ctx.save();
+    ctx.translate(MARGIN_X, MARGIN_TOP);
     if (this.prev && this.fade < 1) this.paint(ctx, this.prev.d, 1 - this.fade);
     this.paint(ctx, this.cur.d, this.prev && this.fade < 1 ? this.fade : 1);
     if (this.cur.group === 'sleep') this.zzz(ctx);
     else if (this.cur.group === 'car') this.carHead(ctx, inp);
+    ctx.restore();
   }
 
   private paint(ctx: CanvasRenderingContext2D, d: Draw, alpha: number) {
@@ -155,13 +189,15 @@ export class MiaAnimator {
     ctx.rotate(d.rot);
     ctx.scale(d.flip ? -d.sx : d.sx, d.sy);
     ctx.drawImage(atlasImg, f.x, f.y, f.w, f.h, -CELL_W / 2, -BASE, f.w, f.h);
+    drawOverlays(ctx, d.name, -CELL_W / 2, -BASE, 1, this.curAcc);
     ctx.restore();
   }
 
   /** Im Auto: nur Kopf und Halstuch (fröhliches Porträt), Ohren flattern im Fahrtwind */
   private carHead(ctx: CanvasRenderingContext2D, inp: AnimInput) {
-    ctx.clearRect(0, 0, CELL_W, CELL_H);
-    const p = portraits[inp.speed > 0.4 ? 'happy' : 'neutral'];
+    ctx.clearRect(-MARGIN_X, -MARGIN_TOP, CANVAS_W, CANVAS_H);
+    const pk: Face = this.curAcc.includes('mia-brille') || inp.speed <= 0.4 ? 'neutral' : 'happy';
+    const p = portraits[pk];
     if (!p || !p.naturalWidth) return;
     const s = 0.9, w = p.naturalWidth * s, h = p.naturalHeight * s;
     const wind = inp.wind ?? 0;
@@ -169,6 +205,7 @@ export class MiaAnimator {
     ctx.translate(CELL_W / 2 + Math.sin(this.t * 24) * 1.5 * wind, CELL_H - 18 + Math.sin(this.t * 2.3) * 1.5 - Math.abs(Math.sin(this.t * 19)) * 3 * wind);
     ctx.rotate(Math.sin(this.t * 1.4) * 0.03 + (this.side === 'left' ? -1 : 1) * wind * 0.04);
     ctx.drawImage(p, -w / 2, -h, w, h);
+    drawOverlays(ctx, 'portrait_' + pk, -w / 2, -h, s, this.curAcc);
     ctx.restore();
   }
 
@@ -195,4 +232,21 @@ export function drawStill(ctx: CanvasRenderingContext2D, name: string, flip = fa
   if (flip) { ctx.translate(CELL_W, 0); ctx.scale(-1, 1); }
   ctx.drawImage(atlasImg, f.x, f.y, f.w, f.h, 0, 0, f.w, f.h);
   ctx.restore();
+}
+
+/** Mia (Vorderansicht, sitzend) mit Accessoires als Bild-URL, z. B. für Vorschaubilder; '' solange die Grafiken laden. */
+export function dressedUrl(acc: string[], frame = 'front_idle', height = 200): string {
+  const f = frames[frame];
+  if (!f || !atlasImg) return '';
+  const cv = document.createElement('canvas');
+  cv.width = CANVAS_W; cv.height = CANVAS_H;
+  const c = cv.getContext('2d')!;
+  c.translate(MARGIN_X, MARGIN_TOP);
+  c.drawImage(atlasImg, f.x, f.y, f.w, f.h, 0, 0, f.w, f.h);
+  drawOverlays(c, frame, 0, 0, 1, acc);
+  if (height >= CANVAS_H) return cv.toDataURL('image/png');
+  const k = height / CANVAS_H, out = document.createElement('canvas');
+  out.width = Math.round(CANVAS_W * k); out.height = height;
+  out.getContext('2d')!.drawImage(cv, 0, 0, out.width, out.height);
+  return out.toDataURL('image/png');
 }

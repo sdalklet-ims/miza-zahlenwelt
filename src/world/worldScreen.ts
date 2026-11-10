@@ -183,7 +183,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
     }
     petSync = false;
   }
-  const offHouse = onProgress(() => { syncHouse(true); void ensurePet(); });
+  const offHouse = onProgress(() => { syncHouse(true); void ensurePet(); miaSpr.setAccessories(equippedFor('mia')); });
   void ensurePet();
 
   /* ── Schlafen ── */
@@ -509,7 +509,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
   function update() {
     st.t += DT;
     {
-      const ev = tickWeather(DT, (houseInside && isBuilt('dach')) || !!currentRide()?.canopy);
+      const ev = tickWeather(DT, (houseInside && isBuilt('dach')) || !!currentRide()?.canopy || equippedFor('mia').includes('mia-regencape'));
       if (ev === 'start') speak('weather.rain');
       else if (ev === 'wet') speak('weather.wet');
       else if (ev === 'stop') speak('weather.dry');

@@ -1,9 +1,32 @@
 {
   "texts": {
-    "weather.rain": ["mia", "Oh, es fängt an zu regnen! Mein Regenschirm ist im Rucksack 🎒."],
-    "weather.wet": ["mia", "Brr, ich werde ganz nass! Ich spanne lieber meinen Regenschirm auf."],
-    "weather.dry": ["mia", "Der Regen hört auf. Die Sonne kommt wieder raus!"],
-    "weather.umb.on": ["mia", "Schirm auf! Jetzt bleibe ich trocken."],
-    "weather.umb.off": ["mia", "Schirm zugeklappt."]
+    "weather.rain": [
+      "mia",
+      "Oh, es fängt an zu regnen! Ich spanne den Schirm aus dem Rucksack auf oder ziehe mein Regencape an."
+    ],
+    "weather.wet": [
+      "mia",
+      "Brr, ich werde ganz nass! Ich spanne lieber meinen Regenschirm auf."
+    ],
+    "weather.dry": [
+      "mia",
+      "Der Regen hört auf. Die Sonne kommt wieder raus!"
+    ],
+    "weather.umb.on": [
+      "mia",
+      "Schirm auf! Jetzt bleibe ich trocken."
+    ],
+    "weather.umb.off": [
+      "mia",
+      "Schirm zugeklappt."
+    ],
+    "mia.wear": [
+      "mia",
+      "Das steht mir gut!"
+    ],
+    "mia.wear.cape": [
+      "mia",
+      "Mit dem Regencape bleibe ich im Regen trocken, und die Pfoten sind frei."
+    ]
   }
 }

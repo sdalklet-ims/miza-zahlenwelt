@@ -3,7 +3,8 @@
  * Die Schleife läuft nur, solange das Element im Dokument hängt.
  */
 import { h } from '../core/dom';
-import { CELL_H, CELL_W, MiaAnimator, loadMia, portraitImg, type Face, type Facing } from '../world3d/miaAnim';
+import { CANVAS_H, CANVAS_W, CELL_H, MiaAnimator, loadMia, portraitImg, type Face, type Facing } from '../world3d/miaAnim';
+import { equippedFor } from '../core/rewards';
 
 export interface MiaView {
   el: HTMLElement;
@@ -15,9 +16,11 @@ export interface MiaView {
 }
 
 export function createMiaView(opts: { height: number; portrait?: boolean; dir?: Facing; cls?: string }): MiaView {
-  const cv = h('canvas', { class: 'mia-cv', width: CELL_W, height: CELL_H }) as HTMLCanvasElement;
-  cv.style.height = opts.height + 'px';
-  cv.style.width = (opts.height * CELL_W) / CELL_H + 'px';
+  const cv = h('canvas', { class: 'mia-cv', width: CANVAS_W, height: CANVAS_H }) as HTMLCanvasElement;
+  const ch = (opts.height * CANVAS_H) / CELL_H; // Mia selbst bleibt opts.height hoch, dazu Platz für Mütze
+  cv.style.height = ch + 'px';
+  cv.style.width = (ch * CANVAS_W) / CANVAS_H + 'px';
+  cv.style.marginTop = -(ch - opts.height) + 'px';
   const bubble = h('div', { class: 'mia-portrait off' });
   const el = h('div', { class: 'mia-view ' + (opts.cls ?? '') }, cv, opts.portrait === false ? null : bubble);
   const ctx = cv.getContext('2d')!;
@@ -38,7 +41,7 @@ export function createMiaView(opts: { height: number; portrait?: boolean; dir?: 
     if (!el.isConnected && now - last > 3000) return; // abgebaut: Schleife beenden
     const dt = (now - last) / 1000;
     last = now;
-    anim.draw(ctx, dt, { dir, speed: moving ? 0.7 : 0 });
+    anim.draw(ctx, dt, { dir, speed: moving ? 0.7 : 0, acc: equippedFor('mia') });
     if (hideT > 0) { hideT -= dt; if (hideT <= 0 && face !== 'think' && face !== 'sad') bubble.classList.add('off'); }
     raf = requestAnimationFrame(loop);
   };

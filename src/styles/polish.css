@@ -92,3 +92,9 @@
 
 .hud-hunger[data-lvl="weak"] .hg-bar i, .hud-hunger[data-lvl="empty"] .hg-bar i { background: #ff6a4a; }
 .hud-hunger[data-lvl="weak"], .hud-hunger[data-lvl="empty"] { animation: breathe .9s ease-in-out infinite; background: #ffe2d9; }
+
+/* Kleidung im Rucksack */
+.pack-clothes h4 { margin: 6px 0 8px; font: 900 24px var(--font); }
+.pack-item.cloth { width: 190px; } .pack-item.cloth img { height: 150px; width: auto; display: block; filter: drop-shadow(0 4px 3px rgba(0,0,0,.25)); }
+.pack-item.cloth.on { background: #bfe6ff; } .pack-item.cloth.locked img { filter: grayscale(1) opacity(.45); }
+.item-img { height: 260px; width: auto; display: block; margin: 0 auto; }

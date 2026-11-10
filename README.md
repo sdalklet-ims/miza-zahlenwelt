@@ -120,3 +120,8 @@ Weichere Knöpfe und Hover, Münz-/Sterne-Anzeige „hüpft“ bei Änderung, Zi
 
 ## Vollbild
 Das Fenster wird ganz ausgefüllt: Die 3D-Welt nutzt die komplette Fläche (breiter Bildschirm = mehr Welt zu sehen), Menüs, Karte und Aufgaben-Bildschirme bleiben 1180×820 und stehen mittig (`src/ui/stage.ts`, Klasse `.framed`). Auf dem iPad im Querformat bleibt alles wie vorher; für Vollbild am PC F11 drücken.
+
+## Kleidung im Rucksack (Mütze, Sonnenbrille, Regencape)
+- Grafiken: `assets/mia-source/Mia_Accessories_Final/`. `python tools/mia_accessories.py` (nutzt `tools/acc_clean.py`) säubert die Overlays (Schein/Hintergrund entfernen, Gesichtsöffnung der Kapuze freistellen) und rechnet für **jedes Mia-Bild** aus, wo das Teil sitzt (Augen, Kopfbreite, Halstuch als Messpunkte) → `assets/mia/accessories.png` + `accessories.json`. Im Spiel zeichnet `src/world3d/miaAnim.ts` die Teile mit auf Mia (Seite, vorne, hinten, gespiegelt für links; im E-Auto auf dem Porträt).
+- Die Teile liegen im **Rucksack** (Bereich „Kleidung“, tippen = an-/ausziehen) und werden mit Sternen freigeschaltet: Zipfelmütze 1 ⭐, Sonnenbrille 2 ⭐, Regencape 3 ⭐. Mütze und Cape tragen sich nicht zusammen (beide Kopf), die Brille passt zu beidem. Das **Regencape schützt wie der Schirm vor Regen** und lässt die Pfoten frei.
+- Im Album gibt es nur noch die Sachen für Eule Olga.

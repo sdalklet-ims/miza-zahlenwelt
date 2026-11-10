@@ -4,6 +4,8 @@ import { openModal } from './modal';
 import { foods, stock } from '../core/pet';
 import { eat, eatTextId, fullness, hungerLevel, mealStock, meals } from '../core/hunger';
 import { onProgress } from '../core/progress';
+import { equippedFor, isUnlocked, items, toggleEquip } from '../core/rewards';
+import { dressedUrl, loadMia, miaLoaded } from '../world3d/miaAnim';
 import { hasUmbrella, onWeather, setUmbrella, weather } from '../core/weather';
 import { speak } from '../audio/speak';
 import { sfx } from '../audio/music';
@@ -22,8 +24,21 @@ export function openBackpack() {
         hasUmbrella() ? h('button', { class: 'pack-item' + (up ? ' on' : '') + (weather.raining && !up ? ' hint' : ''), onclick: () => { setUmbrella(!up); sfx.pop(); speak(!up ? 'weather.umb.on' : 'weather.umb.off'); } },
           h('span', { class: 'pk-icon' }, '☂️'), h('b', {}, 'Regenschirm'), h('small', {}, up ? 'aufgespannt – tippen zum Zuklappen' : weather.raining ? 'Es regnet! Tippen zum Aufspannen' : 'tippen zum Aufspannen')) : null,
         ...foods.filter((f) => stock(f.id) > 0).map((f) => h('div', { class: 'pack-item food' }, h('span', { class: 'pk-icon' }, f.icon), h('b', {}, f.name), h('small', {}, `Vorrat ${stock(f.id)}`)))),
-      h('small', { class: 'pet-hint' }, 'Im Rucksack ist alles, was Mia mitnimmt: Essen (tippen = essen), Haustierfutter und der Schirm gegen Regen.'));
+      h('div', { class: 'pack-clothes' },
+        h('h4', {}, '👕 Kleidung'),
+        h('div', { class: 'pack-grid' }, ...items.filter((i) => i.target === 'mia').map((it) => {
+          const open = isUnlocked(it), on = equippedFor('mia').includes(it.id), u = dressedUrl([it.id], 'front_idle', 150);
+          return h('button', { class: 'pack-item cloth' + (on ? ' on' : '') + (open ? '' : ' locked'), disabled: !open, onclick: () => {
+            toggleEquip(it); sfx.pop();
+            if (!on) speak(it.id === 'mia-regencape' ? 'mia.wear.cape' : 'mia.wear');
+          } },
+          u ? h('img', { src: u, alt: '' }) : h('span', { class: 'pk-icon' }, '👕'),
+          h('b', {}, it.name),
+          h('small', {}, open ? (on ? '✓ an – tippen zum Ausziehen' : 'tippen zum Anziehen') : `🔒 ab ${it.stars} ⭐`));
+        }))),
+      h('small', { class: 'pet-hint' }, 'Im Rucksack ist alles, was Mia mitnimmt: Essen (tippen = essen), Haustierfutter, Schirm und Kleidung. Mit dem Regencape bleibt Mia im Regen trocken.'));
   }
+  if (!miaLoaded()) void loadMia().then(render);
   render();
   const off1 = onWeather(render), off2 = onProgress(render);
   openModal({ title: '🎒 Rucksack', wide: false, onClose: () => { off1(); off2(); clearInterval(timer); }, content: body });

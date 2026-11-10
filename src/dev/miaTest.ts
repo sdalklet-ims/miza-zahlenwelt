@@ -5,7 +5,7 @@ import '../styles/wiese.css';
 import atlas from '../../assets/mia/atlas.json';
 import report from '../../assets/mia/report.json';
 import { createMiaView } from '../ui/miaView';
-import { BASE, CELL_H, CELL_W, MiaAnimator, loadMia, portraitImg, type Facing, type Face } from '../world3d/miaAnim';
+import { BASE, CANVAS_H, CANVAS_W, CELL_W, MARGIN_TOP, MARGIN_X, MiaAnimator, loadMia, portraitImg, type Facing, type Face } from '../world3d/miaAnim';
 
 const frames = atlas.frames as unknown as Record<string, { x: number; y: number; w: number; h: number }>;
 const anims = atlas.animations as unknown as Record<string, string[]>;
@@ -22,7 +22,7 @@ function card(parent: HTMLElement, title: string, paint: Painter) {
   d.innerHTML = `<h3>${title}</h3><div class="pair"></div>`;
   const pair = d.querySelector('.pair')!;
   const ctxs = ['light', 'dark'].map((c) => {
-    const cv = document.createElement('canvas'); cv.width = CELL_W; cv.height = CELL_H; cv.className = c; pair.append(cv);
+    const cv = document.createElement('canvas'); cv.width = CANVAS_W; cv.height = CANVAS_H; cv.className = c; pair.append(cv);
     return cv.getContext('2d')!;
   });
   parent.append(d);
@@ -30,11 +30,11 @@ function card(parent: HTMLElement, title: string, paint: Painter) {
   tickers.push(() => {
     const now = performance.now(), dt = (now - last) / 1000; last = now;
     ctxs.forEach((c, i) => {
-      c.clearRect(0, 0, CELL_W, CELL_H);
+      c.clearRect(0, 0, CANVAS_W, CANVAS_H);
       paint(c, now / 1000, i === 0 ? dt : 0);
       if (grid.checked) {
-        c.save(); c.strokeStyle = 'rgba(255,0,0,.8)'; c.beginPath(); c.moveTo(0, BASE + 0.5); c.lineTo(CELL_W, BASE + 0.5); c.stroke();
-        c.strokeStyle = 'rgba(128,128,128,.6)'; c.beginPath(); c.moveTo(CELL_W / 2, 0); c.lineTo(CELL_W / 2, CELL_H); c.stroke(); c.restore();
+        c.save(); c.strokeStyle = 'rgba(255,0,0,.8)'; c.beginPath(); c.moveTo(0, MARGIN_TOP + BASE + 0.5); c.lineTo(CANVAS_W, MARGIN_TOP + BASE + 0.5); c.stroke();
+        c.strokeStyle = 'rgba(128,128,128,.6)'; c.beginPath(); c.moveTo(MARGIN_X + CELL_W / 2, 0); c.lineTo(MARGIN_X + CELL_W / 2, CANVAS_H); c.stroke(); c.restore();
       }
     });
   });
@@ -44,6 +44,7 @@ let img: HTMLImageElement;
 function drawFrame(c: CanvasRenderingContext2D, name: string, flip: boolean) {
   const f = frames[name];
   c.save();
+  c.translate(MARGIN_X, MARGIN_TOP);
   if (flip) { c.translate(CELL_W, 0); c.scale(-1, 1); }
   c.drawImage(img, f.x, f.y, f.w, f.h, 0, 0, f.w, f.h);
   c.restore();

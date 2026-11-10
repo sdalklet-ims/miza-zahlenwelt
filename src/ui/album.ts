@@ -5,13 +5,11 @@ import { miaSvg, owlSvg } from './art';
 import { items, isUnlocked, toggleEquip, totalStars, equippedFor } from '../core/rewards';
 import { itemPreview } from './results';
 
-const TARGETS = [
-  { id: 'mia', name: 'Mia' },
-  { id: 'eule', name: 'Eule Olga' },
-];
+// Mias Kleidung liegt im Rucksack; im Album gibt es noch die Sachen für Eule Olga
+const TARGETS = [{ id: 'eule', name: 'Eule Olga' }];
 
 export function openAlbum() {
-  let tab = 'mia';
+  let tab = 'eule';
   const preview = h('div', { class: 'alb-preview' });
   const grid = h('div', { class: 'alb-grid' });
   const tabs = h('div', { class: 'alb-tabs' });

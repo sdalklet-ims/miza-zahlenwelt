@@ -4,7 +4,7 @@
  * damit sie auf dem Bildschirm unverzerrt aussehen (wie in klassischen 2,5D-Spielen).
  */
 import * as THREE from 'three';
-import { BASE, CELL_H, CELL_W, MiaAnimator, type Facing, type RideKind } from './miaAnim';
+import { BASE, CANVAS_H, CANVAS_W, CELL_H, MiaAnimator, type Facing, type RideKind } from './miaAnim';
 
 export const PITCH = (40 * Math.PI) / 180;
 export const SPR_Y = 1 / Math.cos(PITCH);
@@ -77,6 +77,8 @@ export interface MiaSprite {
   group: THREE.Group;
   /** dt in Sekunden; speed 0..1 (1 = normales Laufen) */
   update(dt: number, speed: number, dir: Facing, sleep?: boolean, ride?: RideKind, wind?: number): void;
+  /** angelegte Mia-Items (Mütze, Brille, Regencape) */
+  setAccessories(acc: string[]): void;
   /** Freude-Animation (celebrate) */
   celebrate(): void;
   setHidden(h: boolean): void;
@@ -85,15 +87,16 @@ export interface MiaSprite {
 /** Höhe des Sprites in Welt-Einheiten: sitzende Mia ≈ 1,75 hoch (wie bisher) */
 const MIA_UNITS = 1.87;
 
-export function createMiaSprite(_acc?: string[]): MiaSprite {
+export function createMiaSprite(acc: string[] = []): MiaSprite {
   const cv = document.createElement('canvas');
-  cv.width = CELL_W; cv.height = CELL_H;
+  cv.width = CANVAS_W; cv.height = CANVAS_H;
   const c = cv.getContext('2d')!;
   const tex = new THREE.CanvasTexture(cv);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.generateMipmaps = false;
   tex.minFilter = THREE.LinearFilter;
-  const H = (MIA_UNITS * CELL_H) / 320, W = (H * CELL_W) / CELL_H, up = H * ((CELL_H - BASE) / CELL_H);
+  const k = MIA_UNITS / 320; // Welt-Einheiten je Bildpunkt (wie vorher, jetzt mit Platz für Mütze und Kapuze)
+  const H = CANVAS_H * k, W = CANVAS_W * k, up = (CELL_H - BASE) * k;
   const bb = billboard(tex, W, H, up);
   // Silhouette: erscheint nur, wo Mia hinter etwas steht
   const sil = new THREE.Mesh(bb.mesh.geometry, new THREE.MeshBasicMaterial({ map: tex, color: '#ffcf80', transparent: true, opacity: 0.45, alphaTest: 0.04, depthFunc: THREE.GreaterDepth, depthWrite: false, toneMapped: false, side: THREE.DoubleSide }));
@@ -101,7 +104,9 @@ export function createMiaSprite(_acc?: string[]): MiaSprite {
   sil.renderOrder = 20;
   bb.group.add(sil);
   const anim = new MiaAnimator();
+  anim.setAccessories(acc);
   return {
+    setAccessories: (a) => anim.setAccessories(a),
     group: bb.group,
     celebrate: () => anim.celebrate(),
     setHidden: (h) => void (bb.group.visible = !h),

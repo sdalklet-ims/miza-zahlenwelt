@@ -171,6 +171,10 @@
     "common.hide.out": [
       "mia",
       "Und weiter geht es!"
+    ],
+    "common.pack.new": [
+      "mia",
+      "Hurra! Ein neues Teil für meinen Rucksack: {name}!"
     ]
   },
   "rewards": {
@@ -190,18 +194,11 @@
         "stars": 2
       },
       {
-        "id": "mia-halstuch",
-        "target": "mia",
-        "slot": "hals",
-        "name": "Halstuch",
-        "stars": 4
-      },
-      {
-        "id": "mia-krone",
+        "id": "mia-regencape",
         "target": "mia",
         "slot": "kopf",
-        "name": "Krone",
-        "stars": 6
+        "name": "Regencape",
+        "stars": 3
       },
       {
         "id": "eule-hut",
