@@ -4,7 +4,7 @@
  * damit sie auf dem Bildschirm unverzerrt aussehen (wie in klassischen 2,5D-Spielen).
  */
 import * as THREE from 'three';
-import { drawMia, drawSleepingMia, MIA_CANVAS, type Dir, type RideStyle } from './comic';
+import { BASE, CELL_H, CELL_W, MiaAnimator, type Facing, type RideKind } from './miaAnim';
 
 export const PITCH = (40 * Math.PI) / 180;
 export const SPR_Y = 1 / Math.cos(PITCH);
@@ -72,38 +72,41 @@ export async function svgFigure(svg: string, height: number): Promise<Billboard>
   return billboard(tex, height * aspectOf(svg), height);
 }
 
-/* ───────── Mia ───────── */
+/* ───────── Mia (gezeichnete Grafiken, siehe miaAnim.ts) ───────── */
 export interface MiaSprite {
   group: THREE.Group;
-  setAccessories(acc: string[]): void;
-  update(t: number, phase: number, speed: number, dir: Dir, happy: boolean, sleep?: boolean, ride?: RideStyle, wind?: number): void;
+  /** dt in Sekunden; speed 0..1 (1 = normales Laufen) */
+  update(dt: number, speed: number, dir: Facing, sleep?: boolean, ride?: RideKind, wind?: number): void;
+  /** Freude-Animation (celebrate) */
+  celebrate(): void;
   setHidden(h: boolean): void;
 }
 
-export function createMiaSprite(acc: string[]): MiaSprite {
+/** Höhe des Sprites in Welt-Einheiten: sitzende Mia ≈ 1,75 hoch (wie bisher) */
+const MIA_UNITS = 1.87;
+
+export function createMiaSprite(_acc?: string[]): MiaSprite {
   const cv = document.createElement('canvas');
-  cv.width = cv.height = MIA_CANVAS;
+  cv.width = CELL_W; cv.height = CELL_H;
   const c = cv.getContext('2d')!;
   const tex = new THREE.CanvasTexture(cv);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.generateMipmaps = false;
   tex.minFilter = THREE.LinearFilter;
-  const H = 2.15, up = H * (24 / MIA_CANVAS);
-  const bb = billboard(tex, H, H, up);
+  const H = MIA_UNITS, W = (H * CELL_W) / CELL_H, up = H * ((CELL_H - BASE) / CELL_H);
+  const bb = billboard(tex, W, H, up);
   // Silhouette: erscheint nur, wo Mia hinter etwas steht
   const sil = new THREE.Mesh(bb.mesh.geometry, new THREE.MeshBasicMaterial({ map: tex, color: '#ffcf80', transparent: true, opacity: 0.45, alphaTest: 0.04, depthFunc: THREE.GreaterDepth, depthWrite: false, toneMapped: false, side: THREE.DoubleSide }));
   sil.scale.y = SPR_Y;
   sil.renderOrder = 20;
   bb.group.add(sil);
-  let accList = acc;
+  const anim = new MiaAnimator();
   return {
     group: bb.group,
-    setAccessories: (a) => void (accList = a),
+    celebrate: () => anim.celebrate(),
     setHidden: (h) => void (bb.group.visible = !h),
-    update(t, phase, speed, dir, happy, sleep, ride, wind) {
-      c.clearRect(0, 0, MIA_CANVAS, MIA_CANVAS);
-      if (sleep) drawSleepingMia(c, MIA_CANVAS / 2 + 14, MIA_CANVAS - 24, t, accList);
-      else drawMia(c, MIA_CANVAS / 2, MIA_CANVAS - 24, { dir, t, phase, speed, acc: accList, happy, ride, wind });
+    update(dt, speed, dir, sleep, ride, wind) {
+      anim.draw(c, dt, { dir, speed, sleep, ride, wind });
       tex.needsUpdate = true;
     },
   };

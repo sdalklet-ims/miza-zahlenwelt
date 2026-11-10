@@ -59,3 +59,15 @@
 .charge-bar.off { opacity: 0; transform: translateX(-50%) translateY(20px); pointer-events: none; }
 .cb-track { height: 24px; margin-top: 8px; border-radius: 14px; background: #e6dcc4; overflow: hidden; border: 3px solid #cbb98f; } .cb-track i { display: block; height: 100%; width: 0; background: repeating-linear-gradient(115deg, #7dff9a 0 16px, #4fd978 16px 32px); background-size: 45px 100%; animation: chargeFlow .6s linear infinite; }
 @keyframes chargeFlow { to { background-position: 45px 0; } }
+
+/* Mia als Grafik in Menüs */
+.mia-view { position: relative; display: inline-block; line-height: 0; }
+.mia-cv { display: block; image-rendering: auto; }
+.gs-mia { width: auto; }
+.mia-portrait { position: absolute; right: -34px; top: -46px; width: 92px; height: 92px; border-radius: 50%; background: #fff; border: 5px solid var(--ink); box-shadow: 0 6px 0 rgba(0,0,0,.18); overflow: hidden; transition: opacity .25s, transform .25s; z-index: 2; }
+.mia-portrait img { width: 118%; height: 118%; margin: -9% 0 0 -9%; object-fit: cover; }
+.mia-portrait.off { opacity: 0; transform: scale(.4); pointer-events: none; }
+.mia-portrait.pop { animation: popIn .35s; }
+.start-mia { width: auto; margin-left: 0; transform: translateX(-50%); }
+.start-mia .mia-view { filter: none; }
+.mia-inner .mia-view { margin-left: -8px; }

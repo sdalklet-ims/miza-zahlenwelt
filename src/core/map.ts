@@ -3,7 +3,7 @@ import { h } from './dom';
 import { worlds, type WorldContent } from './texts';
 import { getProgress, mutate, worldStars } from './progress';
 import { equippedFor } from './rewards';
-import { miaSvg } from '../ui/art';
+import { createMiaView } from '../ui/miaView';
 import { mapBackground } from './mapArt';
 import { modules } from '../worlds';
 import { worldUnlocked } from './unlock';
@@ -51,7 +51,8 @@ export function mapScreen(): Screen {
     <polyline points="${poly}" fill="none" stroke="#f7e3ae" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
     <polyline points="${poly}" fill="none" stroke="#d9b36c" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 14"/></svg>`;
 
-  const miaInner = h('div', { class: 'mia-inner', html: miaSvg(equippedFor('mia')) });
+  const miaView = createMiaView({ height: 104, dir: 'right', portrait: false });
+  const miaInner = h('div', { class: 'mia-inner' }, miaView.el);
   const mia = h('div', { class: 'map-mia' }, miaInner);
   const place = (p: Pt) => (mia.style.transform = `translate(${p.x - 45}px, ${p.y - 98}px)`);
   place(pts[idx[cur]]);
@@ -96,6 +97,7 @@ export function mapScreen(): Screen {
       const dur = Math.max(400, (total / 320) * 1000);
       const t0 = performance.now();
       miaInner.classList.add('walking');
+      miaView.setMoving(true);
       const tick = (now: number) => {
         if (dead) return resolve();
         const t = Math.min(1, (now - t0) / dur);
@@ -109,6 +111,7 @@ export function mapScreen(): Screen {
         if (t < 1) requestAnimationFrame(tick);
         else {
           miaInner.classList.remove('walking');
+          miaView.setMoving(false);
           resolve();
         }
       };
@@ -136,6 +139,7 @@ export function mapScreen(): Screen {
     }
     if (dead) return;
     miaInner.classList.add('hop');
+    miaView.celebrate();
     await new Promise((r) => setTimeout(r, 350));
     busy = false;
     modules[s.w.id].enter();

@@ -2,7 +2,8 @@
 import { h } from '../core/dom';
 import { textOf, type Params } from '../core/texts';
 import { equippedFor } from '../core/rewards';
-import { miaSvg, npcSvg, type Expr } from './art';
+import { npcSvg, type Expr } from './art';
+import { createMiaView } from './miaView';
 import { speak, say } from '../audio/speak';
 import { addCoins } from '../core/rewards';
 import { sfx } from '../audio/music';
@@ -32,7 +33,8 @@ export interface Shell {
 export function createShell(npc: NpcInfo): Shell {
   const acc = equippedFor('mia');
   const npcArt = h('div', { class: 'gs-npc-art', html: npcSvg(npc.kind, equippedFor(npc.id)) });
-  const miaEl = h('div', { class: 'gs-mia', html: miaSvg(acc, 'neutral') });
+  const miaView = createMiaView({ height: 160, dir: 'right', cls: 'gs-mia' });
+  const miaEl = miaView.el;
   const promptText = h('div', { class: 'gs-prompt-text' });
   const info = h('div', { class: 'gs-info' });
   const main = h('div', { class: 'gs-main' });
@@ -84,7 +86,7 @@ export function createShell(npc: NpcInfo): Shell {
       return talking(say(text, speaker));
     },
     face(e) {
-      miaEl.innerHTML = miaSvg(acc, e);
+      miaView.setFace(e === 'happy' ? 'happy' : e === 'think' ? 'think' : 'neutral');
     },
     feedback(kind, text) {
       el.querySelector('.gs-fb')?.remove();

@@ -1,0 +1,255 @@
+{
+  "image": "atlas.png",
+  "cell": {
+    "w": 324,
+    "h": 320
+  },
+  "baseline": 312,
+  "scale_note": "alle Frames gleicher Maßstab (Iris-Messung)",
+  "frames": {
+    "walk_right_0": {
+      "x": 0,
+      "y": 0,
+      "w": 324,
+      "h": 320
+    },
+    "walk_right_1": {
+      "x": 324,
+      "y": 0,
+      "w": 324,
+      "h": 320
+    },
+    "walk_right_2": {
+      "x": 648,
+      "y": 0,
+      "w": 324,
+      "h": 320
+    },
+    "walk_right_3": {
+      "x": 972,
+      "y": 0,
+      "w": 324,
+      "h": 320
+    },
+    "walk_right_4": {
+      "x": 1296,
+      "y": 0,
+      "w": 324,
+      "h": 320
+    },
+    "walk_right_5": {
+      "x": 1620,
+      "y": 0,
+      "w": 324,
+      "h": 320
+    },
+    "idle_0": {
+      "x": 0,
+      "y": 320,
+      "w": 324,
+      "h": 320
+    },
+    "idle_1": {
+      "x": 324,
+      "y": 320,
+      "w": 324,
+      "h": 320
+    },
+    "idle_2": {
+      "x": 648,
+      "y": 320,
+      "w": 324,
+      "h": 320
+    },
+    "idle_3": {
+      "x": 972,
+      "y": 320,
+      "w": 324,
+      "h": 320
+    },
+    "idle_4": {
+      "x": 1296,
+      "y": 320,
+      "w": 324,
+      "h": 320
+    },
+    "paw_0": {
+      "x": 0,
+      "y": 640,
+      "w": 324,
+      "h": 320
+    },
+    "paw_1": {
+      "x": 324,
+      "y": 640,
+      "w": 324,
+      "h": 320
+    },
+    "paw_2": {
+      "x": 648,
+      "y": 640,
+      "w": 324,
+      "h": 320
+    },
+    "paw_3": {
+      "x": 972,
+      "y": 640,
+      "w": 324,
+      "h": 320
+    },
+    "paw_4": {
+      "x": 1296,
+      "y": 640,
+      "w": 324,
+      "h": 320
+    },
+    "sneak_0": {
+      "x": 0,
+      "y": 960,
+      "w": 324,
+      "h": 320
+    },
+    "sneak_1": {
+      "x": 324,
+      "y": 960,
+      "w": 324,
+      "h": 320
+    },
+    "sneak_2": {
+      "x": 648,
+      "y": 960,
+      "w": 324,
+      "h": 320
+    },
+    "sneak_3": {
+      "x": 972,
+      "y": 960,
+      "w": 324,
+      "h": 320
+    },
+    "sneak_4": {
+      "x": 1296,
+      "y": 960,
+      "w": 324,
+      "h": 320
+    },
+    "celebrate_0": {
+      "x": 0,
+      "y": 1280,
+      "w": 324,
+      "h": 320
+    },
+    "celebrate_1": {
+      "x": 324,
+      "y": 1280,
+      "w": 324,
+      "h": 320
+    },
+    "celebrate_2": {
+      "x": 648,
+      "y": 1280,
+      "w": 324,
+      "h": 320
+    },
+    "celebrate_3": {
+      "x": 972,
+      "y": 1280,
+      "w": 324,
+      "h": 320
+    },
+    "celebrate_4": {
+      "x": 1296,
+      "y": 1280,
+      "w": 324,
+      "h": 320
+    },
+    "front_idle": {
+      "x": 0,
+      "y": 1600,
+      "w": 324,
+      "h": 320
+    },
+    "back_idle": {
+      "x": 0,
+      "y": 1920,
+      "w": 324,
+      "h": 320
+    },
+    "side_idle": {
+      "x": 0,
+      "y": 2240,
+      "w": 324,
+      "h": 320
+    },
+    "three_quarter": {
+      "x": 0,
+      "y": 2560,
+      "w": 324,
+      "h": 320
+    }
+  },
+  "animations": {
+    "walk_right": [
+      "walk_right_0",
+      "walk_right_1",
+      "walk_right_2",
+      "walk_right_3",
+      "walk_right_4",
+      "walk_right_5"
+    ],
+    "idle": [
+      "idle_0",
+      "idle_1",
+      "idle_2",
+      "idle_3",
+      "idle_4"
+    ],
+    "paw": [
+      "paw_0",
+      "paw_1",
+      "paw_2",
+      "paw_3",
+      "paw_4"
+    ],
+    "sneak": [
+      "sneak_0",
+      "sneak_1",
+      "sneak_2",
+      "sneak_3",
+      "sneak_4"
+    ],
+    "celebrate": [
+      "celebrate_0",
+      "celebrate_1",
+      "celebrate_2",
+      "celebrate_3",
+      "celebrate_4"
+    ],
+    "front_idle": [
+      "front_idle"
+    ],
+    "back_idle": [
+      "back_idle"
+    ],
+    "side_idle": [
+      "side_idle"
+    ],
+    "three_quarter": [
+      "three_quarter"
+    ]
+  },
+  "portraits": {
+    "neutral": "portraits/portrait_neutral.png",
+    "happy": "portraits/portrait_happy.png",
+    "think": "portraits/portrait_think.png",
+    "surprised": "portraits/portrait_surprised.png",
+    "sad": "portraits/portrait_sad.png"
+  },
+  "fps": {
+    "walk_right": 12,
+    "idle": 4,
+    "paw": 6,
+    "sneak": 8,
+    "celebrate": 10
+  }
+}

@@ -1,5 +1,5 @@
 import { h } from '../core/dom';
-import { miaSvg } from './art';
+import { createMiaView } from './miaView';
 import { equippedFor } from '../core/rewards';
 import type { Screen } from '../core/router';
 
@@ -23,7 +23,7 @@ export function startScreen(onStart: () => void): Screen {
     h('div', { class: 'start-hills' }),
     ...floaters,
     h('div', { class: 'start-title' }, h('span', {}, 'Mia'), h('small', {}, 'und die'), h('span', { class: 'zw' }, 'Zahlenwelt')),
-    h('div', { class: 'start-mia', html: miaSvg(equippedFor('mia'), 'happy') }),
+    h('div', { class: 'start-mia' }, createMiaView({ height: 300, dir: 'down', portrait: false }).el),
     h('div', { class: 'start-tap' }, 'Tippe zum Starten')
   );
   return { el };

@@ -105,3 +105,8 @@ Weichere Knöpfe und Hover, Münz-/Sterne-Anzeige „hüpft“ bei Änderung, Zi
 - **Mia im Fahrzeug**: im E-Auto sieht man nur Kopf und Schultern über der Karosserie, auf dem Roller steht sie mit flatterndem Halstuch und Ohren im Fahrtwind, auf dem Fahrrad tritt sie in die Pedale (Kurbel dreht sich). Vorderräder schlagen in Kurven ein, die Karosserie neigt sich, nickt beim Beschleunigen und rüttelt leicht; E-Fahrzeuge sprühen Funken statt Abgase. Im Haus geht Mia zu Fuß.
 - **Mias Hunger**: Sättigung sinkt langsam (HUD-Balken). Essen im Supermarkt (Gang „Essen“), im Rucksack antippen zum Essen. Hungrig = etwas langsamer, kein Game Over.
 - **Möbel**: Mia läuft jetzt nicht mehr durch Möbel (wie die Haustiere).
+
+## Mia-Grafiken (gezeichnete Bilder statt Canvas-Figur)
+- Originale: `assets/mia-source/` (unverändert). Aufbereitung: `python tools/mia_assets.py` (braucht Pillow, numpy, scipy) → `assets/mia/` (frames/, portraits/, atlas.png + atlas.json, report.json). Weiß wird per Flood-Fill + weicher Kante entfernt, alle Frames haben denselben Maßstab, Schwerpunkt mittig und gemeinsame Bodenlinie (Sprungbild behält seine Höhe).
+- Im Spiel: `src/world3d/miaAnim.ts` (Zustandsautomat: rechts/links = walk_right (gespiegelt), unten/oben = front/back_idle mit Wippen und Neigen, Stehen = idle mit Blinzeln, Feiern = celebrate, Schlafen, E-Auto = nur Kopf). Laufgeschwindigkeit hängt am Tempo, Übergänge werden 0,14 s übergeblendet. Menüs (Aufgaben-Ansicht, Karte, Start) nutzen `src/ui/miaView.ts` inkl. Porträt-Sprechblase.
+- Testseite (nur Entwicklung): `npm run dev` und `http://localhost:5173/mia-test.html`.

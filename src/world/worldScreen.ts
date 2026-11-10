@@ -32,7 +32,7 @@ import { buildDecor, windUniform } from '../world3d/decor';
 import { Particles } from '../world3d/fx';
 import * as M from '../world3d/models';
 import { createMiaSprite, svgFigure, SPR_Y, type Billboard } from '../world3d/sprites';
-import type { Dir } from '../world3d/comic';
+import type { Facing as Dir } from '../world3d/miaAnim';
 import { npcSvg, squirrelSvg, petSvg, type PetKind } from '../ui/art';
 import { mouseSvg } from '../ui/artWiese';
 import { chickSvg } from '../ui/artFluss';
@@ -273,6 +273,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
     return { s, v };
   });
   let miaDir: Dir = 'down';
+  let lastRT = 0;
 
   interface NpcView { ent: (typeof model.npcs)[number]; root: THREE.Object3D; fig?: Billboard; label: HTMLElement; mark: HTMLElement; top: number }
   const npcViews: NpcView[] = [];
@@ -623,6 +624,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
       mutate((p) => void (p.discovered[s.id] = true));
       for (let i = 0; i < 26; i++) { const a = (i / 26) * 6.28; fx.add(s.x * S, heightAt(s.x, s.y) + 1.1, s.y * S, Math.cos(a) * 2.6, 1 + Math.random() * 2, Math.sin(a) * 2.6, 0.9, 0.3, '#ffd54a', -3); }
       const swid = s.id.split('.')[0];
+      miaSpr.celebrate();
       speak(`${swid}.star.found`);
       sfx.star();
       award(`${swid}.entdecker.${s.id}`, 1);
@@ -695,7 +697,10 @@ export async function enterWorld(opts: EnterOpts = {}) {
     windUniform.value = timeSec;
     const gy = heightAt(st.x, st.y);
     const spd = Math.hypot(st.vx, st.vy);
-    if (spd > 12) miaDir = Math.abs(st.vx) > Math.abs(st.vy) ? (st.vx < 0 ? 'left' : 'right') : st.vy < 0 ? 'up' : 'down';
+    // Blickrichtung: schräg zählt nach der horizontalen Komponente
+    if (spd > 12) miaDir = Math.abs(st.vx) > 0.3 * spd ? (st.vx < 0 ? 'left' : 'right') : st.vy < 0 ? 'up' : 'down';
+    const rdt = Math.min(0.1, Math.max(0, timeSec - lastRT));
+    lastRT = timeSec;
     miaSpr.setHidden(!!hidden);
     const wantRide = !houseInside && !hidden && !sleeping ? currentRide() : null;
     if ((wantRide?.id ?? '') !== vehKind) {
@@ -726,7 +731,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
     }
     shopTick?.(timeSec);
     miaSpr.group.position.set(st.x * S, gy + seatLift + (sleeping ? 1.0 : 0), st.y * S);
-    miaSpr.update(t, vehicle ? pedal : st.phase, vehicle ? (rideStyle === 'bike' && spd > 20 ? 0.6 : 0) : Math.min(1, spd / RUN), miaDir, !!vehicle, sleeping, rideStyle, wind);
+    miaSpr.update(rdt, vehicle ? Math.min(1, spd / (RUN * Math.max(1, rideSpeed()))) : Math.min(1, spd / RUN), miaDir, sleeping, rideStyle, wind);
     for (const sv of stationViews) sv.v.setCharging(charging === sv.s, timeSec, vehicle ? chargeOf(vehKind) : 100);
 
     // Regenschirm

@@ -58,7 +58,7 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 .start-title span { font: 900 120px var(--font); color: #fff; -webkit-text-stroke: 10px var(--wood-d); paint-order: stroke fill; text-shadow: 0 10px 0 rgba(0,0,0,.18); }
 .start-title .zw { color: var(--sun); font-size: 132px; }
 .start-title small { font: 800 38px var(--font); color: var(--wood-d); margin: 4px 0; }
-.start-mia { position: absolute; left: 50%; bottom: 120px; width: 270px; margin-left: -135px; animation: breathe 3s ease-in-out infinite; filter: drop-shadow(0 12px 8px rgba(0,0,0,.25)); }
+.start-mia { position: absolute; left: 50%; bottom: 120px; animation: none; filter: drop-shadow(0 12px 8px rgba(0,0,0,.25)); }
 .start-tap { position: absolute; bottom: 28px; left: 0; right: 0; text-align: center; font: 900 46px var(--font); color: #fff; text-shadow: 0 4px 0 var(--wood-d), 0 0 18px rgba(0,0,0,.3); animation: pulse 1.6s ease-in-out infinite; }
 @keyframes pulse { 50% { transform: scale(1.08); } }
 @keyframes breathe { 50% { transform: scaleY(1.03) translateY(-4px); } }
