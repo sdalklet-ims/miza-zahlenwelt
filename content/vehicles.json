@@ -28,10 +28,6 @@
     }
   ],
   "texts": {
-    "wald.rocky.hello": [
-      "rocky",
-      "Brumm, brumm! Ich bin Rocky. Bei mir gibt es ein Fahrrad, einen E-Roller und ein E-Auto. Die Welt ist groß, da lohnt sich Tempo! Die Elektro-Fahrzeuge laden an den Ladestationen."
-    ],
     "car.buy": [
       "mia",
       "Der {name} gehört jetzt mir! Auf geht's!"

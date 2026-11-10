@@ -4,6 +4,7 @@ import { mutate } from '../../core/progress';
 import type { Adaptive, LevelChange } from '../../core/adaptive';
 import type { Shell } from '../../ui/shell';
 import { award, showResult } from '../../ui/results';
+import { badgeRun } from '../../ui/badges';
 import type { Screen } from '../../core/router';
 import type { TaskHooks, TaskResult } from '../wald/tasks';
 
@@ -44,13 +45,16 @@ export async function playRounds(o: { shell: Shell; total: number; key: string; 
   return hits;
 }
 
-export async function finish(shell: Shell, key: string, stars: number, text: string, done: () => void, again: () => void, bonus = 3, backLabel = 'Zurück auf die Wiese') {
+export async function finish(shell: Shell, key: string, stars: number, text: string, done: () => void, again: () => void, bonus = 3, backLabel = 'Zurück auf die Wiese', clean = false) {
   shell.pay(stars * bonus);
   await award(key, stars);
   if (shell.dead) return;
+  const note = await badgeRun(key, clean);
+  if (shell.dead) return;
+
   shell.pulseHint(false);
   showResult({
-    title: 'Geschafft!', stars, text: `${text}  Verdient: ${shell.earned} 🪙`, speakId: 'common.round.done',
+    title: 'Geschafft!', stars, text: `${text}  Verdient: ${shell.earned} 🪙${note ? '  ' + note : ''}`, speakId: 'common.round.done',
     buttons: [{ label: '🔁 Nochmal', cls: 'sun', onClick: again }, { label: backLabel, onClick: done }],
   });
 }

@@ -1,5 +1,6 @@
 import { openBackpack } from './ui/backpack';
 import { openGarage } from './ui/carshop';
+import { openBadgeBook } from './ui/badges';
 import './styles/base.css';
 import './styles/map.css';
 import './styles/polish.css';
@@ -23,7 +24,7 @@ function goMap() {
   show(mapScreen(), { back: null });
 }
 
-hud.init({ onMap: goMap, onAlbum: openAlbum, onSettings: openSettings, onHouse: () => openHouseUi({ mode: 'plan' }), onPack: openBackpack, onRide: openGarage });
+hud.init({ onMap: goMap, onAlbum: openAlbum, onSettings: openSettings, onHouse: () => openHouseUi({ mode: 'plan' }), onPack: openBackpack, onRide: openGarage, onBadges: () => openBadgeBook() });
 
 show(
   startScreen(() => {

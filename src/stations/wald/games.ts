@@ -7,6 +7,7 @@ import { createShell, type Shell } from '../../ui/shell';
 import { createBoard } from '../../ui/board';
 import { createStoneBoard } from '../../ui/stones';
 import { award, showResult } from '../../ui/results';
+import { badgeRun } from '../../ui/badges';
 import type { Screen } from '../../core/router';
 import { runBuild, runCards, runCount, type TaskHooks, type TaskResult } from './tasks';
 import { genCards, NumberGen, numOf, type CardRule, type PunkteRule } from './generators';
@@ -55,11 +56,13 @@ async function finishRound(shell: Shell, key: string, hits: number, total: numbe
   shell.pay(stars * 3);
   await award(key, stars);
   if (shell.dead) return;
+  const note = await badgeRun(key, hits === total);
+  if (shell.dead) return;
   shell.pulseHint(false);
   showResult({
     title: 'Geschafft!',
     stars,
-    text: `${hits} von ${total} gleich beim ersten Versuch richtig.  Verdient: ${shell.earned} 🪙`,
+    text: `${hits} von ${total} gleich beim ersten Versuch richtig.  Verdient: ${shell.earned} 🪙${note ? '  ' + note : ''}`,
     speakId: 'common.round.done',
     buttons: [{ label: '🔁 Nochmal', cls: 'sun', onClick: again }, { label: 'Zurück in den Wald', onClick: done }],
   });
@@ -118,6 +121,8 @@ export function steineScreen(done: () => void): Screen {
   };
   const stones = createStoneBoard(board, STONES, { onChange: readout, onFull: () => {} });
   let busy = false;
+  let streak = 0; // neue Zahlen in Folge ohne Wiederholung (5 = ein fehlerfreier Durchlauf)
+  const SERIES = 5;
   const okBtn = h('button', { class: 'btn', disabled: true, onclick: submit }, '✓ Das ist meine Zahl!');
   const counter = h('div', { class: 'found-count' });
   const chips = new Map<number, HTMLElement>();
@@ -139,7 +144,8 @@ export function steineScreen(done: () => void): Screen {
       h('div', { class: 'left' }, board.el, h('div', { class: 'tray-row' }, stones.tray), okBtn),
       h('div', { class: 'found-panel' }, counter, h('small', {}, '⭐ bei 7 · 14 · 21'), grid))
   );
-  shell.setInfo(`Genau ${STONES} Steine!`);
+  const info = () => shell.setInfo(`Genau ${STONES} Steine! · Serie ohne Wiederholung: ${streak}/${SERIES}`);
+  info();
   shell.setPrompt('wald.steine.prompt');
 
   shell.onHint = async () => {
@@ -163,6 +169,8 @@ export function steineScreen(done: () => void): Screen {
     const n = numOf(a, b, c);
     if (found.has(n)) {
       shell.face('think');
+      streak = 0;
+      info();
       shell.feedback('info', `${n} hattest du schon.`);
       await shell.speakId('wald.steine.dup', { n });
     } else {
@@ -171,9 +179,12 @@ export function steineScreen(done: () => void): Screen {
       mutate((p) => void p.found.push(n));
       refresh();
       chips.get(n)?.classList.add('new');
+      streak++;
+      info();
       shell.face('happy');
       shell.feedback('good', `${n} ist neu!`);
       await shell.speakId('wald.steine.new', { n });
+      if (streak >= SERIES) { streak = 0; info(); await badgeRun('wald.steine', true); if (shell.dead) return; }
       const stars = Math.floor(found.size / 7);
       if (stars > (getProgress().stars['wald.steine'] ?? 0)) await award('wald.steine', stars);
       if (found.size === all.length) {

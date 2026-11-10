@@ -93,7 +93,7 @@ export function paareScreen(done: () => void, again: () => void): Screen {
     }
     if (shell.dead) return;
     const stars = wrong <= 1 ? 3 : wrong <= 4 ? 2 : 1;
-    await finish(shell, 'fluss.paare', stars, wrong === 0 ? 'Alle Kiesel auf Anhieb zugeordnet!' : `${wrong} Mal falsch gelegt – aber alles zugeordnet.`, done, again, 4, 'Zurück zum Fluss');
+    await finish(shell, 'fluss.paare', stars, wrong === 0 ? 'Alle Kiesel auf Anhieb zugeordnet!' : `${wrong} Mal falsch gelegt – aber alles zugeordnet.`, done, again, 4, 'Zurück zum Fluss', wrong === 0);
   })();
   return { el: shell.el, dispose: () => void (shell.dead = true) };
 }

@@ -113,7 +113,7 @@ export function partnerScreen(done: () => void, again: () => void): Screen {
     }
     if (shell.dead) return;
     const stars = wrong <= 1 ? 3 : wrong <= 4 ? 2 : 1;
-    await finish(shell, 'wiese.partner', stars, wrong === 0 ? 'Alle Paare auf Anhieb gefunden!' : `${wrong} Mal daneben getippt – aber alle Paare gefunden.`, done, again, 4);
+    await finish(shell, 'wiese.partner', stars, wrong === 0 ? 'Alle Paare auf Anhieb gefunden!' : `${wrong} Mal daneben getippt – aber alle Paare gefunden.`, done, again, 4, 'Zurück auf die Wiese', wrong === 0);
   })();
   return { el: shell.el, dispose: () => void (shell.dead = true) };
 }

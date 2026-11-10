@@ -200,7 +200,7 @@ export function strahlScreen(done: () => void, again: () => void): Screen {
       await wait(500);
     }
     if (shell.dead) return;
-    await finish(shell, 'wiese.strahl', hits / TOTAL >= 0.8 ? 3 : hits / TOTAL >= 0.4 ? 2 : 1, `${hits} von ${TOTAL} gleich beim ersten Versuch richtig.`, done, again);
+    await finish(shell, 'wiese.strahl', hits / TOTAL >= 0.8 ? 3 : hits / TOTAL >= 0.4 ? 2 : 1, `${hits} von ${TOTAL} gleich beim ersten Versuch richtig.`, done, again, 3, 'Zurück auf die Wiese', hits === TOTAL);
   })();
   return { el: shell.el, dispose: () => void (shell.dead = true) };
 }

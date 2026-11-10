@@ -107,17 +107,6 @@
         "offers": [
           "check"
         ]
-      },
-      {
-        "id": "rocky",
-        "kind": "raccoon",
-        "name": "Waschbär Rocky",
-        "x": 2650,
-        "y": 2000,
-        "hello": "wald.rocky.hello",
-        "offers": [
-          "autos"
-        ]
       }
     ],
     "bushes": [

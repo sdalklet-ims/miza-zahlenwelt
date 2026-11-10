@@ -8,6 +8,7 @@ import type { Screen } from '../../core/router';
 import { genCalc, runCalc, runErgaenzen } from './calc';
 import { runStrahl } from './strahl';
 import { finish, playRounds, screenOf, starsFor } from './common';
+import { badgeRun } from '../../ui/badges';
 
 const ROUNDS = 6;
 
@@ -17,7 +18,7 @@ function calcScreen(op: '+' | '-', npc: { id: string; kind: string; name: string
     const ad = new Adaptive(getProgress().levels[key] ?? 1);
     (async () => {
       const hits = await playRounds({ shell, total: ROUNDS, key, ad, task: (lvl, _i, hooks) => runCalc(shell, genCalc(op, lvl), hooks) });
-      if (hits >= 0) await finish(shell, key, starsFor(hits, ROUNDS), `${hits} von ${ROUNDS} gleich beim ersten Versuch richtig.`, done, again);
+      if (hits >= 0) await finish(shell, key, starsFor(hits, ROUNDS), `${hits} von ${ROUNDS} gleich beim ersten Versuch richtig.`, done, again, 3, 'Zurück auf die Wiese', hits === ROUNDS);
     })();
     return screenOf(shell);
   };
@@ -60,9 +61,11 @@ export function checkScreen(done: () => void, again: () => void): Screen {
     shell.pay(stars * 4);
     await award('wiese.check', stars);
     if (shell.dead) return;
+    const note = await badgeRun('wiese.check', hits === tasks.length);
+    if (shell.dead) return;
     showResult({
       title: 'Wiesen-Check geschafft!', stars, speakId: `wiese.check.done.${stars}`,
-      text: `${hits} von ${tasks.length} gleich beim ersten Versuch richtig.  Verdient: ${shell.earned} 🪙`,
+      text: `${hits} von ${tasks.length} gleich beim ersten Versuch richtig.  Verdient: ${shell.earned} 🪙${note ? '  ' + note : ''}`,
       buttons: [{ label: '🔁 Nochmal', cls: 'sun', onClick: again }, { label: 'Zurück auf die Wiese', onClick: done }],
     });
   })();

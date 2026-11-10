@@ -7,6 +7,7 @@ import { award, showResult } from '../../ui/results';
 import type { Screen } from '../../core/router';
 import { genMul, runMul } from './mal';
 import { finish, playRounds, screenOf, starsFor } from '../wiese/common';
+import { badgeRun } from '../../ui/badges';
 
 const ROUNDS = 6;
 
@@ -16,7 +17,7 @@ function mulScreen(op: '×' | ':', npc: { id: string; kind: string; name: string
     const ad = new Adaptive(getProgress().levels[key] ?? 1);
     (async () => {
       const hits = await playRounds({ shell, total: ROUNDS, key, ad, task: (lvl, _i, hooks) => runMul(shell, genMul(op, lvl), lvl, hooks) });
-      if (hits >= 0) await finish(shell, key, starsFor(hits, ROUNDS), `${hits} von ${ROUNDS} gleich beim ersten Versuch richtig.`, done, again, 3, 'Zurück zum Fluss');
+      if (hits >= 0) await finish(shell, key, starsFor(hits, ROUNDS), `${hits} von ${ROUNDS} gleich beim ersten Versuch richtig.`, done, again, 3, 'Zurück zum Fluss', hits === ROUNDS);
     })();
     return screenOf(shell);
   };
@@ -50,9 +51,11 @@ export function checkScreen(done: () => void, again: () => void): Screen {
     shell.pay(stars * 4);
     await award('fluss.check', stars);
     if (shell.dead) return;
+    const note = await badgeRun('fluss.check', hits === tasks.length);
+    if (shell.dead) return;
     showResult({
       title: 'Fluss-Check geschafft!', stars, speakId: `fluss.check.done.${stars}`,
-      text: `${hits} von ${tasks.length} gleich beim ersten Versuch richtig.  Verdient: ${shell.earned} 🪙`,
+      text: `${hits} von ${tasks.length} gleich beim ersten Versuch richtig.  Verdient: ${shell.earned} 🪙${note ? '  ' + note : ''}`,
       buttons: [{ label: '🔁 Nochmal', cls: 'sun', onClick: again }, { label: 'Zurück zum Fluss', onClick: done }],
     });
   })();

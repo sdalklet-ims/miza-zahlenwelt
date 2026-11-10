@@ -87,7 +87,7 @@ export function reiheScreen(done: () => void, again: () => void): Screen {
     }
     if (shell.dead) return;
     const stars = wrong <= 1 ? 3 : wrong <= 4 ? 2 : 1;
-    await finish(shell, 'fluss.reihe', stars, wrong === 0 ? 'Fred ist begeistert: kein Fehlsprung!' : `${wrong} Fehlsprünge – aber alle Seerosen gefunden.`, done, again, 4, 'Zurück zum Fluss');
+    await finish(shell, 'fluss.reihe', stars, wrong === 0 ? 'Fred ist begeistert: kein Fehlsprung!' : `${wrong} Fehlsprünge – aber alle Seerosen gefunden.`, done, again, 4, 'Zurück zum Fluss', wrong === 0);
   })();
   return { el: shell.el, dispose: () => void (shell.dead = true) };
 }

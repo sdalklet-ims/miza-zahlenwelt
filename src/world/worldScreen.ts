@@ -39,6 +39,9 @@ import { chickSvg } from '../ui/artFluss';
 import { createCarShop, createChargeStation, createVehicle, rideKindOf, type ChargeStation3D, type Vehicle3D } from '../world3d/vehicles';
 import { batteryEmpty, chargeAll, chargeOf, currentRide, drainBattery, needsCharge, ownsElectric, rideSpeed, saveCharge } from '../core/vehicles';
 import { openCarShop } from '../ui/carshop';
+import { openBadgeBook } from '../ui/badges';
+import { examPassed, gameBadges, missingBadges, allBadges } from '../core/badges';
+import { examScreen } from '../stations/exam';
 import '../styles/world.css';
 import '../styles/wald.css';
 
@@ -71,7 +74,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
 
   const model = buildWorld({
     onNpc: (npc, wid) => openDialog(npc, wid),
-    onGate: () => { speak('common.gate.soon'); shakeFog = 1; },
+    onGate: () => { speak('tor.closed'); shakeFog = 1; },
     onBush: (b) => toggleHide(b),
     onSquirrel: (c) => pet(c),
     onPlot: () => { speak('wald.haus.plot'); openHouseUi({ mode: 'plan' }); },
@@ -287,7 +290,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
     else if (e.kind === 'shroom') { root = M.createShroomRing(); top = 1.8; }
     else {
       const fh = FIG_H[e.kind] ?? 1.8;
-      fig = await svgFigure(npcSvg(e.kind, e.id === 'eule' ? eulerAcc : []), fh);
+      fig = await svgFigure(npcSvg(e.kind, e.id === 'eule' || e.id.startsWith('tor.') ? eulerAcc : []), fh);
       root = fig.group;
       top = fh + 0.15;
     }
@@ -305,7 +308,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
       scene.add(market);
     }
     const label = h('div', { class: 'npc3-name' }, e.name);
-    const mark = h('div', { class: 'npc3-mark' }, e.kind === 'chest' ? '⭐' : PROC_KINDS.includes(e.kind) ? '🎮' : e.kind === 'fox' ? '🛒' : e.kind === 'raccoon' ? '🚗' : '💬');
+    const mark = h('div', { class: 'npc3-mark' }, e.kind === 'chest' ? '⭐' : PROC_KINDS.includes(e.kind) ? '🎮' : e.kind === 'fox' ? '🛒' : e.kind === 'raccoon' ? '🚗' : e.id.startsWith('tor.') ? '📝' : '💬');
     labels.append(label, mark);
     npcViews.push({ ent: e, root, fig, label, mark, top });
   }
@@ -346,8 +349,14 @@ export async function enterWorld(opts: EnterOpts = {}) {
     sp.scale.set(sc, sc * 0.8, 1);
     sp.position.set(f.x * S, 2.4 + (f.ph % 1) * 1.2, f.y * S);
     scene.add(sp);
-    return { f, sp, sc };
+    return { f, sp, sc, born: -1 };
   });
+  const dissolving = fogSprites.filter((x) => x.f.dissolve);
+  if (dissolving.length) {
+    const zi = dissolving[0].f.dissolve!;
+    mutate((p) => void (p.seen['gateopen.' + zi] = true));
+    speak('exam.open');
+  }
   const flies = model.butterflies.map((b) => {
     const v = M.createButterfly(b.col);
     scene.add(v.root);
@@ -422,7 +431,30 @@ export async function enterWorld(opts: EnterOpts = {}) {
     } else speak(`${wid}.${kind}.again`);
   }
 
+  /** Eule Olga am Nebeltor: Abzeichen prüfen, Mathearbeit starten */
+  function openGateDialog(npc: Npc, worldId: string) {
+    closeDialog();
+    frozenByDialog = true;
+    const idx = worlds.findIndex((w) => w.id === worldId);
+    const next = worlds[idx + 1];
+    const nextOpen = !!next && next.meta.status === 'open' && !!stationStarters[next.id];
+    const done = examPassed(worldId);
+    const miss = missingBadges(worldId);
+    const id = done ? (nextOpen ? 'tor.hello.passed' : 'tor.hello.last') : allBadges(worldId) ? 'tor.hello.ready' : 'tor.hello.missing';
+    const params = { n: miss.length === 1 ? 'ein Abzeichen' : `${miss.length} Abzeichen`, names: miss.map((b) => b.name).join(', ') };
+    const btns: HTMLElement[] = [];
+    if (!done && allBadges(worldId)) btns.push(h('button', { class: 'btn sun', onclick: () => { savePos(); closeDialog(); show(examScreen(worldId, () => void enterWorld()), { back: () => void enterWorld() }); } }, '📝 Mathearbeit starten'));
+    btns.push(h('button', { class: 'btn', onclick: () => { closeDialog(); openBadgeBook(worldId); } }, '📖 Abzeichenbuch', !done && !allBadges(worldId) ? h('small', { class: 'btn-stars' }, `${gameBadges(worldId).length - miss.length}/${gameBadges(worldId).length}`) : null));
+    bubble = h('div', { class: 'bubble world-bubble' },
+      h('div', { class: 'bubble-name' }, npc.name),
+      h('p', {}, textOf(id, params)),
+      h('div', { class: 'bubble-btns' }, ...btns, h('button', { class: 'btn ghost', onclick: closeDialog }, 'Tschüss')));
+    el.append(bubble);
+    speak(id, params);
+  }
+
   function openDialog(npc: Npc, worldId: string) {
+    if (npc.id.startsWith('tor.')) return openGateDialog(npc, worldId);
     closeDialog();
     frozenByDialog = true;
     const start = stationStarters[worldId];
@@ -805,6 +837,13 @@ export async function enterWorld(opts: EnterOpts = {}) {
       f.v.wings[0].rotation.z = fl; f.v.wings[1].rotation.z = -fl;
     }
     for (const fs of fogSprites) {
+      if (fs.f.dissolve) { // Nebel hebt sich nach oben und verblasst in ca. 4 s
+        if (fs.born < 0) fs.born = timeSec;
+        const k = Math.min(1, (timeSec - fs.born) / 4);
+        (fs.sp.material as THREE.SpriteMaterial).opacity = 0.95 * (1 - k);
+        fs.sp.position.y = 2.4 + (fs.f.ph % 1) * 1.2 + k * 3;
+        fs.sp.visible = k < 1;
+      }
       const sh = shakeFog * Math.sin(timeSec * 40) * 0.2;
       fs.sp.position.x = fs.f.x * S + Math.sin(timeSec * 0.5 + fs.f.ph) * 0.5 + sh;
     }

@@ -1,0 +1,254 @@
+{
+  "worlds": {
+    "wald": {
+      "title": "Wald",
+      "icon": "🌲",
+      "master": {
+        "id": "master",
+        "name": "Waldmeister",
+        "icon": "🌲",
+        "color": "#3f9a4a",
+        "shape": "star",
+        "npc": "Eule Olga",
+        "what": "Mathearbeit im Wald bestanden"
+      },
+      "games": [
+        {
+          "id": "punkte",
+          "name": "Punkte-Profi",
+          "icon": "🎯",
+          "color": "#e9803a",
+          "shape": "circle",
+          "npc": "Igel Ingo",
+          "what": "Punkte zählen"
+        },
+        {
+          "id": "steine",
+          "name": "Steine-Meister",
+          "icon": "🪨",
+          "color": "#8a8f99",
+          "shape": "hex",
+          "npc": "Dachs Bruno",
+          "what": "Steine-Meister"
+        },
+        {
+          "id": "kaertchen",
+          "name": "Kärtchen-König",
+          "icon": "🃏",
+          "color": "#c0509a",
+          "shape": "shield",
+          "npc": "Hase Hugo",
+          "what": "Kärtchen-Duell"
+        },
+        {
+          "id": "angeln",
+          "name": "Zahlen-Angler",
+          "icon": "🎣",
+          "color": "#3a8fe0",
+          "shape": "flower",
+          "npc": "Angelteich",
+          "what": "Zahlen-Angeln"
+        },
+        {
+          "id": "pilze",
+          "name": "Pilz-Sammler",
+          "icon": "🍄",
+          "color": "#e0483f",
+          "shape": "circle",
+          "npc": "Zahlenpilze",
+          "what": "Pilze pflücken"
+        }
+      ]
+    },
+    "wiese": {
+      "title": "Wiese",
+      "icon": "🌼",
+      "master": {
+        "id": "master",
+        "name": "Wiesenkönig",
+        "icon": "🌼",
+        "color": "#e9b410",
+        "shape": "star",
+        "npc": "Eule Olga",
+        "what": "Mathearbeit auf der Wiese bestanden"
+      },
+      "games": [
+        {
+          "id": "plus",
+          "name": "Honig-Rechner",
+          "icon": "🍯",
+          "color": "#e9b410",
+          "shape": "hex",
+          "npc": "Biene Bella",
+          "what": "Honig-Plus"
+        },
+        {
+          "id": "minus",
+          "name": "Rückwärts-Wanderer",
+          "icon": "🐌",
+          "color": "#a8703a",
+          "shape": "shield",
+          "npc": "Schnecke Schorsch",
+          "what": "Minus-Wanderung"
+        },
+        {
+          "id": "partner",
+          "name": "Paar-Finder",
+          "icon": "🦋",
+          "color": "#9a6ad9",
+          "shape": "flower",
+          "npc": "Schmetterling Fritzi",
+          "what": "Schmetterlings-Paare"
+        },
+        {
+          "id": "strahl",
+          "name": "Strahl-Hüpfer",
+          "icon": "🦗",
+          "color": "#5fbf4a",
+          "shape": "circle",
+          "npc": "Grashüpfer Hannes",
+          "what": "Zahlenstrahl-Hüpfer"
+        },
+        {
+          "id": "check",
+          "name": "Wiesen-Held",
+          "icon": "⭐",
+          "color": "#f2a43a",
+          "shape": "star",
+          "npc": "Blumentruhe",
+          "what": "Wiesen-Check"
+        }
+      ]
+    },
+    "fluss": {
+      "title": "Fluss",
+      "icon": "🌊",
+      "master": {
+        "id": "master",
+        "name": "Flusskapitän",
+        "icon": "🌊",
+        "color": "#2f7bd9",
+        "shape": "star",
+        "npc": "Eule Olga",
+        "what": "Mathearbeit am Fluss bestanden"
+      },
+      "games": [
+        {
+          "id": "mal",
+          "name": "Stapel-Biber",
+          "icon": "🪵",
+          "color": "#a8703a",
+          "shape": "shield",
+          "npc": "Biber Bruno",
+          "what": "Baumstamm-Mal"
+        },
+        {
+          "id": "teilen",
+          "name": "Fisch-Verteiler",
+          "icon": "🦆",
+          "color": "#e9b410",
+          "shape": "circle",
+          "npc": "Ente Emma",
+          "what": "Fische teilen"
+        },
+        {
+          "id": "reihe",
+          "name": "Seerosen-Springer",
+          "icon": "🐸",
+          "color": "#4aa83a",
+          "shape": "flower",
+          "npc": "Frosch Fred",
+          "what": "Seerosen-Reihen"
+        },
+        {
+          "id": "paare",
+          "name": "Kiesel-Kenner",
+          "icon": "🦦",
+          "color": "#8a5a3a",
+          "shape": "hex",
+          "npc": "Otter Otto",
+          "what": "Mal-Paare"
+        },
+        {
+          "id": "check",
+          "name": "Fluss-Held",
+          "icon": "⭐",
+          "color": "#4a90d9",
+          "shape": "star",
+          "npc": "Flusstruhe",
+          "what": "Fluss-Check"
+        }
+      ]
+    }
+  },
+  "texts": {
+    "badge.run1": [
+      "mia",
+      "Fehlerfrei! Noch ein fehlerfreier Durchgang, dann gehört mir das Abzeichen „{name}“."
+    ],
+    "badge.new": [
+      "mia",
+      "Ein neues Abzeichen: {name}! Das kommt ins Abzeichenbuch."
+    ],
+    "badge.master": [
+      "mia",
+      "Ich habe die Mathearbeit bestanden! Das Abzeichen „{name}“ gehört mir."
+    ],
+    "tor.closed": [
+      "mia",
+      "Der Nebel lässt mich nicht durch. Davor steht Eule Olga – vielleicht kann sie helfen."
+    ],
+    "tor.hello.missing": [
+      "eule",
+      "Hu-hu! Hinter dem Nebel liegt die nächste Welt. Zuerst brauchst du alle Abzeichen dieser Welt. Dir fehlen noch {n}: {names}."
+    ],
+    "tor.hello.ready": [
+      "eule",
+      "Hu-hu! Du hast alle Abzeichen! Dann kommt jetzt meine kleine Mathearbeit: fünf Aufgaben, eine aus jedem Spiel. Mit vier richtigen bestehst du. Ein Fehler ist erlaubt!"
+    ],
+    "tor.hello.passed": [
+      "eule",
+      "Du hast meine Mathearbeit bestanden. Der Nebel ist weg, geh nur weiter!"
+    ],
+    "tor.hello.last": [
+      "eule",
+      "Du hast meine Mathearbeit bestanden! Hinter dem Nebel wächst noch alles heran, die nächste Welt kommt bald."
+    ],
+    "exam.intro": [
+      "eule",
+      "Los geht's! Fünf Aufgaben, eine aus jedem Spiel. Denk in Ruhe nach, es gibt keinen Zeitdruck."
+    ],
+    "exam.pass.5": [
+      "eule",
+      "Alle fünf richtig! Das war eine Eins mit Sternchen. Der Nebel lichtet sich!"
+    ],
+    "exam.pass.4": [
+      "eule",
+      "Vier von fünf, das reicht! Bestanden. Der Nebel lichtet sich!"
+    ],
+    "exam.fail": [
+      "eule",
+      "Das war noch nicht ganz genug, aber das ist nicht schlimm. Übe noch ein bisschen bei deinen Freunden und komm wieder. Du darfst es so oft versuchen, wie du magst."
+    ],
+    "exam.open": [
+      "mia",
+      "Der Nebel lichtet sich! Auf in die nächste Welt!"
+    ],
+    "exam.reihe.prompt": [
+      "eule",
+      "Setze die Reihe fort: {seq}, … Welche Zahl kommt als Nächstes?"
+    ],
+    "exam.choice.prompt": [
+      "eule",
+      "Wie viel ist {a} mal {b}? Tippe die richtige Zahl an."
+    ],
+    "exam.reihe.hint": [
+      "eule",
+      "Schau, um wie viel die Zahlen jedes Mal größer werden, und zähle genauso weiter."
+    ],
+    "exam.choice.hint": [
+      "eule",
+      "Rechne {a} mal {b}: {b} gleich große Gruppen mit je {a}. Zähle in {a}er-Schritten."
+    ]
+  }
+}

@@ -3,7 +3,7 @@
  * Gebiete mit status "locked" (oder ohne Station) bekommen ein Nebeltor. Dekoration entsteht deterministisch (fester Seed).
  * Gezeichnet wird in src/world3d (three.js); hier stehen nur Positionen, Kollisionen und Interaktionen.
  */
-import { worlds, type WorldContent } from '../core/texts';
+import { worlds, badgeCfg, type WorldContent } from '../core/texts';
 import { getProgress } from '../core/progress';
 import { worldUnlocked } from '../core/unlock';
 import { stationStarters, type Npc } from '../stations';
@@ -20,7 +20,7 @@ export interface Decor { kind: string; x: number; y: number; s: number; rot: num
 
 export interface WorldModel {
   solids: Circle[]; rects: Rect[]; interacts: Interact[];
-  fogs: { x: number; y: number; s: number; ph: number }[];
+  fogs: { x: number; y: number; s: number; ph: number; dissolve?: number }[];
   gates: { x: number; y: number }[];
   critters: Critter[]; bushes: Bush[]; stars: Star[]; npcs: NpcEnt[]; decor: Decor[];
   butterflies: { x: number; y: number; ph: number; col: string }[];
@@ -117,19 +117,36 @@ export function buildWorld(hooks: Hooks): WorldModel {
     addSolid(x, y - 6, 16);
     m.interacts.push({ id: `station.${m.stations.length}`, x, y: y + 20, r: 120, label: 'Aufladen', icon: '🔋', run: () => hooks.onCharge(s) });
   };
-  for (let zi = 0; zi < worlds.length; zi++) for (const lx of [900, 1900, 2900]) addStation(zi * ZW + lx, Math.round(pathY(zi * ZW + lx) + 140));
+  for (let zi = 1; zi < worlds.length; zi++) for (const lx of [900, 1900, 2900]) addStation(zi * ZW + lx, Math.round(pathY(zi * ZW + lx) + 140));
   if (PLOT) addStation(PLOT.x + 520, PLOT.y + 150);
 
   /* ── Nebeltore zwischen gesperrten Gebieten ── */
   for (let zi = 1; zi < worlds.length; zi++) {
     const bx = zi * ZW, py = pathY(bx);
     keep.push({ x: bx, y: py, r: 190 });
-    if (isOpen(worlds[zi])) continue;
+    // Eule Olga steht vor dem Nebel: Mathearbeit der Welt davor (nur Welten mit Abzeichen)
+    const prev = worlds[zi - 1];
+    if (badgeCfg.worlds[prev.id]) {
+      const gx = bx - 210, gy = Math.round(py + 135);
+      keep.push({ x: gx, y: gy, r: 150 });
+      const npc: Npc = { id: `tor.${prev.id}`, kind: 'owl', name: 'Eule Olga', x: gx, y: gy, hello: 'tor.hello.missing', offers: ['pruefung'] };
+      m.npcs.push({ npc, id: npc.id, kind: 'owl', name: npc.name, x: gx, y: gy, worldId: prev.id });
+      addSolid(gx, gy, 20);
+      m.interacts.push({ id: `npc.${npc.id}`, x: gx, y: gy, r: 130, label: 'Mathearbeit', icon: '📝', run: () => hooks.onNpc(npc, prev.id) });
+    }
+    if (isOpen(worlds[zi])) {
+      // Nebel löst sich beim ersten Besuch nach bestandener Mathearbeit sichtbar auf
+      if (!getProgress().seen['gateopen.' + zi]) {
+        const r0 = rng(zi * 31 + 5);
+        for (let y = 120; y < WH; y += 90) m.fogs.push({ x: bx + (r0() - 0.5) * 110, y: y + r0() * 40, s: 0.9 + r0() * 0.8, ph: r0() * 6, dissolve: zi });
+      }
+      continue;
+    }
     m.rects.push({ x: bx - 22, y: 0, w: 44, h: WH });
     m.gates.push({ x: bx - 150, y: py + 90 });
     const r = rng(zi * 31 + 5);
     for (let y = 120; y < WH; y += 90) m.fogs.push({ x: bx + (r() - 0.5) * 110, y: y + r() * 40, s: 0.9 + r() * 0.8, ph: r() * 6 });
-    m.interacts.push({ id: `gate.${zi}`, x: bx - 70, y: py, r: 190, label: 'Nebeltor', icon: '🌫️', run: hooks.onGate });
+    m.interacts.push({ id: `gate.${zi}`, x: bx - 40, y: py, r: 120, label: 'Nebeltor', icon: '🌫️', run: hooks.onGate });
   }
 
   /* ── Bäume, Felsen, Berge, Häuser ── */

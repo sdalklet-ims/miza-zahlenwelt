@@ -6,7 +6,8 @@
 import { h, pick, rnd, shuffle, wait } from '../../core/dom';
 import { getProgress } from '../../core/progress';
 import { getWorld, textOf, type Params } from '../../core/texts';
-import { createShell } from '../../ui/shell';
+import { createShell, type Shell } from '../../ui/shell';
+import type { TaskResult } from './tasks';
 import { digitsOf, NumberGen, type PunkteRule } from './generators';
 import { finish } from './minigames';
 import type { Screen } from '../../core/router';
@@ -113,7 +114,48 @@ export function angelnScreen(done: () => void, again: () => void): Screen {
     }
     if (shell.dead) return;
     const stars = wrong <= 1 ? 3 : wrong <= 4 ? 2 : 1;
-    await finish(shell, 'wald.angeln', stars, wrong === 0 ? 'Kein einziger Fehlgriff!' : `${wrong} Mal daneben gegriffen – aber alle gefangen.`, done, again);
+    await finish(shell, 'wald.angeln', stars, wrong === 0 ? 'Kein einziger Fehlgriff!' : `${wrong} Mal daneben gegriffen – aber alle gefangen.`, done, again, wrong === 0);
   })();
   return { el: shell.el, dispose: () => void (shell.dead = true) };
+}
+
+/** Eine einzelne Fang-Aufgabe (für die Mathearbeit): richtig beim ersten Griff = Punkt */
+export function runFishTask(shell: Shell, lvl: number): Promise<TaskResult> {
+  const gen = new NumberGen(world.games.punkte.levels as PunkteRule[]);
+  const rd = makeRound(pick([...KINDS]), gen, Math.max(2, lvl));
+  const field = h('div', { class: 'pond-field' });
+  const bucket = h('div', { class: 'bucket' }, '🎣');
+  shell.main.replaceChildren(h('div', { class: 'task angeln' }, field, bucket));
+  return new Promise((resolve) => {
+    let tries = 0, solved = false;
+    const slots = shuffle([0, 1, 2, 3, 4]);
+    shell.onHint = () => void shell.speakId(`wald.angeln.hint.${rd.kind}`, rd.params);
+    const fishEls = rd.fish.map((n, i) => {
+      const s = slots[i];
+      const el = h('button', { class: 'fish', style: { left: 40 + (s % 3) * 270 + (s > 2 ? 130 : 0) + 'px', top: 26 + Math.floor(s / 3) * 175 + (i % 2) * 20 + 'px', animationDelay: -i * 0.7 + 's' } },
+        h('span', { class: 'fish-body' }, h('i', { class: 'fish-tail' }), h('i', { class: 'fish-eye' }), h('b', {}, String(n))));
+      el.addEventListener('click', async () => {
+        if (solved || shell.dead) return;
+        if (rd.right(n)) {
+          solved = true;
+          el.classList.add('caught');
+          shell.face('happy');
+          shell.feedback('good', textOf('common.cheer.' + rnd(1, 5)));
+          await wait(1000);
+          if (!shell.dead) resolve({ firstTry: tries === 0, attempts: tries + 1 });
+        } else {
+          tries++;
+          el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
+          shell.face('think');
+          shell.feedback('oops', 'Nicht ganz – schau noch einmal genau hin!');
+          void shell.speakId(`wald.angeln.hint.${rd.kind}`, rd.params);
+          if (tries >= 3) fishEls.find((_, k) => rd.right(rd.fish[k]))?.classList.add('glow');
+        }
+      });
+      field.append(el);
+      return el;
+    });
+    shell.face('neutral');
+    shell.setPrompt(`wald.angeln.${rd.kind}`, rd.params);
+  });
 }

@@ -49,6 +49,10 @@ export interface Progress {
   ride: string | null;
   /** Akkustand (0–100) der Elektro-Fahrzeuge */
   charge: Record<string, number>;
+  /** Fehlerfreie Durchläufe je Spiel ("wald.punkte" → 0..), ab 2 gehört das Abzeichen Mia */
+  badges: Record<string, number>;
+  /** Bestandene Mathearbeiten je Welt (Punkte 4–5) */
+  passed: Record<string, number>;
 }
 
 const KEY = 'mia.progress.v1';
@@ -77,6 +81,8 @@ const defaults = (): Progress => ({
   vehicles: {},
   ride: null,
   charge: {},
+  badges: {},
+  passed: {},
 });
 
 let state: Progress = load();
