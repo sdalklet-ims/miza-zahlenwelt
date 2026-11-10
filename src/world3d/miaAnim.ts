@@ -72,7 +72,31 @@ export interface AnimInput {
   wind?: number;
 }
 
-interface Draw { name: string; flip: boolean; ox: number; oy: number; rot: number; sx: number; sy: number }
+interface Draw { name: string; flip: boolean; ox: number; oy: number; rot: number; sx: number; sy: number; /** Schritt-Phase (rad) für die Vorder-/Rückansicht: Pfoten heben abwechselnd */ step?: number; amp?: number }
+
+/** Für Vorder-/Rückansicht gibt es kein Laufbild: das Standbild wird in Oberkörper und zwei Pfotenhälften zerlegt (nur Ausschnitte, nichts neu gezeichnet). */
+interface Legs { cutY: number; cutX: number }
+const legCache: Record<string, Legs> = {};
+function legsOf(name: string): Legs | null {
+  if (legCache[name]) return legCache[name];
+  const f = frames[name];
+  if (!f || !atlasImg) return null;
+  const cv = document.createElement('canvas'); cv.width = f.w; cv.height = f.h;
+  const c = cv.getContext('2d', { willReadFrequently: true })!;
+  c.drawImage(atlasImg, f.x, f.y, f.w, f.h, 0, 0, f.w, f.h);
+  const d = c.getImageData(0, 0, f.w, f.h).data;
+  let top = f.h, bottom = 0;
+  for (let y = 0; y < f.h; y++) for (let x = 0; x < f.w; x += 2) if (d[(y * f.w + x) * 4 + 3] > 40) { top = Math.min(top, y); bottom = Math.max(bottom, y); }
+  const cutY = Math.round(bottom - (bottom - top) * 0.2);
+  // senkrechter Schnitt: Spalte mit den wenigsten sichtbaren Pixeln im Pfotenbereich nahe der Mitte
+  let best = Math.round(f.w / 2), bestN = 1e9;
+  for (let x = Math.round(f.w * 0.38); x <= Math.round(f.w * 0.62); x++) {
+    let n = 0;
+    for (let y = cutY; y <= bottom; y++) if (d[(y * f.w + x) * 4 + 3] > 40) n++;
+    if (n < bestN) { bestN = n; best = x; }
+  }
+  return (legCache[name] = { cutY, cutX: best });
+}
 interface Layer { group: string; d: Draw }
 
 export class MiaAnimator {
@@ -112,8 +136,9 @@ export class MiaAnimator {
       return { group: 'ride', d: { ...base, name: 'idle_' + (inp.ride === 'bike' ? 0 : 3), rot: tilt, oy: -bob * 2 * Math.min(1, inp.speed) } };
     }
     if (moving) {
-      if (inp.dir === 'down') return { group: 'front', d: { ...base, name: 'front_idle', oy: -bob * 14 * Math.min(1, inp.speed + 0.3), rot: sway * 0.07, ox: sway * 4, sy: 1 - 0.035 * bob } };
-      if (inp.dir === 'up') return { group: 'back', d: { ...base, name: 'back_idle', oy: -bob * 14 * Math.min(1, inp.speed + 0.3), rot: sway * 0.06, ox: sway * 4, sy: 1 - 0.035 * bob } };
+      const amp = Math.min(1, inp.speed + 0.3);
+      if (inp.dir === 'down') return { group: 'front', d: { ...base, name: 'front_idle', step: this.bobT, amp, rot: sway * 0.04 } };
+      if (inp.dir === 'up') return { group: 'back', d: { ...base, name: 'back_idle', step: this.bobT, amp, rot: sway * 0.04 } };
       return { group: 'walk', d: { ...base, name: `walk_right_${Math.floor(this.walkT) % 6}` } };
     }
     // Stehen
@@ -148,12 +173,32 @@ export class MiaAnimator {
   private paint(ctx: CanvasRenderingContext2D, d: Draw, alpha: number) {
     const f = frames[d.name];
     if (!f || !atlasImg) return;
+    if (d.step !== undefined) { const lg = legsOf(d.name); if (lg) return this.paintStep(ctx, d, f, lg, alpha); }
     ctx.save();
     ctx.globalAlpha = alpha;
     ctx.translate(CELL_W / 2 + d.ox, BASE + d.oy);
     ctx.rotate(d.rot);
     ctx.scale(d.flip ? -d.sx : d.sx, d.sy);
     ctx.drawImage(atlasImg, f.x, f.y, f.w, f.h, -CELL_W / 2, -BASE, f.w, f.h);
+    ctx.restore();
+  }
+
+  private paintStep(ctx: CanvasRenderingContext2D, d: Draw, f: FrameDef, lg: Legs, alpha: number) {
+    const p = d.step!, A = 15 * (d.amp ?? 1);
+    const liftL = Math.max(0, Math.sin(p)) * A, liftR = Math.max(0, -Math.sin(p)) * A;
+    const bounce = Math.abs(Math.cos(p)) * 7 * (d.amp ?? 1); // Körper federt mit jedem Schritt
+    const img = atlasImg!;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(CELL_W / 2, BASE);
+    // Pfoten: linke und rechte Hälfte heben abwechselnd
+    const lw = lg.cutX, rw = f.w - lg.cutX, lh = f.h - lg.cutY;
+    ctx.drawImage(img, f.x, f.y + lg.cutY, lw, lh, -CELL_W / 2, -BASE + lg.cutY - liftL, lw, lh);
+    ctx.drawImage(img, f.x + lg.cutX, f.y + lg.cutY, rw, lh, -CELL_W / 2 + lg.cutX, -BASE + lg.cutY - liftR, rw, lh);
+    // Oberkörper (überlappt den Schnitt um 5 px), wiegt sich zur Seite des angehobenen Beins
+    ctx.translate(0, -bounce * 0.4);
+    ctx.rotate(d.rot + Math.sin(p) * 0.035);
+    ctx.drawImage(img, f.x, f.y, f.w, lg.cutY + 5, -CELL_W / 2, -BASE, f.w, lg.cutY + 5);
     ctx.restore();
   }
 
