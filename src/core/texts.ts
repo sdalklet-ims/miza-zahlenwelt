@@ -76,4 +76,6 @@ export const mealCfg = files['/content/meals.json'] as { meals: MealDef[] };
 
 export interface PetKindDef { id: string; name: string; icon: string; price: number; likes: string[]; names: string[] }
 export interface PetFoodDef { id: string; name: string; icon: string; price: number; fill: number }
+export interface TierGadget { id: string; animal: string; name: string; desc: string; stars: number; fav: boolean; anim: string; emoji: string; reaction: string }
+export const tierCfg = files['/content/tierhaus.json'] as { gadgets: TierGadget[] };
 export const petCfg = files['/content/pets.json'] as { kinds: PetKindDef[]; foods: PetFoodDef[] };

@@ -136,3 +136,9 @@ Das Fenster wird ganz ausgefüllt: Die 3D-Welt nutzt die komplette Fläche (brei
 - **Fallendes Laub** im Wald, **Blütenblätter** auf der Wiese. Am **Angelteich** springen ab und zu Fische (Spritzer), **Truhen** glitzern, der **Pilzring** lässt Sporen aufsteigen.
 - Tiere **wiegen sich** leicht und **hüpfen vor Freude**, wenn Mia näher kommt.
 - Robustheit: Zweimal kurz hintereinander „Zurück“ baut nicht mehr zwei Welten gleichzeitig auf (`enterSeq` in `worldScreen.ts`).
+
+## Tierhaus
+Im Haus gibt es (ab „bewohnbar“) die Stelle **Tierhaus ansehen** 🏠. Die Zoom-Ansicht zeigt für jedes gekaufte Haustier (Meerschweinchen, Kaninchen, Hamster, Wellensittich, siehe `content/pets.json`) eine Wohnnische an der Rückwand. Die Tiere laufen frei herum, schlafen in der Nische, grüßen beim Antippen und spielen mit den Gadgets. Hungrige Tiere spielen nicht, sondern zeigen 🍽️.
+- **Gadgets** stehen in `content/tierhaus.json` (Tier oder `alle`, Name, Beschreibung, `stars`, `fav`, `anim`, Reaktionstext). Sie schalten sich **automatisch ab einer Gesamt-Sternenzahl** frei (Sterne werden nicht ausgegeben) und erscheinen, sobald ein passendes Tier wohnt. Die Sternenzahlen lassen sich dort leicht ändern.
+- Pro Tier ein Lieblingsstück (`fav`: Herzchen, Hüpfer, Text) und ein weiteres; dazu Laternen-Girlande, Mini-Bühne und Futterbrunnen für alle.
+- Neu freigeschaltete Stücke werden beim Öffnen angekündigt (`tierSeen` im Fortschritt). Code: `src/ui/tierhaus.ts`, `src/core/tierhaus.ts`. Dev: `window.__tier()` öffnet die Ansicht.

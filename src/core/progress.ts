@@ -53,6 +53,8 @@ export interface Progress {
   badges: Record<string, number>;
   /** Aquarium: Tiere je Art, Futterportionen, Sättigung (0–100 zum Zeitpunkt t) */
   aqua: { fish: Record<string, number>; food: number; fill: number; t: number };
+  /** Tierhaus: Gadgets, deren Freischaltung schon gezeigt wurde */
+  tierSeen: string[];
   /** Bestandene Mathearbeiten je Welt (Punkte 4–5) */
   passed: Record<string, number>;
 }
@@ -85,6 +87,7 @@ const defaults = (): Progress => ({
   charge: {},
   badges: {},
   aqua: { fish: {}, food: 0, fill: 80, t: Date.now() },
+  tierSeen: [],
   passed: {},
 });
 

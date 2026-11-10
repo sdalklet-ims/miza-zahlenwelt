@@ -42,6 +42,8 @@ import { batteryEmpty, chargeAll, chargeOf, currentRide, drainBattery, needsChar
 import { openCarShop } from '../ui/carshop';
 import { openBadgeBook } from '../ui/badges';
 import { openAquarium } from '../ui/aquarium';
+import { openTierhaus } from '../ui/tierhaus';
+import { petUnlocked } from '../core/pet';
 import { aquaColors, aquaHungry, fishFood } from '../core/aquarium';
 import { aquaLook } from '../world3d/aquaShared';
 import { examPassed, gameBadges, missingBadges, allBadges } from '../core/badges';
@@ -145,6 +147,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
     if (hs.built.radio && !model.interacts.some((i) => i.id === 'radio')) model.interacts.push({ id: 'radio', x: plot.x - 125, y: plot.y - 120, r: 150, label: 'Radio', icon: '📻', run: () => openRadio() });
     aquaLook.colors = aquaColors();
     if (hs.built.aquarium && !model.interacts.some((i) => i.id === 'aquarium')) model.interacts.push({ id: 'aquarium', x: plot.x - 225, y: plot.y - 78, r: 120, label: 'Aquarium ansehen', icon: '🐠', run: () => openAquarium() });
+    if (petUnlocked() && !model.interacts.some((i) => i.id === 'tierhaus')) model.interacts.push({ id: 'tierhaus', x: plot.x + 215, y: plot.y - 100, r: 120, label: 'Tierhaus ansehen', icon: '🏠', run: () => openTierhaus() });
     if (hs.built.bett && !model.interacts.some((i) => i.id === 'bed')) model.interacts.push({ id: 'bed', x: plot.x - 200, y: plot.y + 60, r: 110, label: 'Schlafen', icon: '😴', run: () => startSleep() });
   }
   syncHouse(false);
