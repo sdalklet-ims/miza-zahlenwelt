@@ -234,6 +234,16 @@ def main():
         sys.exit(f'Laufzyklus: erwartet 6 Frames, gefunden {len(merged)}: {merged}')
     walk = [tight(walk_full[:, a:b].copy()) for a, b in merged]
 
+    # ── Laufen nach unten/oben: je 6 Einzelbilder (schon transparent, harte Alpha-Kante) ──
+    def load_dir(name):
+        import glob
+        fs = sorted(glob.glob(os.path.join(SRC, name, '*.png')))
+        if len(fs) != 6:
+            sys.exit(f'{name}: erwartet 6 Bilder, gefunden {len(fs)}')
+        return [tight(np.array(Image.open(f).convert('RGBA'))) for f in fs]
+    walk_down = load_dir('Mia_laeuft_nach_unten')
+    walk_up = load_dir('Mia_laeuft_nach_oben')
+
     # ── Maßstab über Iris-Durchmesser ──
     def med(imgs):
         v = [iris_size(i) for i in imgs]
@@ -269,6 +279,23 @@ def main():
     for i, im in enumerate(rows[3]): add(f'celebrate_{i}', im, s_pose)
     add('front_idle', sheet_fig['front'], s_sheet)
     add('back_idle', sheet_fig['back'], s_sheet)
+    # Maßstab Laufen unten/oben: Halstuchbreite gegen front_idle/back_idle (gleiche Ansicht, schon im Gesamtmaßstab)
+    def scarf_w(img):
+        r, g, b, a = [img[..., i].astype(int) for i in range(4)]
+        m = (a > 200) & (b > r + 50) & (b > g + 10)
+        xs = np.where(m.any(axis=0))[0]
+        return float(xs.max() - xs.min() + 1) if len(xs) else 0.0
+    s_down = scarf_w(F['front_idle']) / float(np.median([scarf_w(i) for i in walk_down]))
+    def head_w(img):  # Breite von Kopf und Ohren (obere 35 % der Figur); in der Rückansicht ragt dort nichts anderes heraus
+        a = img[..., 3] > 40
+        ys = np.where(a.any(axis=1))[0]
+        top = a[ys.min(): ys.min() + int((ys.max() - ys.min()) * 0.35)]
+        xs = np.where(top.any(axis=0))[0]
+        return float(xs.max() - xs.min() + 1)
+    s_up = head_w(F['back_idle']) / float(np.median([head_w(i) for i in walk_up]))
+    report['scale_updown'] = {'down': s_down, 'up': s_up, 'note': 'unten: Halstuchbreite, oben: Kopfbreite – jeweils gegen front_idle/back_idle'}
+    for i, im in enumerate(walk_down): add(f'walk_down_{i}', im, s_down)
+    for i, im in enumerate(walk_up): add(f'walk_up_{i}', im, s_up)
     add('side_idle', sheet_fig['side'], s_sheet)
     add('three_quarter', sheet_fig['three_quarter'], s_sheet)
 
@@ -285,6 +312,8 @@ def main():
         ('paw', [f'paw_{i}' for i in range(5)]),
         ('sneak', [f'sneak_{i}' for i in range(5)]),
         ('celebrate', [f'celebrate_{i}' for i in range(5)]),
+        ('walk_down', [f'walk_down_{i}' for i in range(6)]),
+        ('walk_up', [f'walk_up_{i}' for i in range(6)]),
         ('front_idle', ['front_idle']),
         ('back_idle', ['back_idle']),
         ('side_idle', ['side_idle']),
@@ -296,7 +325,15 @@ def main():
         # gemeinsamer Horizontal-Anker je Animation: mittlerer Schwerpunkt; Bodenlinie: tiefster Fußpunkt
         cxs = []
         for n in names:
-            a = F[n][..., 3].astype(np.float32)
+            im0 = F[n]
+            if an in ('walk_down', 'walk_up'):
+                # Körperachse = Halstuchmitte (der Schwanz ragt seitlich heraus und würde den Schwerpunkt verschieben)
+                r, g, b, a = [im0[..., i].astype(int) for i in range(4)]
+                m = (a > 200) & (b > r + 50) & (b > g + 10)
+                xs0 = np.where(m.any(axis=0))[0]
+                cxs.append(float((xs0.min() + xs0.max()) / 2) if len(xs0) else im0.shape[1] / 2)
+                continue
+            a = im0[..., 3].astype(np.float32)
             xs = np.arange(a.shape[1])[None, :]
             cxs.append(float((a * xs).sum() / a.sum()))
         for n, cx in zip(names, cxs):
@@ -364,7 +401,7 @@ def main():
     atlas_json = {
         'image': 'atlas.png', 'cell': {'w': cell_w, 'h': cell_h}, 'baseline': BASE, 'scale_note': 'alle Frames gleicher Maßstab (Iris-Messung)',
         'frames': frames_json, 'animations': anims_json, 'portraits': portraits,
-        'fps': {'walk_right': 12, 'idle': 4, 'paw': 6, 'sneak': 8, 'celebrate': 10},
+        'fps': {'walk_right': 12, 'walk_down': 12, 'walk_up': 12, 'idle': 4, 'paw': 6, 'sneak': 8, 'celebrate': 10},
     }
     with open(os.path.join(OUT, 'atlas.json'), 'w', encoding='utf-8') as f:
         json.dump(atlas_json, f, ensure_ascii=False, indent=2)

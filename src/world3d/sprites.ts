@@ -93,7 +93,7 @@ export function createMiaSprite(_acc?: string[]): MiaSprite {
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.generateMipmaps = false;
   tex.minFilter = THREE.LinearFilter;
-  const H = MIA_UNITS, W = (H * CELL_W) / CELL_H, up = H * ((CELL_H - BASE) / CELL_H);
+  const H = (MIA_UNITS * CELL_H) / 320, W = (H * CELL_W) / CELL_H, up = H * ((CELL_H - BASE) / CELL_H);
   const bb = billboard(tex, W, H, up);
   // Silhouette: erscheint nur, wo Mia hinter etwas steht
   const sil = new THREE.Mesh(bb.mesh.geometry, new THREE.MeshBasicMaterial({ map: tex, color: '#ffcf80', transparent: true, opacity: 0.45, alphaTest: 0.04, depthFunc: THREE.GreaterDepth, depthWrite: false, toneMapped: false, side: THREE.DoubleSide }));
