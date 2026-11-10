@@ -6,6 +6,8 @@ import { layers } from './stage';
 import { onWeather, weather } from '../core/weather';
 import { fullness, hungerLevel } from '../core/hunger';
 import { badgeChipText } from './badges';
+import { openTierhaus } from './tierhaus';
+import { pets, petUnlocked } from '../core/pet';
 import { chargeOf, currentRide, hasBattery, ownedAny } from '../core/vehicles';
 
 export interface HudHandlers {
@@ -24,6 +26,7 @@ let starsEl: HTMLElement;
 let coinEl: HTMLElement;
 let houseEl: HTMLElement;
 let packEl: HTMLElement | null = null;
+let tierEl: HTMLElement | null = null;
 let hungerEl: HTMLElement;
 let rideEl: HTMLElement;
 let batEl: HTMLElement;
@@ -58,6 +61,7 @@ export const hud = {
       batEl,
       rideEl,
       (packEl = btn('🎒', 'Rucksack', handlers.onPack)),
+      (tierEl = btn('🏠', 'Tierhaus', () => openTierhaus())),
       btn('🗺️', 'Karte', handlers.onMap),
       btn('🎩', 'Album', handlers.onAlbum),
       btn('⚙️', 'Einstellungen', handlers.onSettings)
@@ -77,6 +81,7 @@ export const hud = {
     backBtn.onclick = fn;
   },
   refresh() {
+    if (tierEl) tierEl.style.display = petUnlocked() && pets().length > 0 ? '' : 'none'; // erst sichtbar, wenn ein Haustier eingezogen ist
     const set = (e: HTMLElement | undefined, t: string) => {
       if (!e || e.textContent === t) return;
       const had = !!e.textContent;

@@ -3,7 +3,9 @@ import { getProgress, mutate } from './progress';
 
 export const items: RewardItem[] = common.rewards.items;
 
-export const totalStars = () => Object.values(getProgress().stars).reduce((s, v) => s + v, 0);
+/** Sterne gibt es nur durch Spiele und Prüfungen; frühere Sterne für Entdecker-Sterne, Streicheln und Hausbau zählen nicht mehr. */
+export const isGameStarKey = (k: string) => !/\.entdecker\.|\.haus$/.test(k);
+export const totalStars = () => Object.entries(getProgress().stars).filter(([k]) => isGameStarKey(k)).reduce((s, [, v]) => s + v, 0);
 
 export const isUnlocked = (it: RewardItem) => totalStars() >= it.stars;
 

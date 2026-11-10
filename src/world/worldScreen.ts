@@ -233,7 +233,6 @@ export async function enterWorld(opts: EnterOpts = {}) {
   function milestone(stage: number) {
     const info = [null, ['🏗️', 'Der Rohbau steht!', 'wald.haus.roh'], ['🏡', 'Mias Haus ist bewohnbar!', 'wald.haus.done'], ['🏆', 'Alles gebaut!', 'wald.haus.master']][stage] as [string, string, string];
     if (stage >= 2) confetti();
-    award('wald.haus', stage);
     const close = openModal({ title: info[1], content: h('div', { class: 'milestone' }, h('div', { class: 'big' }, info[0]), h('p', {}, textOf(info[2])), h('button', { class: 'btn', onclick: () => close() }, 'Weiter bauen!')) });
     speak(info[2]);
   }
@@ -347,7 +346,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
     return { b, ...v };
   });
 
-  const starViews = model.stars.map((s) => {
+  const starViews = ([] as typeof model.stars).map((s) => { // Entdecker-Sterne liegen nicht mehr herum: Sterne gibt es nur durch Spiele
     const m = M.createStar();
     m.position.set(s.x * S, heightAt(s.x, s.y) + 1.1, s.y * S);
     m.visible = !s.got;
@@ -445,7 +444,6 @@ export async function enterWorld(opts: EnterOpts = {}) {
     if (!getProgress().discovered[id]) {
       mutate((p) => void (p.discovered[id] = true));
       speak(`${wid}.${kind}.pet`);
-      award(`${wid}.entdecker.${kind}`, 1);
     } else speak(`${wid}.${kind}.again`);
   }
 

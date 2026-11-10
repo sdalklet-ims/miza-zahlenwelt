@@ -140,5 +140,5 @@ export function resetProgress() {
 
 export const worldStars = (worldId: string) =>
   Object.entries(state.stars)
-    .filter(([k]) => k.startsWith(worldId + '.'))
+    .filter(([k]) => k.startsWith(worldId + '.') && !/\.entdecker\.|\.haus$/.test(k))
     .reduce((s, [, v]) => s + v, 0);

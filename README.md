@@ -142,3 +142,5 @@ Im Haus gibt es (ab „bewohnbar“) die Stelle **Tierhaus ansehen** 🏠. Die Z
 - **Gadgets** stehen in `content/tierhaus.json` (Tier oder `alle`, Name, Beschreibung, `stars`, `fav`, `anim`, Reaktionstext). Sie schalten sich **automatisch ab einer Gesamt-Sternenzahl** frei (Sterne werden nicht ausgegeben) und erscheinen, sobald ein passendes Tier wohnt. Die Sternenzahlen lassen sich dort leicht ändern.
 - Pro Tier ein Lieblingsstück (`fav`: Herzchen, Hüpfer, Text) und ein weiteres; dazu Laternen-Girlande, Mini-Bühne und Futterbrunnen für alle.
 - Neu freigeschaltete Stücke werden beim Öffnen angekündigt (`tierSeen` im Fortschritt). Code: `src/ui/tierhaus.ts`, `src/core/tierhaus.ts`. Dev: `window.__tier()` öffnet die Ansicht.
+- Zugang: fester Knopf 🏠 **Tierhaus** in der oberen Leiste (erscheint, sobald ein Haustier eingezogen ist), zusätzlich die Stelle im Haus.
+- **Sterne gibt es nur durch Spiele und Prüfungen.** Die Entdecker-Sterne in der Welt, Sterne fürs erste Streicheln und fürs Hausbauen sind abgeschafft; alte Sterne dieser Art zählen nicht mehr (`isGameStarKey` in `src/core/rewards.ts`).
