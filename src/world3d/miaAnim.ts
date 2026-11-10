@@ -35,7 +35,7 @@ const portraitUrls: Record<Face, string> = {
 type FrameDef = { x: number; y: number; w: number; h: number };
 const frames = atlas.frames as unknown as Record<string, FrameDef>;
 
-type AccPlace = { sx: number; sy: number; sw: number; sh: number; x: number; y: number; w: number; h: number };
+type AccPlace = { sx: number; sy: number; sw: number; sh: number; x: number; y: number; w: number; h: number; rot?: number };
 const accFrames = (accData as unknown as { frames: Record<string, Record<string, AccPlace>> }).frames;
 let accImg: HTMLImageElement | null = null;
 /** Welche Mia-Items welches Accessoire-Bild bedeuten (Reihenfolge = Zeichenreihenfolge: Kapuze, Mütze, Brille) */
@@ -48,7 +48,13 @@ function drawOverlays(ctx: CanvasRenderingContext2D, name: string, ox: number, o
   for (const [id, key] of ACC_ORDER) {
     const p = e[key];
     if (!p || !acc.includes(id)) continue;
-    ctx.drawImage(accImg, p.sx, p.sy, p.sw, p.sh, ox + p.x * k, oy + p.y * k, p.w * k, p.h * k);
+    if (p.rot) { // leicht nach vorn gekippt (Mütze in der Seitenansicht)
+      ctx.save();
+      ctx.translate(ox + (p.x + p.w / 2) * k, oy + (p.y + p.h / 2) * k);
+      ctx.rotate(p.rot);
+      ctx.drawImage(accImg, p.sx, p.sy, p.sw, p.sh, (-p.w / 2) * k, (-p.h / 2) * k, p.w * k, p.h * k);
+      ctx.restore();
+    } else ctx.drawImage(accImg, p.sx, p.sy, p.sw, p.sh, ox + p.x * k, oy + p.y * k, p.w * k, p.h * k);
   }
 }
 

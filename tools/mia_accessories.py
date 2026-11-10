@@ -25,7 +25,7 @@ VIEWS_OF = lambda n: ('front' if n.startswith('walk_down') or n in ('front_idle'
 
 # Abstimmwerte (Anteile an Kopfbreite Hw / Kopfhöhe Hh / Irisdurchmesser d)
 TUNE = {
-    'hat':   {'right': dict(w=1.02, rim=0.55, eye=1.5, dx=-0.05), 'front': dict(w=0.98, rim=0.5, eye=1.7, dx=0.0), 'back': dict(w=0.98, rim=0.6, eye=0, dx=0.0)},
+    'hat':   {'right': dict(w=1.02, rim=0.55, eye=0.35, dx=-0.03, rot=0.17), 'front': dict(w=0.98, rim=0.5, eye=1.7, dx=0.0), 'back': dict(w=0.98, rim=0.6, eye=0, dx=0.0)},
     'cape':  {'right': dict(hole=0.78, cy=0.60, dx=0.10), 'front': dict(hole=0.92, cy=0.60, dx=0.0), 'back': dict(w=1.22, top=0.10)},
     'glasses': {'right': dict(lens=3.0, dx=0.15, dy=0.0), 'front': dict(w=2.15, dy=0.05)},
 }
@@ -213,7 +213,7 @@ def main():
                 tr, (ox, oy) = trim(cell)
                 src = cell_of(a, v if not (a == 'glasses' and v == 'right') else 'right', i)
                 entry[a] = {'sx': src['x'] + int(ox), 'sy': src['y'] + int(oy), 'sw': int(tr.shape[1]), 'sh': int(tr.shape[0]),
-                            'x': round(p[0], 1), 'y': round(p[1], 1), 'w': round(p[2], 1), 'h': round(p[3], 1)}
+                            'x': round(p[0], 1), 'y': round(p[1], 1), 'w': round(p[2], 1), 'h': round(p[3], 1), 'rot': TUNE[a][v].get('rot', 0)}
             result[n] = {'view': v, **entry}
             review.append((n, img, entry, geo))
     with open(os.path.join(OUT, 'accessories.json'), 'w', encoding='utf-8') as f:
@@ -235,6 +235,12 @@ def main():
                     continue
                 d = e[a]
                 piece = atl.crop((d['sx'], d['sy'], d['sx'] + d['sw'], d['sy'] + d['sh'])).resize((max(1, int(d['w'])), max(1, int(d['h']))), Image.LANCZOS)
+                if d.get('rot'):
+                    import math
+                    pw, ph = piece.size
+                    big = piece.rotate(-math.degrees(d['rot']), expand=True, resample=Image.BICUBIC)
+                    d = dict(d, x=d['x'] - (big.size[0] - pw) / 2, y=d['y'] - (big.size[1] - ph) / 2)
+                    piece = big
                 px, py = x0 + int(d['x']), y0 + int(d['y'])
                 sheet2 = Image.new('RGBA', sheet.size, (0, 0, 0, 0)); sheet2.alpha_composite(piece, (max(0, px), max(0, py))); sheet.alpha_composite(sheet2)
         sheet.convert('RGB').resize((W * 6 // 2, (H + M))).save(os.path.join(OUT, f'_acc_review_{"_".join(combo)}.png'))
