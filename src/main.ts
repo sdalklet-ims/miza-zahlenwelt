@@ -32,7 +32,7 @@ show(
     void enterWorld();
     speak('common.start');
   }),
-  { hud: false }
+  { hud: false, framed: false }
 );
 
 if ('serviceWorker' in navigator && import.meta.env.PROD) {

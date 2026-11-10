@@ -40,8 +40,15 @@ export function createStage3D(canvas: HTMLCanvasElement, pixelRatio: number): St
   scene.background = HORIZON;
   scene.fog = new THREE.Fog(HORIZON, 74, 135);
 
-  const asp = VW / VH;
+  let asp = VW / VH;
   const camera = new THREE.OrthographicCamera((-VIEW_H * asp) / 2, (VIEW_H * asp) / 2, VIEW_H / 2, -VIEW_H / 2, 1, 260);
+  const frustum = () => {
+    camera.left = (-view * asp) / 2; camera.right = (view * asp) / 2; camera.top = view / 2; camera.bottom = -view / 2;
+    camera.updateProjectionMatrix();
+  };
+  // Bühne wird größer/kleiner (Fenstergröße): Auflösung und Bildverhältnis nachziehen
+  const onResize = () => { asp = VW / VH; renderer.setSize(VW, VH, false); frustum(); };
+  window.addEventListener('stage-resize', onResize);
 
   /* Licht: warme Sonne + Himmelslicht */
   scene.add(new THREE.HemisphereLight('#ffffff', '#9ab87a', 1.55));
@@ -167,8 +174,7 @@ export function createStage3D(canvas: HTMLCanvasElement, pixelRatio: number): St
     tick(t) {
       if (Math.abs(view - viewTarget) > 0.002) {
         view += (viewTarget - view) * 0.07;
-        camera.left = (-view * asp) / 2; camera.right = (view * asp) / 2; camera.top = view / 2; camera.bottom = -view / 2;
-        camera.updateProjectionMatrix();
+        frustum();
       }
       waveTex.offset.y = -t * 0.12;
       waveTex.offset.x = Math.sin(t * 0.4) * 0.05;
@@ -184,6 +190,7 @@ export function createStage3D(canvas: HTMLCanvasElement, pixelRatio: number): St
       return ray.ray.intersectPlane(plane, tmp) ? { x: tmp.x / S, y: tmp.z / S } : null;
     },
     dispose() {
+      window.removeEventListener('stage-resize', onResize);
       renderer.dispose();
       scene.traverse((o) => {
         const m = o as THREE.Mesh;

@@ -1,6 +1,11 @@
-/** Feste Bühne 1180×820, skaliert auf jedes Fenster (iPad quer). */
-export const W = 1180;
-export const H = 820;
+/**
+ * Bühne: Grundmaß 1180×820 (iPad quer). Das Fenster wird ganz ausgefüllt: Die Bühne wächst in der längeren Richtung mit (W/H sind die aktuellen
+ * logischen Maße). Die 3D-Welt nutzt die ganze Fläche, Menüs und Aufgaben-Bildschirme bleiben 1180×820 und stehen mittig.
+ */
+export const BASE_W = 1180;
+export const BASE_H = 820;
+export let W = BASE_W;
+export let H = BASE_H;
 
 export interface Layers {
   stage: HTMLElement;
@@ -27,8 +32,13 @@ export function initStage(): Layers {
   const fit = () => {
     const vw = window.visualViewport?.width ?? window.innerWidth;
     const vh = window.visualViewport?.height ?? window.innerHeight;
-    scale = Math.min(vw / W, vh / H);
+    scale = Math.min(vw / BASE_W, vh / BASE_H);
+    W = Math.max(BASE_W, Math.round(vw / scale));
+    H = Math.max(BASE_H, Math.round(vh / scale));
+    stage.style.width = W + 'px';
+    stage.style.height = H + 'px';
     stage.style.transform = `translate(-50%,-50%) scale(${scale})`;
+    window.dispatchEvent(new Event('stage-resize'));
   };
   fit();
   window.addEventListener('resize', fit);

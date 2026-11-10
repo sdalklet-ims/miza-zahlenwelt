@@ -12,6 +12,8 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 #screen { z-index: 1; } #hud { z-index: 5; pointer-events: none; } #subs { z-index: 8; pointer-events: none; } #overlay { z-index: 10; pointer-events: none; }
 #overlay > * { pointer-events: auto; }
 #screen > * { position: absolute; inset: 0; }
+/* Menüs und Aufgaben-Bildschirme behalten ihr festes Maß 1180×820 und stehen mittig auf der (größeren) Bühne */
+#screen > .framed { inset: auto; left: 50%; top: 50%; width: 1180px; height: 820px; margin: -410px 0 0 -590px; }
 .screen-in { animation: fadeIn .35s ease; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 

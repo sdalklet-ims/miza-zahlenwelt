@@ -26,5 +26,5 @@ export function startScreen(onStart: () => void): Screen {
     h('div', { class: 'start-mia' }, createMiaView({ height: 300, dir: 'down', portrait: false }).el),
     h('div', { class: 'start-tap' }, 'Tippe zum Starten')
   );
-  return { el };
+  return { el, bg: '#a9e0f7' };
 }

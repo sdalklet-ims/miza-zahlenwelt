@@ -23,7 +23,7 @@ import { sfx, setStation, currentStation } from '../audio/music';
 import { openRadio } from '../ui/radio';
 import { openModal } from '../ui/modal';
 import { createHouse3D } from '../world3d/house';
-import { getScale, layers, W as VW } from '../ui/stage';
+import { getScale, layers, W as VW, H as VH } from '../ui/stage';
 import { stationStarters, type Npc, type Offer } from '../stations';
 import { buildWorld, PROC_KINDS, type Bush, type Critter, type Interact } from './world';
 import { WW, WH, S, heightAt, zoneIndex, riverOf } from './terrain';
@@ -100,7 +100,9 @@ export async function enterWorld(opts: EnterOpts = {}) {
   const controls = createControls(() => act());
   const banner = h('div', { class: 'zone-banner' });
   const rainTint = h('div', { class: 'rain-tint' });
-  const rainCv = h('canvas', { class: 'rain-cv', width: 1180, height: 820 });
+  const rainCv = h('canvas', { class: 'rain-cv', width: VW, height: VH });
+  const sizeRain = () => { rainCv.width = VW; rainCv.height = VH; };
+  window.addEventListener('stage-resize', sizeRain);
   const el = h('div', { class: 'worldscreen' }, cv, rainTint, rainCv, labels, radar, banner, controls.el);
   const pixelRatio = () => clamp(getScale() * (window.devicePixelRatio || 1), 1, 2);
   const stage = createStage3D(cv, pixelRatio());
@@ -262,7 +264,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
     scene.add(umbrella);
   }
   const rainCtx = rainCv.getContext('2d')!;
-  const drops = Array.from({ length: 260 }, () => ({ x: Math.random() * 1180, y: Math.random() * 820, v: 700 + Math.random() * 500, l: 14 + Math.random() * 16 }));
+  const drops = Array.from({ length: 260 }, () => ({ x: Math.random() * 1500, y: Math.random() * 900, v: 700 + Math.random() * 500, l: 14 + Math.random() * 16 }));
   let umbT = 0;
   let charging: { x: number; y: number } | null = null, chargeSound = 0, lastBat = 100;
   const chargeBar = h('div', { class: 'charge-bar off' }, h('span', {}, '🔋 Akku lädt …'), h('div', { class: 'cb-track' }, h('i', {})));
@@ -778,7 +780,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
       const covered = houseInside && isBuilt('dach');
       const lvl = covered ? 0 : weather.level;
       rainTint.style.opacity = String(lvl * 0.22);
-      rainCtx.clearRect(0, 0, 1180, 820);
+      rainCtx.clearRect(0, 0, VW, VH);
       if (lvl > 0.03) {
         rainCtx.strokeStyle = 'rgba(200,225,255,0.65)';
         rainCtx.lineWidth = 2;
@@ -787,7 +789,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
         for (let i = 0; i < n; i++) {
           const d = drops[i];
           d.y += d.v / 60; d.x -= d.v / 60 * 0.18;
-          if (d.y > 820 || d.x < -20) { d.y = -30; d.x = Math.random() * 1250; }
+          if (d.y > VH || d.x < -20) { d.y = -30; d.x = Math.random() * (VW + 80); }
           rainCtx.moveTo(d.x, d.y); rainCtx.lineTo(d.x + d.l * 0.18, d.y - d.l);
         }
         rainCtx.stroke();
@@ -891,9 +893,9 @@ export async function enterWorld(opts: EnterOpts = {}) {
       const dd = Math.hypot(plot.x - st.x, plot.y - st.y);
       v3.set(plot.x * S, 2.5, plot.y * S);
       const pp = stage.project(v3);
-      if (dd > 450 && (pp.x < 80 || pp.x > VW - 80 || pp.y < 110 || pp.y > 720)) {
-        const cx = VW / 2, cy = 410, a = Math.atan2(pp.y - cy, pp.x - cx);
-        radar.style.transform = `translate(${clamp(cx + Math.cos(a) * 540, 70, VW - 70)}px, ${clamp(cy + Math.sin(a) * 330, 120, 700)}px)`;
+      if (dd > 450 && (pp.x < 80 || pp.x > VW - 80 || pp.y < 110 || pp.y > VH - 100)) {
+        const cx = VW / 2, cy = VH / 2, a = Math.atan2(pp.y - cy, pp.x - cx);
+        radar.style.transform = `translate(${clamp(cx + Math.cos(a) * 540, 70, VW - 70)}px, ${clamp(cy + Math.sin(a) * (VH * 0.4), 120, VH - 120)}px)`;
         (radar.firstChild as HTMLElement).style.transform = `rotate(${a * 57.3}deg)`;
         (radar.lastChild as HTMLElement).textContent = `🏠 Zuhause · ${Math.round(dd / 50)} m`;
         showRadar = true;
@@ -922,6 +924,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
       dead = true;
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', fit);
+      window.removeEventListener('stage-resize', sizeRain);
       controls.dispose();
       savePos();
       stage.dispose();
@@ -934,7 +937,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
   stage.streamChunks(st.x, st.y, 30); // die nächsten Kacheln sofort, der Rest läuft nach
   if (import.meta.env.DEV) (window as unknown as { __mia: unknown; __w: unknown }).__mia = st;
   if (import.meta.env.DEV) (window as unknown as { __w: unknown }).__w = { weather, forceRain };
-  show(screen, { back: null });
+  show(screen, { back: null, framed: false });
   if (!getProgress().seen.goal) {
     mutate((p) => void (p.seen.goal = true));
     speak('wald.haus.goal');

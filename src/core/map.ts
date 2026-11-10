@@ -145,5 +145,5 @@ export function mapScreen(): Screen {
     modules[s.w.id].enter();
   }
 
-  return { el, dispose: () => void (dead = true) };
+  return { el, bg: '#8ed3ee', dispose: () => void (dead = true) };
 }

@@ -1,0 +1,45 @@
+{
+  "character": "Mia",
+  "style": "hand-drawn cartoon, dark brown outlines, colored-pencil texture",
+  "recommended_usage": "overlay accessory sheets placed above Mia sprites in code",
+  "assets": {
+    "hat": {
+      "file": "hat/mia_hat_red_zipfel_overlay_4dir_6frames.png",
+      "type": "overlay_spritesheet",
+      "rows": [
+        "down/front",
+        "up/back",
+        "left",
+        "right"
+      ],
+      "columns": 6,
+      "notes": "Plain hat overlay without cat ears; recommended production file."
+    },
+    "sunglasses": {
+      "file": "sunglasses/mia_sunglasses_round_overlay_3dir_6frames.png",
+      "type": "overlay_spritesheet",
+      "rows": [
+        "down/front",
+        "left",
+        "right"
+      ],
+      "columns": 6,
+      "notes": "No dedicated back row included because sunglasses are not visible from full back view."
+    },
+    "raincape": {
+      "file": "raincape/mia_raincape_yellow_hood_overlay_4dir_6frames.png",
+      "type": "overlay_spritesheet",
+      "rows": [
+        "down/front",
+        "up/back",
+        "left",
+        "right"
+      ],
+      "columns": 6,
+      "notes": "Includes hood for head protection."
+    }
+  },
+  "optional": {
+    "hat_with_ears_variant": "_optional/mia_hat_red_zipfel_with_ears_variant_4dir_6frames.png"
+  }
+}

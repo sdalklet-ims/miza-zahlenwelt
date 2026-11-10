@@ -117,3 +117,6 @@ Weichere Knöpfe und Hover, Münz-/Sterne-Anzeige „hüpft“ bei Änderung, Zi
 - **Eule Olga am Nebeltor** (am Ende jeder Welt): Fehlen Abzeichen, zählt sie auf, welche. Sind alle da, startet sie die **Mathearbeit**: 5 Aufgaben, **eine aus jedem Spiel** der Welt (`src/stations/exam.ts`), **mindestens 4 Punkte** (Punkt = beim ersten Versuch richtig), also ein Fehler ist erlaubt. Bei zu wenig gibt es Zuspruch und beliebig viele neue Versuche. Bestanden = Meister-Abzeichen, Sterne, Münzen, die **nächste Welt ist frei** und der Nebel löst sich sichtbar auf.
 - Die Test-Schalter in den Einstellungen („Wiese/Fluss freischalten“) gibt es weiter. Entwicklung: `window.__examAuto = 4` im Browser lässt die ersten 4 Prüfungsaufgaben als richtig zählen.
 - **Autohaus und Fahrzeuge** gibt es erst ab der Wiese (Waschbär Rocky), Ladestationen ab der Wiese (und eine am Bauplatz).
+
+## Vollbild
+Das Fenster wird ganz ausgefüllt: Die 3D-Welt nutzt die komplette Fläche (breiter Bildschirm = mehr Welt zu sehen), Menüs, Karte und Aufgaben-Bildschirme bleiben 1180×820 und stehen mittig (`src/ui/stage.ts`, Klasse `.framed`). Auf dem iPad im Querformat bleibt alles wie vorher; für Vollbild am PC F11 drücken.
