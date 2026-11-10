@@ -2,7 +2,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 const house = JSON.parse(readFileSync('content/house.json', 'utf-8'));
 const now = Date.now();
-const core = Object.fromEntries(house.core.map((id) => [id, true]));
+const core = Object.fromEntries([...house.core, 'bett', 'aquarium'].map((id) => [id, true]));
 const data = {
   v: 1, stars: { 'wald.punkte': 3, 'wald.steine': 3 }, levels: {}, found: [], equipped: { 'mia.kopf': 'mia-zipfel' },
   weak: {}, seen: {}, mapAt: 'wald', discovered: {}, coins: 2, coinsGot: {},
@@ -13,7 +13,7 @@ const data = {
   ],
   petStock: {}, pack: { umbrella: true }, unlocked: {}, hunger: { fill: 100, t: now }, meals: { apfel: 2 },
   vehicles: {}, ride: null, charge: {}, badges: { 'wald.punkte': 2 },
-  aqua: { fish: {}, food: 0, fill: 80, t: now }, tierSeen: [], passed: {},
+  aqua: { fish: { goldfisch: 2, guppy: 2, neon: 3, garnele: 3, schnecke: 1 }, food: 3, fill: 100, t: now }, tierSeen: [], passed: {},
 };
 const code = Buffer.from(JSON.stringify({ mia: 1, data }), 'utf-8').toString('base64');
 writeFileSync('spielstand-test.txt', code);
