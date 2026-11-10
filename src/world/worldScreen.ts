@@ -29,7 +29,7 @@ import { stationStarters, type Npc, type Offer } from '../stations';
 import { buildWorld, PROC_KINDS, type Bush, type Critter, type Interact } from './world';
 import { WW, WH, S, heightAt, zoneIndex, riverOf } from './terrain';
 import { createStage3D } from '../world3d/scene';
-import { buildDecor, windUniform } from '../world3d/decor';
+import { buildDecor, playerUniform, windUniform } from '../world3d/decor';
 import { Particles } from '../world3d/fx';
 import * as M from '../world3d/models';
 import { createMiaSprite, svgFigure, SPR_Y, type Billboard } from '../world3d/sprites';
@@ -65,7 +65,10 @@ function fogTexture() {
   });
 }
 
+let enterSeq = 0; // nur der zuletzt gestartete Aufruf zeigt die Welt (Doppeltipp auf „Zurück“ baute sonst zwei Welten auf)
+
 export async function enterWorld(opts: EnterOpts = {}) {
+  const mySeq = ++enterSeq;
   const first = worlds[0].id;
 
   /* ── Zustand ── */
@@ -513,6 +516,30 @@ export async function enterWorld(opts: EnterOpts = {}) {
   let stall = { x: st.x, y: st.y, t: 0 };
   const dist = (a: { x: number; y: number }) => Math.hypot(a.x - st.x, a.y - st.y);
 
+  /* ── Umgebung: fallendes Laub und Blüten, Teich-Spritzer, glitzernde Truhen, Pilz-Sporen ── */
+  const ambient: Record<string, number> = {};
+  const tick = (key: string, every: number, dt: number) => ((ambient[key] = (ambient[key] ?? Math.random() * every) - dt) <= 0 ? ((ambient[key] = every * (0.6 + Math.random() * 0.8)), true) : false);
+  function ambientFx(dt: number) {
+    const zone = zoneIndex(st.x);
+    const leaf = zone === 0 ? ['#e9a24b', '#d9704a', '#9bd17a', '#f2c14a'] : zone === 1 ? ['#ff8fab', '#ffffff', '#ffd166'] : [];
+    if (leaf.length && tick('leaf', 0.45, dt)) {
+      const ang = Math.random() * 6.28, rr = 2 + Math.random() * 9;
+      fx.add(st.x * S + Math.cos(ang) * rr, 7.5 + Math.random() * 2, st.y * S + Math.sin(ang) * rr * 0.8, (Math.random() - 0.5) * 0.8, -(0.7 + Math.random() * 0.5), (Math.random() - 0.5) * 0.5, 9, zone === 0 ? 0.2 : 0.15, leaf[Math.floor(Math.random() * leaf.length)]);
+    }
+    for (const nv of npcViews) {
+      const e = nv.ent, d = Math.hypot(e.x - st.x, e.y - st.y);
+      if (d > 760) continue;
+      const gy = heightAt(e.x, e.y), key = e.id;
+      if (e.kind === 'pond' && tick('p' + key, 5.5, dt)) { // ein Fisch springt: Spritzer und Wellenringe
+        const px = e.x * S + (Math.random() - 0.5) * 2.4, pz = e.y * S + (Math.random() - 0.5) * 1.6;
+        for (let i = 0; i < 12; i++) fx.add(px, gy + 0.25, pz, (Math.random() - 0.5) * 1.6, 2.6 + Math.random() * 2, (Math.random() - 0.5) * 1.2, 0.9, 0.16, i % 3 ? '#bfe8ff' : '#ffffff', -9);
+        sfx.pop();
+      }
+      if (e.kind === 'chest' && tick('c' + key, 0.5, dt)) fx.add(e.x * S + (Math.random() - 0.5) * 1.2, gy + 0.9 + Math.random() * 0.6, e.y * S + (Math.random() - 0.5) * 0.6, 0, 0.5, 0, 1.2, 0.2, Math.random() < 0.5 ? '#ffe27a' : '#ffffff');
+      if (e.kind === 'shroom' && tick('s' + key, 0.35, dt)) fx.add(e.x * S + (Math.random() - 0.5) * 4, gy + 0.3, e.y * S + (Math.random() - 0.5) * 3, (Math.random() - 0.5) * 0.3, 0.45, (Math.random() - 0.5) * 0.3, 3.5, 0.16, Math.random() < 0.5 ? '#ffe9a0' : '#ffd6f0');
+    }
+  }
+
   function update() {
     st.t += DT;
     {
@@ -686,6 +713,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
     }
 
     if (shakeFog > 0) shakeFog = Math.max(0, shakeFog - DT);
+    ambientFx(DT);
 
     // Aktionsknopf: nächstes Ziel in Reichweite
     near = null;
@@ -750,6 +778,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
   function render(timeSec: number) {
     const t = st.t;
     windUniform.value = timeSec;
+    playerUniform.value.set(st.x * S, 0, st.y * S);
     const gy = heightAt(st.x, st.y);
     const spd = Math.hypot(st.vx, st.vy);
     // Blickrichtung: schräg zählt nach der horizontalen Komponente
@@ -851,6 +880,11 @@ export async function enterWorld(opts: EnterOpts = {}) {
         const lift = k === 'bee' || k === 'butterfly' ? 0.45 + Math.sin(ph * 3) * 0.14 : k === 'grasshopper' ? Math.pow(Math.abs(Math.sin(ph * 1.1)), 10) * 0.55 : 0;
         if (lift) nv.root.position.y = heightAt(nv.ent.x, nv.ent.y) + lift;
         if (k === 'bee' || k === 'butterfly' || k === 'grasshopper' || k === 'snail') nv.fig.mesh.scale.x = st.x < nv.ent.x ? -1 : 1; // schaut zu Mia
+        nv.fig.mesh.rotation.z = Math.sin(timeSec * 1.3 + nv.ent.x * 0.01) * 0.022; // wiegt sich leicht
+        if (!lift && k !== 'fox' && !PROC_KINDS.includes(k)) { // freut sich, wenn Mia nah ist: kleine Hüpfer
+          const near = d < 300 ? 1 : 0, hop = near ? Math.pow(Math.max(0, Math.sin(timeSec * 3.4 + nv.ent.x)), 3) * 0.2 : 0;
+          nv.root.position.y = heightAt(nv.ent.x, nv.ent.y) + hop;
+        }
       }
       v3.set(nv.ent.x * S, heightAt(nv.ent.x, nv.ent.y) + nv.top, nv.ent.y * S);
       const p = stage.project(v3);
@@ -975,6 +1009,15 @@ export async function enterWorld(opts: EnterOpts = {}) {
   };
   stage.follow(st.x, st.y, 0, 0, DT, true);
   stage.streamChunks(st.x, st.y, 30); // die nächsten Kacheln sofort, der Rest läuft nach
+  if (mySeq !== enterSeq) { // ein neuerer Aufruf läuft schon: diese Welt wieder abbauen, ohne dessen Zustand anzufassen
+    dead = true;
+    window.removeEventListener('resize', fit);
+    window.removeEventListener('stage-resize', sizeRain);
+    controls.dispose();
+    stage.dispose();
+    offHouse();
+    return;
+  }
   if (import.meta.env.DEV) (window as unknown as { __mia: unknown; __w: unknown }).__mia = st;
   if (import.meta.env.DEV) (window as unknown as { __w: unknown }).__w = { weather, forceRain };
   show(screen, { back: null, framed: false });

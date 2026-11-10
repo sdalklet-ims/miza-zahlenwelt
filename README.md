@@ -130,3 +130,9 @@ Das Fenster wird ganz ausgefüllt: Die 3D-Welt nutzt die komplette Fläche (brei
 - **Tiere einzeln kaufen** (Supermarkt, Gang „Aquarium“, nur wenn das Aquarium im Haus steht; höchstens 14 Tiere): Goldfisch 4 🪙, Guppy 3, Neon-Salmler 3, Silber-Skalar 6, Kampffisch 7, Panzerwels 5, Apfelschnecke 3, Zwerggarnele 2. **Fischfutter** gibt es extra (Flocken 2 🪙 = 1 Portion, Dose 6 🪙 = 4 Portionen). Daten: `content/aquarium.json`, Logik `src/core/aquarium.ts`.
 - **Aquarium ansehen**: Im Haus am Aquarium erscheint der Knopf „Aquarium ansehen“. Die Zoom-Ansicht (`src/ui/aquarium.ts`) zeigt das Becken groß mit allen gekauften Tieren: Fische schwimmen (Neons im Schwarm), Panzerwels und Schnecke kriechen am Boden, Garnelen hüpfen; Pflanzen wiegen sich, Luftblasen steigen auf. Antippen eines Tieres zeigt den Namen. **Füttern**: Flocken sinken, die Tiere schwimmen hin und fressen.
 - **Hunger**: Die Tiere werden langsam hungrig; ab und zu (etwa alle 3 Minuten) sagt Mia, dass die Fische Hunger haben, und über dem Aquarium im Haus erscheint ein 🐟🍽️. Hungrige Tiere schwimmen träger, es gibt kein Game Over. Das 3D-Aquarium im Haus zeigt nur die Fische, die gekauft wurden, in den Farben der Arten.
+
+## Feinschliff im Wald (und den anderen Welten)
+- **Gras biegt sich weg**, wenn Mia durchläuft (Shader, `playerUniform` in `src/world3d/decor.ts`).
+- **Fallendes Laub** im Wald, **Blütenblätter** auf der Wiese. Am **Angelteich** springen ab und zu Fische (Spritzer), **Truhen** glitzern, der **Pilzring** lässt Sporen aufsteigen.
+- Tiere **wiegen sich** leicht und **hüpfen vor Freude**, wenn Mia näher kommt.
+- Robustheit: Zweimal kurz hintereinander „Zurück“ baut nicht mehr zwei Welten gleichzeitig auf (`enterSeq` in `worldScreen.ts`).

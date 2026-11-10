@@ -7,11 +7,14 @@ import type { WorldModel, Decor } from '../world/world';
 import { createHouse, toon } from './models';
 
 export const windUniform = { value: 0 };
+/** Mias Position (Welt-Einheiten): Gras in der Nähe biegt sich weg */
+export const playerUniform = { value: new THREE.Vector3(1e6, 0, 1e6) };
 
-function wind(m: THREE.MeshToonMaterial, amp: number, base: number) {
+function wind(m: THREE.MeshToonMaterial, amp: number, base: number, push = 0) {
   m.onBeforeCompile = (sh) => {
     sh.uniforms.uTime = windUniform;
-    sh.vertexShader = 'uniform float uTime;\n' + sh.vertexShader.replace(
+    sh.uniforms.uPlayer = playerUniform;
+    sh.vertexShader = 'uniform float uTime;\nuniform vec3 uPlayer;\n' + sh.vertexShader.replace(
       '#include <begin_vertex>',
       `#include <begin_vertex>
        #ifdef USE_INSTANCING
@@ -19,6 +22,13 @@ function wind(m: THREE.MeshToonMaterial, amp: number, base: number) {
          float ph = uTime * 1.5 + instanceMatrix[3].x * 0.6 + instanceMatrix[3].z * 0.4;
          transformed.x += sin(ph) * sw * sw * ${amp.toFixed(3)};
          transformed.z += cos(ph * 0.8) * sw * sw * ${(amp * 0.7).toFixed(3)};
+         ${push ? `
+         vec2 pdd = vec2(instanceMatrix[3].x - uPlayer.x, instanceMatrix[3].z - uPlayer.z);
+         float pdl = length(pdd);
+         float ppu = ${push.toFixed(2)} * smoothstep(1.7, 0.15, pdl) * sw;
+         mat3 pim = mat3(instanceMatrix);
+         vec3 pld = transpose(pim) * vec3(pdd.x, 0.0, pdd.y) / max(pdl, 0.05);
+         transformed.xz += pld.xz / max(dot(pim[0], pim[0]), 0.0001) * ppu;` : ''}
        #endif`
     );
   };
@@ -176,7 +186,7 @@ export function buildDecor(model: WorldModel): THREE.Group {
     }
   });
   const gm = toon({ vertexColors: true, side: THREE.DoubleSide });
-  const grass = instanced(tuft, wind(gm, 0.25, 0.0), grassItems, 1, false);
+  const grass = instanced(tuft, wind(gm, 0.25, 0.0, 1.25), grassItems, 1, false);
   grass.castShadow = false;
   g.add(grass);
 
