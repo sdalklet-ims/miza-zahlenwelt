@@ -33,14 +33,14 @@ export function openSettings() {
   };
 
   let armed = false;
-  const resetBtn = h('button', { class: 'btn ghost set-reset' }, '🗑 Fortschritt löschen');
+  const resetBtn = h('button', { class: 'btn ghost set-reset' }, '🔄 Alles zurücksetzen und neu anfangen');
   resetBtn.addEventListener('click', () => {
     if (!armed) {
       armed = true;
-      resetBtn.textContent = 'Wirklich alles löschen? Nochmal tippen.';
+      resetBtn.textContent = 'Wirklich ALLES löschen? Zum Bestätigen nochmal tippen.';
       setTimeout(() => {
         armed = false;
-        resetBtn.textContent = '🗑 Fortschritt löschen';
+        resetBtn.textContent = '🔄 Alles zurücksetzen und neu anfangen';
       }, 4000);
       return;
     }
@@ -68,6 +68,8 @@ export function openSettings() {
     title: 'Einstellungen',
     wide: true,
     content: h('div', { class: 'settings' },
+      h('div', { class: 'set-row' }, resetBtn),
+      h('div', { class: 'set-hint' }, 'Löscht Sterne, Münzen, Haus, Tiere, Fahrzeuge und alle Abzeichen. Danach beginnt das Spiel ganz neu.'),
       h('label', {}, h('span', {}, '🎵 Musik-Lautstärke ', volOut), vol),
       h('div', { class: 'set-row' },
         toggle('Musik an', () => getProgress().settings.musicOn, (v) => mutate((s) => void (s.settings.musicOn = v))),
@@ -76,6 +78,6 @@ export function openSettings() {
         toggle('🔧 Test: Fluss freischalten (lädt neu)', () => worldUnlocked('fluss'), (v) => { setWorldUnlocked('fluss', v); setWorldUnlocked('wiese', v || worldUnlocked('wiese')); setTimeout(() => location.reload(), 300); })),
       h('div', { class: 'set-hint' }, 'Alle Texte werden gelesen – es gibt keine Stimmen. Der Spielstand wird automatisch auf diesem Gerät gespeichert.'),
       h('h3', { class: 'set-h' }, '💾 Spielstand sichern'), box, saveRow, msg,
-      h('div', { class: 'set-row' }, resetBtn)),
+      ),
   });
 }
