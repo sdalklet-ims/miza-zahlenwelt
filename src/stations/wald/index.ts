@@ -1,4 +1,6 @@
 import { show } from '../../core/router';
+import { hungerBlocked } from '../../core/hunger';
+import { speak } from '../../audio/speak';
 import { registerStations, type Npc, type Offer } from '../index';
 import { checkScreen, discoverScreen, kaertchenScreen, punkteScreen, steineScreen } from './games';
 import { videoScreen } from './video';
@@ -8,6 +10,7 @@ import '../../styles/games.css';
 import '../../styles/video.css';
 
 function start(offer: Offer, npc: Npc, back: () => void) {
+  if (hungerBlocked(offer)) { void speak('mia.hunger.nogame'); back(); return; } // leerer Magen: erst essen
   const again = () => start(offer, npc, back);
   switch (offer) {
     case 'punkte': return show(punkteScreen(back, again), { back });

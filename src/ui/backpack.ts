@@ -2,7 +2,7 @@
 import { h } from '../core/dom';
 import { openModal } from './modal';
 import { foods, stock } from '../core/pet';
-import { eat, fullness, hungerLevel, mealStock, meals } from '../core/hunger';
+import { eat, eatTextId, fullness, hungerLevel, mealStock, meals } from '../core/hunger';
 import { onProgress } from '../core/progress';
 import { hasUmbrella, onWeather, setUmbrella, weather } from '../core/weather';
 import { speak } from '../audio/speak';
@@ -15,9 +15,9 @@ export function openBackpack() {
     const up = weather.umbrella;
     const full = Math.round(fullness()), lvl = hungerLevel();
     body.replaceChildren(
-      h('div', { class: 'pack-hunger' }, h('span', {}, lvl === 'hungry' ? '😫 Mia hat großen Hunger' : lvl === 'rumble' ? '😋 Mias Magen knurrt' : lvl === 'ok' ? '🙂 Mia ist ganz gut satt' : '😊 Mia ist satt'), h('div', { class: 'pet-bar ' + (lvl === 'hungry' ? 'hungry' : lvl === 'rumble' ? 'ok' : 'happy') }, h('i', { style: { width: full + '%' } }))),
+      h('div', { class: 'pack-hunger' }, h('span', {}, lvl === 'empty' ? '🥺 Mias Magen ist leer – erst essen, dann spielen!' : lvl === 'weak' ? '🥴 Mia ist ganz schwindelig vor Hunger' : lvl === 'hungry' ? '😫 Mia hat großen Hunger' : lvl === 'rumble' ? '😋 Mias Magen knurrt' : lvl === 'ok' ? '🙂 Mia ist ganz gut satt' : '😊 Mia ist satt'), h('div', { class: 'pet-bar ' + (lvl === 'hungry' || lvl === 'weak' || lvl === 'empty' ? 'hungry' : lvl === 'rumble' ? 'ok' : 'happy') }, h('i', { style: { width: full + '%' } }))),
       h('div', { class: 'pack-grid' },
-        ...meals.filter((m) => mealStock(m.id) > 0).map((m) => h('button', { class: 'pack-item meal', disabled: full >= 97, onclick: () => { if (eat(m.id)) { sfx.munch(); speak('mia.eat', { name: m.name }); } else speak('mia.eat.full'); } },
+        ...meals.filter((m) => mealStock(m.id) > 0).map((m) => h('button', { class: 'pack-item meal', disabled: full >= 97, onclick: () => { if (eat(m.id)) { sfx.munch(); speak(eatTextId(m), { name: m.name }); } else speak('mia.eat.full'); } },
           h('span', { class: 'pk-icon' }, m.icon), h('b', {}, m.name), h('small', {}, `Vorrat ${mealStock(m.id)} · +${m.fill}`))),
         hasUmbrella() ? h('button', { class: 'pack-item' + (up ? ' on' : '') + (weather.raining && !up ? ' hint' : ''), onclick: () => { setUmbrella(!up); sfx.pop(); speak(!up ? 'weather.umb.on' : 'weather.umb.off'); } },
           h('span', { class: 'pk-icon' }, '☂️'), h('b', {}, 'Regenschirm'), h('small', {}, up ? 'aufgespannt – tippen zum Zuklappen' : weather.raining ? 'Es regnet! Tippen zum Aufspannen' : 'tippen zum Aufspannen')) : null,

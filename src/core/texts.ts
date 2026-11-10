@@ -67,7 +67,7 @@ export const vehicleCfg = files['/content/vehicles.json'] as { vehicles: Vehicle
 export interface BadgeGameDef { id: string; name: string; icon: string; color: string; shape: string; npc: string; what: string }
 export const badgeCfg = files['/content/badges.json'] as { worlds: Record<string, { title: string; icon: string; master: BadgeGameDef; games: BadgeGameDef[] }> };
 
-export interface MealDef { id: string; name: string; icon: string; price: number; fill: number }
+export interface MealDef { id: string; name: string; icon: string; price: number; fill: number; kind?: 'obst' | 'cat' | 'premium' }
 export const mealCfg = files['/content/meals.json'] as { meals: MealDef[] };
 
 export interface PetKindDef { id: string; name: string; icon: string; price: number; likes: string[]; names: string[] }

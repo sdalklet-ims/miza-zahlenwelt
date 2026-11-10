@@ -89,3 +89,6 @@
 .bb-closed { text-align: center; padding: 40px 20px; font: 800 26px var(--font); } .bb-lock { font-size: 90px; }
 .hud-bar .hud-stars.badges { cursor: pointer; border-left: 0; border-right: 0; border-top: 0; background: #fff1c9; border-bottom-color: #e2c26a; font-family: var(--font); color: var(--ink); }
 .map-title { top: 92px !important; }
+
+.hud-hunger[data-lvl="weak"] .hg-bar i, .hud-hunger[data-lvl="empty"] .hg-bar i { background: #ff6a4a; }
+.hud-hunger[data-lvl="weak"], .hud-hunger[data-lvl="empty"] { animation: breathe .9s ease-in-out infinite; background: #ffe2d9; }

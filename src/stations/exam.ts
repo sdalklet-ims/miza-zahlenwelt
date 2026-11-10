@@ -10,6 +10,8 @@ import { createShell, type Shell } from '../ui/shell';
 import { award, showResult } from '../ui/results';
 import { celebrateBadge } from '../ui/badges';
 import { show, type Screen } from '../core/router';
+import { hungerBlocked } from '../core/hunger';
+import { speak } from '../audio/speak';
 import { EXAM_PASS, examPassed, masterBadge, recordExam } from '../core/badges';
 import { setWorldUnlocked } from '../core/unlock';
 import { runBuild, runCards, runCount, type TaskResult } from './wald/tasks';
@@ -96,7 +98,7 @@ export function examScreen(worldId: string, done: () => void): Screen {
       showResult({
         title: 'Fast geschafft!', stars: 0, speakId: 'exam.fail',
         text: `${score} von ${tasks.length} Punkten. Mit ${EXAM_PASS} bestehst du. Ein Fehler ist erlaubt, probier es gleich nochmal!`,
-        buttons: [{ label: '🔁 Nochmal versuchen', cls: 'sun', onClick: () => show(examScreen(worldId, done), { back: done }) }, { label: 'Zurück zu den Spielen', onClick: done }],
+        buttons: [{ label: '🔁 Nochmal versuchen', cls: 'sun', onClick: () => { if (hungerBlocked('pruefung')) { void speak('mia.hunger.nogame'); done(); return; } show(examScreen(worldId, done), { back: done }); } }, { label: 'Zurück zu den Spielen', onClick: done }],
       });
     }
   })();

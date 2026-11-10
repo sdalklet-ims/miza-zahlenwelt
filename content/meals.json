@@ -5,56 +5,40 @@
       "name": "Apfel",
       "icon": "🍎",
       "price": 2,
-      "fill": 14
+      "fill": 14,
+      "kind": "obst"
     },
     {
       "id": "banane",
       "name": "Banane",
       "icon": "🍌",
       "price": 2,
-      "fill": 16
+      "fill": 16,
+      "kind": "obst"
     },
     {
-      "id": "brot",
-      "name": "Butterbrot",
-      "icon": "🥪",
-      "price": 4,
-      "fill": 30
-    },
-    {
-      "id": "kuchen",
-      "name": "Kuchen",
-      "icon": "🍰",
-      "price": 5,
-      "fill": 26
-    },
-    {
-      "id": "nudeln",
-      "name": "Nudeln",
-      "icon": "🍝",
-      "price": 6,
-      "fill": 45
-    },
-    {
-      "id": "pizza",
-      "name": "Pizza",
-      "icon": "🍕",
-      "price": 8,
-      "fill": 60
-    },
-    {
-      "id": "eis",
-      "name": "Eis",
-      "icon": "🍦",
+      "id": "birne",
+      "name": "Birne",
+      "icon": "🍐",
       "price": 3,
-      "fill": 10
+      "fill": 18,
+      "kind": "obst"
     },
     {
-      "id": "saft",
-      "name": "Apfelsaft",
-      "icon": "🧃",
-      "price": 2,
-      "fill": 10
+      "id": "katzenfutter",
+      "name": "Katzenfutter normal",
+      "icon": "🥫",
+      "price": 6,
+      "fill": 40,
+      "kind": "cat"
+    },
+    {
+      "id": "premium",
+      "name": "Katzenfutter Premium",
+      "icon": "🐟",
+      "price": 10,
+      "fill": 75,
+      "kind": "premium"
     }
   ],
   "texts": {
@@ -64,15 +48,39 @@
     ],
     "mia.hunger.hungry": [
       "mia",
-      "Ich habe großen Hunger und werde ganz müde. Im Supermarkt gibt es leckeres Essen!"
+      "Ich habe großen Hunger und werde ganz müde. Ich sollte bald etwas essen!"
     ],
     "mia.hunger.nofood": [
       "mia",
-      "In meinem Rucksack ist kein Essen mehr. Auf zum Supermarkt!"
+      "Ich habe großen Hunger und im Rucksack ist nichts mehr. Auf zum Supermarkt!"
+    ],
+    "mia.hunger.weak": [
+      "mia",
+      "Oh je, mein Magen ist fast leer! Mir wird ganz schwindelig. Ich muss ganz schnell etwas essen."
+    ],
+    "mia.hunger.empty": [
+      "mia",
+      "Mein Magen ist ganz leer! So kann ich nicht spielen. Erst muss ich etwas essen. Einkaufen im Supermarkt geht zum Glück noch."
+    ],
+    "mia.hunger.again": [
+      "mia",
+      "Mein Magen knurrt schon wieder laut. Ich brauche etwas zu essen!"
+    ],
+    "mia.hunger.nogame": [
+      "mia",
+      "Ich habe zu großen Hunger zum Spielen. Erst essen, dann spielen!"
     ],
     "mia.eat": [
       "mia",
-      "Mmm, lecker! {name} schmeckt toll."
+      "Mmm, lecker! {name} schmeckt gut."
+    ],
+    "mia.eat.cat": [
+      "mia",
+      "Mmm, Katzenfutter! Das schmeckt einer Katze am besten. Schnurr."
+    ],
+    "mia.eat.premium": [
+      "mia",
+      "Premium-Katzenfutter! Das ist das Allerbeste. Schnurr, schnurr, schnurr!"
     ],
     "mia.eat.full": [
       "mia",

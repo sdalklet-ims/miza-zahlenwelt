@@ -87,7 +87,7 @@ export const hud = {
       const lvl = hungerLevel();
       hungerFill.style.width = Math.round(fullness()) + '%';
       hungerEl.dataset.lvl = lvl;
-      (hungerEl.firstChild as HTMLElement).textContent = lvl === 'hungry' ? '😫' : lvl === 'rumble' ? '😋' : '🍽️';
+      (hungerEl.firstChild as HTMLElement).textContent = lvl === 'empty' ? '🥺' : lvl === 'weak' || lvl === 'hungry' ? '😫' : lvl === 'rumble' ? '😋' : '🍽️';
     }
     if (batEl) {
       const v = currentRide(), on = hasBattery(v);

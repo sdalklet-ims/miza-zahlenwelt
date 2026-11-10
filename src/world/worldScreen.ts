@@ -12,7 +12,8 @@ import { onProgress } from '../core/progress';
 import { show } from '../core/router';
 import { createControls } from '../input/controls';
 import { speak } from '../audio/speak';
-import { hungerLevel, hungerSpeed, mealStock, meals } from '../core/hunger';
+import { hungerBlocked, hungerLevel, hungerSpeed, mealStock, meals } from '../core/hunger';
+import { openBackpack } from '../ui/backpack';
 import { tickWeather, weather, forceRain } from '../core/weather';
 import { award } from '../ui/results';
 import { openHouseUi, setBuilder, setHomeNav } from '../ui/houseUi';
@@ -269,7 +270,9 @@ export async function enterWorld(opts: EnterOpts = {}) {
   let charging: { x: number; y: number } | null = null, chargeSound = 0, lastBat = 100;
   const chargeBar = h('div', { class: 'charge-bar off' }, h('span', {}, '🔋 Akku lädt …'), h('div', { class: 'cb-track' }, h('i', {})));
   el.append(chargeBar);
-  let hungerTick = 3, lastHunger = hungerLevel(), lastSpd = 0;
+  let hungerTick = 3, lastHunger = hungerLevel(), lastSpd = 0, hungerSaid = 0;
+  const miaMark = h('div', { class: 'pet-mark mia-mark' }, '🍽️');
+  labels.append(miaMark);
   let vehicle: Vehicle3D | null = null, vehKind = '', vehYaw = 0, lastRiding = false, pedal = 0, steerNow = 0, leanNow = 0;
   const stationViews: { s: { x: number; y: number }; v: ChargeStation3D }[] = model.stations.map((s) => {
     const v = createChargeStation();
@@ -445,7 +448,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
     const id = done ? (nextOpen ? 'tor.hello.passed' : 'tor.hello.last') : allBadges(worldId) ? 'tor.hello.ready' : 'tor.hello.missing';
     const params = { n: miss.length === 1 ? 'ein Abzeichen' : `${miss.length} Abzeichen`, names: miss.map((b) => b.name).join(', ') };
     const btns: HTMLElement[] = [];
-    if (!done && allBadges(worldId)) btns.push(h('button', { class: 'btn sun', onclick: () => { savePos(); closeDialog(); show(examScreen(worldId, () => void enterWorld()), { back: () => void enterWorld() }); } }, '📝 Mathearbeit starten'));
+    if (!done && allBadges(worldId)) btns.push(h('button', { class: 'btn sun', onclick: () => { if (hungerBlocked('pruefung')) { closeDialog(); speak('mia.hunger.nogame'); openBackpack(); return; } savePos(); closeDialog(); show(examScreen(worldId, () => void enterWorld()), { back: () => void enterWorld() }); } }, '📝 Mathearbeit starten'));
     btns.push(h('button', { class: 'btn', onclick: () => { closeDialog(); openBadgeBook(worldId); } }, '📖 Abzeichenbuch', !done && !allBadges(worldId) ? h('small', { class: 'btn-stars' }, `${gameBadges(worldId).length - miss.length}/${gameBadges(worldId).length}`) : null));
     bubble = h('div', { class: 'bubble world-bubble' },
       h('div', { class: 'bubble-name' }, npc.name),
@@ -470,8 +473,8 @@ export async function enterWorld(opts: EnterOpts = {}) {
     const starKey: Record<string, string> = { check: `${worldId}.check`, punkte: `${worldId}.punkte`, steine: `${worldId}.steine`, kaertchen: `${worldId}.kaertchen`, angeln: `${worldId}.angeln`, pilze: `${worldId}.pilze`, plus: `${worldId}.plus`, minus: `${worldId}.minus`, partner: `${worldId}.partner`, strahl: `${worldId}.strahl`, mal: `${worldId}.mal`, teilen: `${worldId}.teilen`, reihe: `${worldId}.reihe`, malpaare: `${worldId}.paare` };
     const btns = npc.offers.map((o) => {
       const s = starKey[o] ? getProgress().stars[starKey[o]] ?? 0 : null;
-      return h('button', { class: 'btn ' + (o === 'video' || o === 'shop' || o === 'autos' ? 'sun' : o === 'check' ? 'coral' : ''), onclick: () => { savePos(); closeDialog(); if (o === 'shop') openSupermarket(); else if (o === 'autos') openCarShop(); else start?.(o as Offer, npc, () => void enterWorld()); } },
-        labelsTxt[o] ?? o, s != null && h('small', { class: 'btn-stars' }, '★'.repeat(s) + '☆'.repeat(3 - s)));
+      return h('button', { class: 'btn ' + (o === 'video' || o === 'shop' || o === 'autos' ? 'sun' : o === 'check' ? 'coral' : ''), onclick: () => { if (hungerBlocked(o)) { closeDialog(); speak('mia.hunger.nogame'); openBackpack(); return; } savePos(); closeDialog(); if (o === 'shop') openSupermarket(); else if (o === 'autos') openCarShop(); else start?.(o as Offer, npc, () => void enterWorld()); } },
+        (labelsTxt[o] ?? o) + (hungerBlocked(o) ? ' 🍽️' : ''), s != null && h('small', { class: 'btn-stars' }, '★'.repeat(s) + '☆'.repeat(3 - s)));
     });
     bubble = h('div', { class: 'bubble world-bubble' },
       h('div', { class: 'bubble-name' }, npc.name),
@@ -515,10 +518,17 @@ export async function enterWorld(opts: EnterOpts = {}) {
     if (hungerTick <= 0) {
       hungerTick = 2;
       const lv = hungerLevel();
+      const hasFood = meals.some((m) => mealStock(m.id) > 0);
       if (lv !== lastHunger) {
-        if (lv === 'rumble' && lastHunger !== 'hungry') speak('mia.hunger.rumble');
-        else if (lv === 'hungry') speak(meals.some((m) => mealStock(m.id) > 0) ? 'mia.hunger.hungry' : 'mia.hunger.nofood');
+        if (lv === 'rumble') speak('mia.hunger.rumble');
+        else if (lv === 'hungry') speak(hasFood ? 'mia.hunger.hungry' : 'mia.hunger.nofood');
+        else if (lv === 'weak') speak('mia.hunger.weak');
+        else if (lv === 'empty') speak('mia.hunger.empty');
+        if (lv === 'hungry' || lv === 'weak' || lv === 'empty') hungerSaid = st.t;
         lastHunger = lv;
+      } else if ((lv === 'hungry' || lv === 'weak' || lv === 'empty') && st.t - hungerSaid > 70 && !frozen()) {
+        speak(hasFood ? 'mia.hunger.again' : 'mia.hunger.nofood'); // erinnert sich alle ~70 s
+        hungerSaid = st.t;
       }
     }
     if (charging) {
@@ -764,6 +774,16 @@ export async function enterWorld(opts: EnterOpts = {}) {
       pedal += (spd / 60) * 0.1;
     }
     shopTick?.(timeSec);
+    {
+      const lvM = hungerLevel(), show = (lvM === 'hungry' || lvM === 'weak' || lvM === 'empty') && !sleeping && !hidden;
+      miaMark.style.display = show ? '' : 'none';
+      if (show) {
+        v3.set(st.x * S, gy + seatLift + 2.4, st.y * S);
+        const mp = stage.project(v3);
+        miaMark.textContent = lvM === 'empty' ? '🥺🍽️' : '🍽️';
+        miaMark.style.transform = `translate(${mp.x}px, ${mp.y + Math.sin(timeSec * 4) * 4}px) translate(-50%, -100%)`;
+      }
+    }
     miaSpr.group.position.set(st.x * S, gy + seatLift + (sleeping ? 1.0 : 0), st.y * S);
     miaSpr.update(rdt, vehicle ? Math.min(1, spd / (RUN * Math.max(1, rideSpeed()))) : Math.min(1, spd / RUN), miaDir, sleeping, rideStyle, wind);
     for (const sv of stationViews) sv.v.setCharging(charging === sv.s, timeSec, vehicle ? chargeOf(vehKind) : 100);
