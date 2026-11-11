@@ -4,13 +4,14 @@ import { getProgress, mutate, resetProgress } from '../core/progress';
 import { openModal } from './modal';
 import { applyMusicSettings, sfx } from '../audio/music';
 import { exportSave, importSave } from '../core/save';
-import { addCoins, coins } from '../core/rewards';
+import { addCoins, coins, totalStars } from '../core/rewards';
 import { setWorldUnlocked, worldUnlocked } from '../core/unlock';
 
 export function openSettings() {
   const p = getProgress().settings;
 
   const coinNow = h('span', {}, `Du hast ${coins()} Münzen`);
+  const starNow = h('span', {}, `Sterne: ${totalStars()}`);
   const volOut = h('b', {}, Math.round(p.music * 100) + ' %');
   const vol = h('input', { type: 'range', min: '0', max: '1', step: '0.05', value: String(p.music), class: 'set-range', 'aria-label': 'Lautstärke der Musik' });
   vol.addEventListener('input', () => {
@@ -71,6 +72,7 @@ export function openSettings() {
     wide: true,
     content: h('div', { class: 'settings' },
       h('div', { class: 'set-row' }, h('button', { class: 'btn sun', onclick: () => { addCoins(20); sfx.coin(); coinNow.textContent = `Du hast ${coins()} Münzen`; } }, '🪙 +20 Münzen (Test)'), h('span', { class: 'set-hint' }, coinNow)),
+      h('div', { class: 'set-row' }, h('button', { class: 'btn sun', onclick: () => { mutate((q) => void (q.stars['test.bonus'] = (q.stars['test.bonus'] ?? 0) + 1)); sfx.star(); starNow.textContent = `Sterne: ${totalStars()}`; } }, '⭐ +1 Stern (Test)'), h('span', { class: 'set-hint' }, starNow)),
       h('div', { class: 'set-row' }, resetBtn),
       h('div', { class: 'set-hint' }, 'Löscht Sterne, Münzen, Haus, Tiere, Fahrzeuge und alle Abzeichen. Danach beginnt das Spiel ganz neu.'),
       h('label', {}, h('span', {}, '🎵 Musik-Lautstärke ', volOut), vol),

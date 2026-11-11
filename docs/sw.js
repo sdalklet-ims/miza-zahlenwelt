@@ -1,7 +1,7 @@
 /* Service Worker – wird beim Build von vite.config.ts mit Dateiliste und Version gefüllt.
  * Strategie: network-first mit 3 Sekunden Timeout, sonst Cache (so kommen Updates sofort beim nächsten Start an, und ohne Netz läuft es trotzdem). */
-const VERSION = '1794422983942'; // wird bei jedem Build neu gesetzt (Zeitstempel)
-const FILES = ["assets/accessories-Dv8yA44p.png","assets/atlas-Npc4bnLt.png","assets/index-30VOvgnh.css","assets/index-DHEdRR98.js","assets/portrait_happy-CI7YC2nl.png","assets/portrait_neutral-C407dqrH.png","assets/portrait_sad-CQSl7PBc.png","assets/portrait_surprised-CbYFPo_k.png","assets/portrait_think-DVDWoCGk.png","icon.svg","icons/apple-touch-icon.png","icons/icon-192.png","icons/icon-512.png","index.html","manifest.webmanifest"];
+const VERSION = '1794422998708'; // wird bei jedem Build neu gesetzt (Zeitstempel)
+const FILES = ["assets/accessories-Dv8yA44p.png","assets/atlas-Npc4bnLt.png","assets/index-30VOvgnh.css","assets/index-DZbqcDM3.js","assets/portrait_happy-CI7YC2nl.png","assets/portrait_neutral-C407dqrH.png","assets/portrait_sad-CQSl7PBc.png","assets/portrait_surprised-CbYFPo_k.png","assets/portrait_think-DVDWoCGk.png","icon.svg","icons/apple-touch-icon.png","icons/icon-192.png","icons/icon-512.png","index.html","manifest.webmanifest"];
 const CACHE = 'mia-' + VERSION;
 const TIMEOUT_MS = 3000;
 
