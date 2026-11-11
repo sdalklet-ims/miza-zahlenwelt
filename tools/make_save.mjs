@@ -5,7 +5,7 @@ const now = Date.now();
 const core = Object.fromEntries([...house.core, 'bett', 'aquarium'].map((id) => [id, true]));
 const data = {
   v: 1, stars: { 'wald.punkte': 3, 'wald.steine': 3 }, levels: {}, found: [], equipped: { 'mia.kopf': 'mia-zipfel' },
-  weak: {}, seen: {}, mapAt: 'wald', discovered: {}, coins: 2, coinsGot: {},
+  weak: {}, seen: {}, mapAt: 'wald', discovered: {}, coins: 50, coinsGot: {},
   house: { owned: { ...core }, built: { ...core }, roof: '#d9534f', wall: '#fff0d4', stage: 2 }, posV: 0,
   pets: [
     { kind: 'wellensittich', name: 'Mago', fill: 100, t: now, fed: 0 },
