@@ -5,9 +5,8 @@
   "lang": "de",
   "start_url": "./",
   "scope": "./",
-  "display": "fullscreen",
-  "display_override": ["fullscreen", "standalone"],
-  "orientation": "landscape",
+  "display": "standalone",
+  "orientation": "any",
   "background_color": "#4f9d5d",
   "theme_color": "#4f9d5d",
   "icons": [

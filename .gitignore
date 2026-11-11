@@ -2,3 +2,7 @@ node_modules
 dist
 *.log
 *.zip
+
+spielstand-test.txt
+test-out/
+.claude/

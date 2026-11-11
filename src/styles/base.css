@@ -18,7 +18,7 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 #rotate { display: none; position: fixed; inset: 0; z-index: 99; background: #2a5f37; color: #fff; font: 800 30px var(--font); text-align: center; align-items: center; justify-content: center; line-height: 1.6; }
-@media (orientation: portrait) { #rotate { display: flex; } }
+/* Hochformat wird ebenfalls unterstützt (die Bühne wächst nach unten mit), daher keine Dreh-Aufforderung mehr */
 
 /* HUD */
 .hud-bar { position: absolute; top: 12px; left: 14px; right: 14px; display: flex; gap: 10px; align-items: center; }

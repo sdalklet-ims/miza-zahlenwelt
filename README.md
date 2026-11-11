@@ -144,3 +144,7 @@ Im Haus gibt es (ab „bewohnbar“) die Stelle **Tierhaus ansehen** 🏠. Die Z
 - Neu freigeschaltete Stücke werden beim Öffnen angekündigt (`tierSeen` im Fortschritt). Code: `src/ui/tierhaus.ts`, `src/core/tierhaus.ts`. Dev: `window.__tier()` öffnet die Ansicht.
 - Zugang: fester Knopf 🏠 **Tierhaus** in der oberen Leiste (erscheint, sobald ein Haustier eingezogen ist), zusätzlich die Stelle im Haus.
 - **Sterne gibt es nur durch Spiele und Prüfungen.** Die Entdecker-Sterne in der Welt, Sterne fürs erste Streicheln und fürs Hausbauen sind abgeschafft; alte Sterne dieser Art zählen nicht mehr (`isGameStarKey` in `src/core/rewards.ts`).
+
+## iPad-App über GitHub Pages
+- `npm run build:pages` baut nach `docs/` (das wird von GitHub Pages ausgeliefert). `npm run serve` startet einen kleinen Server (Port 8080) mit der WLAN-Adresse fürs iPad. `node tools/pwa-test.mjs` testet Service Worker, Offline-Start und Spielstand mit Chrome und macht Screenshots nach `test-out/`.
+- Service Worker (`tools/sw.template.js`): network-first mit 3 s Timeout, sonst Cache; Version = Build-Zeitstempel. Spielstand: localStorage `mia.progress.v1`. Wake Lock, Tipp-Toleranz von 24 px und `storage.persist()` stehen in `src/main.ts`. Hoch- und Querformat funktionieren (die Bühne wächst mit).
