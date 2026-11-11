@@ -82,6 +82,14 @@ document.addEventListener('pointerdown', () => void keepAwake(), { passive: true
 }
 
 // Kein Scrollen/Zoomen der Seite, Multi-Touch bleibt erlaubt (Joystick + Knopf gleichzeitig)
-document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+// Ausnahme: Listen, die wirklich scrollbar sind (Supermarkt, Fenster, Rucksack …), dürfen mit dem Finger gescrollt werden
+const canScroll = (t: EventTarget | null) => {
+  for (let el = t as HTMLElement | null; el && el !== document.body; el = el.parentElement) {
+    const oy = getComputedStyle(el).overflowY;
+    if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) return true;
+  }
+  return false;
+};
+document.addEventListener('touchmove', (e) => { if (!canScroll(e.target)) e.preventDefault(); }, { passive: false });
 for (const g of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(g, (e) => e.preventDefault());
 document.addEventListener('contextmenu', (e) => e.preventDefault());
