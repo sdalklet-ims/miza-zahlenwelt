@@ -75,7 +75,7 @@ export async function badgeRun(key: string, clean: boolean): Promise<string> {
   const r = recordRun(key, true);
   if (r.newly) { await celebrateBadge(def); return `🏅 Abzeichen „${def.name}“ erhalten!`; }
   speak('badge.run1', { name: def.name });
-  return `🏅 Fehlerfrei! „${def.name}“: ${r.runs} von ${NEED_RUNS}.`;
+  return `🏅 Fehlerfrei! Noch ${NEED_RUNS - r.runs} fehlerfreier Durchgang, dann bekommst du das Abzeichen „${def.name}“ (${r.runs} von ${NEED_RUNS}).`;
 }
 
 /** Das Abzeichenbuch: eine Seite je Welt */

@@ -8,6 +8,7 @@ import { createBoard } from '../../ui/board';
 import { createStoneBoard } from '../../ui/stones';
 import { award, showResult } from '../../ui/results';
 import { badgeRun } from '../../ui/badges';
+import { openModal } from '../../ui/modal';
 import type { Screen } from '../../core/router';
 import { runBuild, runCards, runCount, type TaskHooks, type TaskResult } from './tasks';
 import { genCards, NumberGen, numOf, type CardRule, type PunkteRule } from './generators';
@@ -187,7 +188,12 @@ export function steineScreen(done: () => void): Screen {
       shell.face('happy');
       shell.feedback('good', `${n} ist neu!`);
       void shell.speakId('wald.steine.new', { n }); // läuft nebenher, damit es zügig weitergeht
-      if (streak >= SERIES) { streak = 0; info(); await badgeRun('wald.steine', true); if (shell.dead) return; }
+      if (streak >= SERIES) { // fehlerfreier Durchlauf: Hinweis, was fürs Abzeichen noch fehlt (kommt nicht, wenn man es schon hat)
+        streak = 0; info();
+        const note = await badgeRun('wald.steine', true);
+        if (note && !note.includes('erhalten')) await new Promise<void>((res) => { const close = openModal({ title: '🏅 Fehlerfrei!', onClose: res, content: h('div', { class: 'celebrate' }, h('p', {}, 'Super, ein fehlerfreier Durchlauf! Du brauchst noch einen weiteren, dann bekommst du das Abzeichen „Steine-Meister“.'), h('button', { class: 'btn', onclick: () => close() }, 'Weiter')) }); });
+        if (shell.dead) return;
+      }
       const stars = starsFor(found.size);
       if (stars > (getProgress().stars['wald.steine'] ?? 0)) await award('wald.steine', stars);
       if (found.size >= MIN && found.size < all.length && !offered) { // genug gefunden: aufhören oder freiwillig weitersuchen
