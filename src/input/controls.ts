@@ -1,5 +1,6 @@
 /**
- * Touch-Steuerung (Querformat): fester Joystick links unten,  Pfoten-Knopf rechts unten (kontextabhängig).
+ * Steuerung: Gelaufen wird mit dem Finger auf der Welt (siehe worldScreen: halten = folgen). Hier: Pfoten-Knopf rechts unten (kontextabhängig).
+ * Der frühere Joystick wird nicht mehr angezeigt (Code bleibt für Tests).
  * Jedes Bedienelement verfolgt seinen eigenen Pointer → Multi-Touch geht.
  * Zusätzlich Tastatur (Pfeile/WASD, Leertaste/E) zum Testen am Rechner.
  */
@@ -78,7 +79,7 @@ export function createControls(onAction: () => void): Controls {
   window.addEventListener('keyup', ku);
 
   return {
-    el: h('div', { class: 'controls' }, base, act),
+    el: h('div', { class: 'controls' }, act), // der runde Joystick ist weg: gelaufen wird mit dem Finger auf der Welt (halten = folgen)
     vec() {
       let x = jx, y = jy;
       if (!x && !y) {
