@@ -387,7 +387,7 @@
       ]
     },
     "steine": {
-      "stones": 4
+      "stones": 5
     },
     "kaertchen": {
       "rounds": 5,
@@ -682,7 +682,7 @@
     ],
     "wald.dachs.hello": [
       "dachs",
-      "Brumm. Ich bin Bruno. Ich habe genau vier Steine. Wie viele Zahlen kannst du damit legen?"
+      "Brumm. Ich bin Bruno. Ich habe genau fünf Steine. Wie viele Zahlen kannst du damit legen?"
     ],
     "wald.hase.hello": [
       "hase",
@@ -770,11 +770,11 @@
     ],
     "wald.steine.prompt": [
       "dachs",
-      "Lege genau vier Steine in die Tafel. Welche Zahlen findest du?"
+      "Lege genau fünf Steine in die Tafel. Welche Zahlen findest du?"
     ],
     "wald.steine.tip": [
       "dachs",
-      "Lege zuerst alle vier Steine zu den Einern. Dann schiebe immer einen Stein weiter, zu den Zehnern. So vergisst du keine Zahl."
+      "Lege zuerst alle fünf Steine zu den Einern. Dann schiebe immer einen Stein weiter, zu den Zehnern. So vergisst du keine Zahl."
     ],
     "wald.steine.new": [
       "dachs",
@@ -794,7 +794,7 @@
     ],
     "wald.steine.done": [
       "dachs",
-      "Alle fünfzehn Zahlen! Du bist ein Steine-Meister!"
+      "Alle einundzwanzig Zahlen! Du bist ein Steine-Meister!"
     ],
     "wald.kaertchen.prompt.max": [
       "hase",

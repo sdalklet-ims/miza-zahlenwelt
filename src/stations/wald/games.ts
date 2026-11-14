@@ -112,7 +112,9 @@ export function steineScreen(done: () => void): Screen {
   for (let a = 0; a <= STONES; a++) for (let b = 0; b <= STONES - a; b++) all.push(numOf(a, b, STONES - a - b));
   all.sort((x, y) => x - y);
   const found = new Set(getProgress().found.filter((n) => all.includes(n)));
-  const STEP = Math.round(all.length / 3); // alle Zahlen = 3 Sterne (bei 4 Steinen: 15 Zahlen, Sterne bei 5 · 10 · 15)
+  const MIN = 10; // so viele verschiedene Zahlen reichen zum Abschluss; danach darf man freiwillig weitersuchen
+  const starsFor = (n: number) => (n >= all.length ? 3 : n >= 15 ? 2 : n >= MIN ? 1 : 0);
+  let offered = false;
 
   const board = createBoard({ small: true });
   const readout = () => {
@@ -143,7 +145,7 @@ export function steineScreen(done: () => void): Screen {
   shell.main.append(
     h('div', { class: 'task steine' },
       h('div', { class: 'left' }, board.el, h('div', { class: 'tray-row' }, stones.tray), okBtn),
-      h('div', { class: 'found-panel' }, counter, h('small', {}, `⭐ bei ${STEP} · ${STEP * 2} · ${STEP * 3}`), grid))
+      h('div', { class: 'found-panel' }, counter, h('small', {}, `⭐ bei ${MIN} · 15 · ${all.length}`), grid))
   );
   const info = () => shell.setInfo(`Genau ${STONES} Steine! · Serie ohne Wiederholung: ${streak}/${SERIES}`);
   info();
@@ -186,8 +188,14 @@ export function steineScreen(done: () => void): Screen {
       shell.feedback('good', `${n} ist neu!`);
       void shell.speakId('wald.steine.new', { n }); // läuft nebenher, damit es zügig weitergeht
       if (streak >= SERIES) { streak = 0; info(); await badgeRun('wald.steine', true); if (shell.dead) return; }
-      const stars = Math.floor(found.size / STEP);
+      const stars = starsFor(found.size);
       if (stars > (getProgress().stars['wald.steine'] ?? 0)) await award('wald.steine', stars);
+      if (found.size >= MIN && found.size < all.length && !offered) { // genug gefunden: aufhören oder freiwillig weitersuchen
+        offered = true;
+        const goOn = await new Promise<boolean>((res) => void showResult({ title: `${found.size} Zahlen gefunden!`, stars: starsFor(found.size), text: 'Das reicht schon für einen Stern. Möchtest du weitersuchen?', buttons: [{ label: 'Weitersuchen', onClick: () => res(true) }, { label: 'Fertig', cls: 'ghost', onClick: () => res(false) }] }));
+        if (shell.dead) return;
+        if (!goOn) { done(); return; }
+      }
       if (found.size === all.length) {
         await shell.speakId('wald.steine.done');
         showResult({ title: 'Steine-Meister!', stars: 3, text: `Du hast alle ${all.length} Zahlen gefunden!`, buttons: [{ label: 'Zurück in den Wald', onClick: done }] });
