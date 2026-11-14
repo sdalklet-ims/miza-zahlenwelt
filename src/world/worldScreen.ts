@@ -500,7 +500,8 @@ export async function enterWorld(opts: EnterOpts = {}) {
     frozenByDialog = false;
   }
 
-  // Tippen auf die Welt = dorthin laufen
+  // Tippen auf die Welt = dorthin laufen; Halten = dem Finger folgen
+  let hold: { id: number; x: number; y: number; x0: number; y0: number; t0: number; on: boolean } | null = null;
   cv.addEventListener('pointerdown', (e) => {
     if (dead || frozen() || !getProgress().settings.tapWalk || hidden) return;
     const g = stage.pickGround(e.clientX, e.clientY);
@@ -510,7 +511,20 @@ export async function enterWorld(opts: EnterOpts = {}) {
     const rip = h('div', { class: 'tap-ripple', style: { left: (e.clientX - r.left) / sc + 'px', top: (e.clientY - r.top) / sc + 'px' } });
     el.append(rip);
     setTimeout(() => rip.remove(), 700);
+    // Finger liegen lassen = laufen: Mia geht dorthin, wo der Finger ist, und folgt ihm (hoch/runter/seitwärts), bis er losgelassen wird
+    hold = { id: e.pointerId, x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, t0: performance.now(), on: false };
+    try { cv.setPointerCapture(e.pointerId); } catch { /* egal */ }
   });
+  cv.addEventListener('pointermove', (e) => {
+    if (hold && e.pointerId === hold.id) { hold.x = e.clientX; hold.y = e.clientY; }
+  });
+  const holdEnd = (e: PointerEvent) => {
+    if (!hold || e.pointerId !== hold.id) return;
+    if (hold.on) tap = null; // war ein Halten: beim Loslassen stehen bleiben (ein kurzes Tippen läuft weiter zum Ziel)
+    hold = null;
+  };
+  cv.addEventListener('pointerup', holdEnd);
+  cv.addEventListener('pointercancel', holdEnd);
 
   /* ── Update (fester Zeitschritt, Logik in Pixeln wie bisher) ── */
   let saveT = 0;
@@ -581,6 +595,13 @@ export async function enterWorld(opts: EnterOpts = {}) {
       if (!needsCharge()) { chargeAll(10, 100); charging = null; chargeBar.classList.add('off'); saveCharge(); sfx.star(); speak('car.charge.done'); lastBat = 100; }
     }
     const isFrozen = frozen();
+    if (hold && !isFrozen && !hidden) { // Finger liegt: nach kurzem Halten (oder Wischen) dem Finger folgen
+      if (!hold.on && (performance.now() - hold.t0 > 200 || Math.hypot(hold.x - hold.x0, hold.y - hold.y0) > 24)) hold.on = true;
+      if (hold.on) {
+        const g = stage.pickGround(hold.x, hold.y);
+        if (g) tap = { x: clamp(g.x, 30, WW - 30), y: clamp(g.y, 50, WH - 24) };
+      }
+    }
     let { x: ix, y: iy } = isFrozen ? { x: 0, y: 0 } : controls.vec();
     const stick = ix !== 0 || iy !== 0;
     if (stick) tap = null;
@@ -589,6 +610,7 @@ export async function enterWorld(opts: EnterOpts = {}) {
       if (d < 10) tap = null;
       else { ix = dx / d; iy = dy / d; }
       stall.t += DT;
+      if (hold?.on) stall.t = 0; // beim Halten nicht wegen "steckt fest" abbrechen
       if (stall.t > 0.5) {
         if (Math.hypot(st.x - stall.x, st.y - stall.y) < 8) tap = null;
         stall = { x: st.x, y: st.y, t: 0 };
