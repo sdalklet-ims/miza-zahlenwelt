@@ -1,5 +1,6 @@
 /** Rechenstrich: ein Zahlenstrahl-Ausschnitt, auf dem Sprünge (Bögen) gezeigt werden – das wichtigste Rechenbild der 3. Klasse. */
 import { wait } from '../core/dom';
+import { drawScale } from './scale';
 
 export interface Strich {
   el: HTMLElement;
@@ -27,6 +28,7 @@ export function createStrich(lo: number, hi: number): Strich {
   const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, class: 'strich-svg' });
   const x = (n: number) => X0 + ((n - lo) / (hi - lo)) * (X1 - X0);
   svg.append(el('line', { x1: X0 - 20, y1: Y, x2: X1 + 20, y2: Y, class: 'st-line' }));
+  drawScale(svg, x, lo, hi, Y); // Einer, Fünfer und Zehner als Striche
   const layer = el('g');
   svg.append(layer);
   const wrap = document.createElement('div');

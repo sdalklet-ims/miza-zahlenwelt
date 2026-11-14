@@ -3,6 +3,7 @@
  * Stufen: 1 Strahl 0–100 · 2 Strahl 0–1000 mit allen Hundertern · 3 ein Hunderterabschnitt (z. B. 300–400) · 4 Strahl 0–1000 nur mit 0, 500, 1000.
  * Fehler: Der Hüpfer zeigt die richtige Stelle und hilft mit der Mitte des Strahls.
  */
+import { drawScale } from '../../ui/scale';
 import { h, pick, rnd, shuffle, wait } from '../../core/dom';
 import { getProgress } from '../../core/progress';
 import { textOf } from '../../core/texts';
@@ -35,9 +36,10 @@ function drawLine(l: Line) {
   const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, class: 'strahl-svg' }) as SVGSVGElement;
   const x = (n: number) => X0 + ((n - l.lo) / (l.hi - l.lo)) * (X1 - X0);
   svg.append(svgEl('line', { x1: X0 - 16, y1: Y, x2: X1 + 16, y2: Y, class: 'st-line' }));
+  drawScale(svg, x, l.lo, l.hi, Y); // Einer als kleine Striche, Fünfer länger, Zehner am längsten
   for (let n = l.lo; n <= l.hi; n += l.tick) {
     const big = (n - l.lo) % l.label === 0;
-    svg.append(svgEl('line', { x1: x(n), y1: Y - (big ? 16 : 9), x2: x(n), y2: Y + (big ? 16 : 9), class: 'st-tick' }));
+    if (big) svg.append(svgEl('line', { x1: x(n), y1: Y - 20, x2: x(n), y2: Y + 20, class: 'st-tick' }));
     if (big) svg.append(svgEl('text', { x: x(n), y: Y + 46, class: 'st-num', 'text-anchor': 'middle' }, String(n)));
   }
   const layer = svgEl('g', {});
